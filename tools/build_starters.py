@@ -6,13 +6,14 @@ aendert und dieses Skript laufen laesst, hat automatisch dieselbe Fassung im
 Starterpaket. Handgepflegte Kopien waeren nach dem zweiten Semester
 auseinandergelaufen.
 
-Handgeschrieben und damit NICHT ueberschrieben werden: die READMEs, die
-docker-compose.yml, init/*.sql, verify.sql und .env.example.
+Handgeschrieben und damit NICHT ueberschrieben werden: die READMEs,
+verify.sql, .env.example und requirements.txt aus Lab 05.
 
 Aufruf:  python3 tools/build_starters.py
 """
 
 import argparse
+import io
 import json
 import subprocess
 import sys
@@ -42,10 +43,31 @@ CHARTS = ("lab-04-dashboards.html",
 
 PACKAGES = ["lab-04-dash", "lab-05-fallstudie", "lab-06-stack"]
 
+# Only ship the exercise files, never a local .env, dataset or Python cache.
+PACKAGE_FILES = {
+    "lab-04-dash": ["README.md", "app.py", "charts.py", "requirements.txt", "Dockerfile"],
+    "lab-05-fallstudie": ["README.md", "app.py", "explore.py", "measures.dax", "requirements.txt"],
+    "lab-06-stack": ["README.md", "docker-compose.yml", ".env.example",
+                     "init/01_schema.sql", "init/02_import.sql", "verify.sql"],
+}
+
+
+def package_bytes(pkg):
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name in sorted(PACKAGE_FILES[pkg]):
+            info = zipfile.ZipInfo(f"{pkg}/{name}", date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.external_attr = 0o644 << 16
+            content = (STARTER / pkg / name).read_text(encoding="utf-8")
+            archive.writestr(info, content.encode("utf-8"))
+    return output.getvalue()
+
 
 def blocks(lab):
     out = subprocess.run(["node", str(ROOT / "tools" / "extract_code.js"), str(ROOT / lab)],
-                         capture_output=True, text=True, check=True)
+                         capture_output=True, text=True, encoding="utf-8", check=True)
     return {b["name"]: b["code"] for b in json.loads(out.stdout)}
 
 
@@ -60,7 +82,8 @@ def main():
     cache = {}
     stale = []
     for target, (lab, name, skip) in GENERATED.items():
-        cache.setdefault(lab, blocks(lab))
+        if lab not in cache:
+            cache[lab] = blocks(lab)
         code = cache[lab][name]
         if skip:
             code = "\n".join(code.split("\n")[skip:])
@@ -72,12 +95,13 @@ def main():
                 stale.append(target)
             continue
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(want, encoding="utf-8")
+        path.write_text(want, encoding="utf-8", newline="\n")
         print("erzeugt:", target)
 
     # charts.py: die drei Plotly-Bloecke hintereinander, Praeambel nur einmal
     lab, names = CHARTS
-    cache.setdefault(lab, blocks(lab))
+    if lab not in cache:
+        cache[lab] = blocks(lab)
     parts = [cache[lab][names[0]]]
     for n in names[1:]:
         parts.append("\n".join(cache[lab][n].split("\n")[5:]))
@@ -87,30 +111,26 @@ def main():
         have = charts.read_text(encoding="utf-8") if charts.exists() else None
         if have != want:
             stale.append("lab-04-dash/charts.py")
+        for pkg in PACKAGES:
+            archive = STARTER / f"{pkg}.zip"
+            if not archive.exists() or archive.read_bytes() != package_bytes(pkg):
+                stale.append(f"{pkg}.zip")
         if stale:
             print("veraltet:", ", ".join(stale))
             print("\nStarterdateien sind nicht auf dem Stand der Lab-Seiten. "
                   "python3 tools/build_starters.py ausfuehren.")
             return 1
-        print("Alle Starterdateien entsprechen den Lab-Seiten.")
+        print("Alle Starterdateien und ZIP-Pakete sind synchron.")
         return 0
-    charts.write_text(want, encoding="utf-8")
+    charts.write_text(want, encoding="utf-8", newline="\n")
     print("erzeugt: lab-04-dash/charts.py")
 
     for pkg in PACKAGES:
-        src = STARTER / pkg
         zip_path = STARTER / f"{pkg}.zip"
         # Feste Zeitstempel: sonst erzeugt jeder Lauf ein neues ZIP und das
         # Repository bekommt bei jedem Bauen einen Diff, obwohl sich am
         # Inhalt nichts geaendert hat.
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
-            for f in sorted(src.rglob("*")):
-                if not f.is_file():
-                    continue
-                info = zipfile.ZipInfo(f"{pkg}/{f.relative_to(src)}", date_time=(1980, 1, 1, 0, 0, 0))
-                info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o644 << 16
-                z.writestr(info, f.read_bytes())
+        zip_path.write_bytes(package_bytes(pkg))
         print("gepackt: ", zip_path.relative_to(ROOT))
 
     return 0

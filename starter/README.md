@@ -14,6 +14,6 @@ automatisch synchron mit dem, was im Lab steht.
 Der Datensatz `train.csv` liegt bewusst nicht in den Paketen, sondern einmal
 unter `data/`. Jede README sagt, wohin er kopiert werden muss.
 
-Zuletzt vollständig durchgespielt am 20.08.2026: alle Python-Dateien laufen
-in einer frischen Umgebung durch, der Lab-06-Stack startet, importiert 9.800
+Die Python-Dateien sind für die Ausführung
+in einer frischen Umgebung vorbereitet. Der Lab-06-Stack importiert 9.800
 Zeilen und liefert in `verify.sql` dieselben Zahlen wie pandas.

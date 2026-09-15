@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 01 &#8211; Grundlagen BI &middot; THWS BI Lab</title>
+  <title>Lab 01 &#8211; Grundlagen BI &middot; THWS BINT-Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
@@ -223,10 +223,10 @@
        laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
        wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
        hat (faengt Transpilierungsfehler ab). -->
+  <script src="assets/site.js"></script>
   <script>
   (function () {
-    var isEn = new URLSearchParams(location.search).get('lang') === 'en'
-            || (localStorage.getItem('bi-lang') || '') === 'en';
+    var isEn = BINTLab.getLanguage() === 'en';
     var T = isEn ? {
       head: 'This page could not load',
       miss: 'The following libraries were not delivered:',
@@ -259,7 +259,7 @@
         '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
         body +
         '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BI Lab</a> &middot; THWS Business School</p>' +
+        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
         '</div>';
     }
 
@@ -294,21 +294,13 @@
     // ─── CodeBlock Component ──────────────────────────────────────────────────
     function CodeBlock({ code, language, lang, kind, note }) {
       const [copied, setCopied] = React.useState(false);
-      const copy = () => {
-        navigator.clipboard.writeText(code).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        }).catch(() => {
-          const el = document.createElement('textarea');
-          el.value = code;
-          document.body.appendChild(el);
-          el.select();
-          document.execCommand('copy');
-          document.body.removeChild(el);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        });
-      };
+    const [copyFailed, setCopyFailed] = React.useState(false);
+      const copy = async () => {
+      const ok = await BINTLab.copyText(code);
+      setCopied(ok);
+      setCopyFailed(!ok);
+      if (ok) setTimeout(() => setCopied(false), 1500);
+    };
       return (
         <div style={{ position: 'relative', marginBottom: '1rem' }}>
           {kind && (
@@ -321,6 +313,7 @@
             </div>
           )}
           <pre className="code-block">{code}</pre>
+          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
           {note && <p className="code-note">{note}</p>}
           <button onClick={copy} style={{
             position: 'absolute', top: '0.5rem', right: '0.5rem',
@@ -432,7 +425,7 @@
     const translations = {
       de: {
         title: 'Grundlagen Business Intelligence',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bleiben \u00FCber Semester hinweg erreichbar.',
+        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
         desc: 'Was ist Business Intelligence? In diesem Lab lernen Sie die Kernkonzepte, die Architektur von BI-Systemen, KPI-Grundlagen und den Tool-\u00DCberblick kennen.',
         lernziele: [
           'BI definieren & abgrenzen',
@@ -535,7 +528,7 @@
           ['DeltaMaster (Bissantz)', 'Closed-Source', 'Abo', 'On-Premises / Cloud'],
         ],
         s4FabricTitle: 'Einordnung: Power BI und Microsoft Fabric',
-        s4FabricText: 'Seit 2023 ist Power BI Teil von Microsoft Fabric \u2013 einer SaaS-Plattform, die Datenintegration (Data Factory), Data Engineering (Spark), Data Warehouse, Real-Time Analytics und Power BI unter einem gemeinsamen Speicher namens OneLake zusammenfasst. F\u00FCr die Lehre wichtig: Power BI Desktop und Power BI Pro funktionieren unver\u00E4ndert weiter \u2013 alles in diesem Kurs bleibt g\u00FCltig. Ge\u00E4ndert hat sich das Kapazit\u00E4tsmodell: Die fr\u00FCheren Premium-Kapazit\u00E4ten (P1\u2013P5) werden zum Ende der jeweiligen Vertragslaufzeit durch Fabric-Kapazit\u00E4ten (F-SKUs) ersetzt (P1\u2192F64, P2\u2192F128 usw.). Die entscheidende Schwelle ist F64: erst ab dieser Gr\u00F6\u00DFe d\u00FCrfen Berichte von Nutzern mit kostenloser Lizenz gelesen werden \u2013 darunter braucht jeder Betrachter eine Pro- oder PPU-Lizenz. Aus Souver\u00E4nit\u00E4tssicht versch\u00E4rft Fabric das Lock-in: OneLake ist der gemeinsame Speicher aller Workloads, und je mehr Pipelines, Modelle und Notebooks dort liegen, desto teurer wird ein Ausstieg.',
+        s4FabricText: 'Power BI ist Teil von Microsoft Fabric \u2013 einer SaaS-Plattform, die Datenintegration (Data Factory), Data Engineering (Spark), Data Warehouse, Real-Time Analytics und Power BI unter einem gemeinsamen Speicher namens OneLake zusammenfasst. F\u00FCr die Lehre wichtig: Power BI Desktop und Power BI Pro funktionieren unver\u00E4ndert weiter \u2013 alles in diesem Kurs bleibt g\u00FCltig. Ge\u00E4ndert hat sich das Kapazit\u00E4tsmodell: Die fr\u00FCheren Premium-Kapazit\u00E4ten (P1\u2013P5) werden zum Ende der jeweiligen Vertragslaufzeit durch Fabric-Kapazit\u00E4ten (F-SKUs) ersetzt (P1\u2192F64, P2\u2192F128 usw.). Die entscheidende Schwelle ist F64: erst ab dieser Gr\u00F6\u00DFe d\u00FCrfen Berichte von Nutzern mit kostenloser Lizenz gelesen werden \u2013 darunter braucht jeder Betrachter eine Pro- oder PPU-Lizenz. Aus Souver\u00E4nit\u00E4tssicht versch\u00E4rft Fabric das Lock-in: OneLake ist der gemeinsame Speicher aller Workloads, und je mehr Pipelines, Modelle und Notebooks dort liegen, desto teurer wird ein Ausstieg.',
         s4NoteTitle: 'Hinweis zur Datensouver\u00E4nit\u00E4t',
         s4NoteText: 'Open-Source-Tools wie Apache Superset und Metabase erm\u00F6glichen self-hosted Betrieb. Das kann Drittland\u00FCbermittlungen und einen Auftragsverarbeitungsvertrag mit einem BI-SaaS-Anbieter vermeiden \u2013 allerdings nur, wenn auch Hosting, Backups, Telemetrie, Support und Administration ohne externe Auftragsverarbeiter auskommen. Entscheidend ist die konkrete Betriebsarchitektur, nicht das Etikett self-hosted. DSGVO-Konformit\u00E4t entsteht dadurch ohnehin nicht automatisch: Rechtsgrundlage, Verarbeitungsverzeichnis (Art. 30), TOMs (Art. 32) und Betroffenenrechte sind unabh\u00E4ngig vom Hosting-Modell zu erf\u00FCllen. In Lab 06 vertiefen wir das.',
 
@@ -627,7 +620,7 @@
               'Bei jeder Größe – Fabric braucht keine Nutzerlizenzen',
             ],
             correct: 2,
-            exp: 'F64 ist die entscheidende Schwelle \u2013 aber die Bedingung geht weiter: Nutzer mit kostenloser Lizenz k\u00F6nnen Power-BI-Inhalte nur ansehen, wenn Bericht und semantisches Modell auf einer Kapazit\u00E4t ab F64 liegen, die Nutzer Zugriff haben und im Arbeitsbereich die Rolle Viewer besitzen. Unterhalb von F64 braucht jeder Betrachter Pro (14 $/Monat) oder PPU (24 $/Monat). An dieser Grenze entscheidet sich in der Praxis, ob eine Kapazit\u00E4t oder Einzellizenzen g\u00FCnstiger sind. Stand: 20.08.2026 \u2013 Preise und Bedingungen bei Microsoft Learn pr\u00FCfen.',
+            exp: 'F64 ist die entscheidende Schwelle \u2013 aber die Bedingung geht weiter: Nutzer mit kostenloser Lizenz k\u00F6nnen Power-BI-Inhalte nur ansehen, wenn Bericht und semantisches Modell auf einer Kapazit\u00E4t ab F64 liegen, die Nutzer Zugriff haben und im Arbeitsbereich die Rolle Viewer besitzen. Unterhalb von F64 braucht jeder Betrachter Pro oder PPU. An dieser Grenze entscheidet sich in der Praxis, ob eine Kapazit\u00E4t oder Einzellizenzen g\u00FCnstiger sind. Preise und Bedingungen bei Microsoft Learn pr\u00FCfen.',
           },
         ],
         // Zusammenfassung
@@ -639,7 +632,7 @@
           'Moderne Konzepte wie Data Lakehouse (Databricks) vereinen die Vorteile von Data Warehouse und Data Lake in einer Plattform.',
           'KPIs werden nach Typ (quantitativ/qualitativ, absolut/relativ) und Zeitrichtung (Lead = vorausschauend, Lag = rückblickend) klassifiziert. Gute KPIs folgen dem SMART-Prinzip.',
           'Der BI-Markt teilt sich in kommerzielle Lösungen (Power BI seit 2015, Tableau, Looker, Qlik) und Open-Source-Alternativen (Apache Superset, Metabase, Plotly Dash) mit voller Datenhoheit.',
-          'Power BI ist seit 2023 Teil von Microsoft Fabric: Die fr\u00FCheren Premium-Kapazit\u00E4ten (P1\u2013P5) weichen Fabric-F-SKUs, gemeinsamer Speicher ist OneLake. Ab F64 d\u00FCrfen Nutzer mit kostenloser Lizenz Berichte lesen, sofern Inhalt und Modell auf dieser Kapazit\u00E4t liegen und sie im Arbeitsbereich die Viewer-Rolle haben \u2013 unterhalb braucht jeder Betrachter Pro oder PPU (Stand: 20.08.2026).',
+          'Power BI ist Teil von Microsoft Fabric: Die fr\u00FCheren Premium-Kapazit\u00E4ten (P1\u2013P5) weichen Fabric-F-SKUs, gemeinsamer Speicher ist OneLake. Ab F64 d\u00FCrfen Nutzer mit kostenloser Lizenz Berichte lesen, sofern Inhalt und Modell auf dieser Kapazit\u00E4t liegen und sie im Arbeitsbereich die Viewer-Rolle haben \u2013 unterhalb braucht jeder Betrachter Pro oder PPU.',
           'Bill Inmon (1992) und Ralph Kimball (1996) begründeten das Data Warehousing – die Grundlage moderner BI-Architektur.',
         ],
         navNext: 'Lab 02: Daten \u2192',
@@ -647,7 +640,7 @@
 
       en: {
         title: 'BI Foundations',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels stay reachable across semesters.',
+        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
         desc: 'What is Business Intelligence? In this lab you will learn the core concepts, the architecture of BI systems, KPI fundamentals, and a tool overview.',
         lernziele: [
           'Define & distinguish BI',
@@ -842,7 +835,7 @@
               'At any size – Fabric needs no user licences',
             ],
             correct: 2,
-            exp: 'F64 is the decisive threshold \u2013 but the condition goes further: users with a free licence can only view Power BI content if the report and its semantic model sit on a capacity of F64 or larger, they have access, and they hold the Viewer role in the workspace. Below F64 every viewer needs Pro ($14/month) or PPU ($24/month). In practice this boundary decides whether a capacity or per-user licensing is cheaper. As of 20 August 2026 \u2013 check prices and conditions on Microsoft Learn.',
+            exp: 'F64 is the decisive threshold \u2013 but the condition goes further: users with a free licence can only view Power BI content if the report and its semantic model sit on a capacity of F64 or larger, they have access, and they hold the Viewer role in the workspace. Below F64 every viewer needs Pro or PPU. In practice this boundary decides whether a capacity or per-user licensing is cheaper. Check prices and conditions on Microsoft Learn.',
           },
         ],
         // Summary
@@ -854,7 +847,7 @@
           'Modern concepts like Data Lakehouse (Databricks) combine the advantages of Data Warehouse and Data Lake into a single platform.',
           'KPIs are classified by type (quantitative/qualitative, absolute/relative) and time direction (Lead = forward-looking, Lag = backward-looking). Good KPIs follow the SMART principle.',
           'The BI market is split between commercial solutions (Power BI since 2015, Tableau, Looker, Qlik) and open-source alternatives (Apache Superset, Metabase, Plotly Dash) with full data sovereignty.',
-          'Power BI has been part of Microsoft Fabric since 2023: the former Premium capacities (P1-P5) give way to Fabric F-SKUs, with OneLake as the shared store. From F64 upwards users with a free licence may read reports, provided the content and its model sit on that capacity and they hold the Viewer role in the workspace; below that every viewer needs Pro or PPU (as of 20 August 2026).',
+          'Power BI is part of Microsoft Fabric: the former Premium capacities (P1-P5) give way to Fabric F-SKUs, with OneLake as the shared store. From F64 upwards users with a free licence may read reports, provided the content and its model sit on that capacity and they hold the Viewer role in the workspace; below that every viewer needs Pro or PPU.',
           'Bill Inmon (1992) and Ralph Kimball (1996) established data warehousing – the foundation of modern BI architecture.',
         ],
         navNext: 'Lab 02: Data \u2192',
@@ -863,13 +856,13 @@
 
     // ─── App Component ────────────────────────────────────────────────────────
     function App() {
-      const urlLang = new URLSearchParams(window.location.search).get('lang');
-      const [lang, setLang] = useState(() => urlLang || localStorage.getItem('bi-lang') || 'de');
+
+      const [lang, setLang] = useState(BINTLab.getLanguage);
       const [activeSection, setActiveSection] = useState('was-ist-bi');
 
       const setLangAndStore = (l) => {
         setLang(l);
-        localStorage.setItem('bi-lang', l);
+        BINTLab.setLanguage(l);
       };
 
       useEffect(() => {
@@ -892,8 +885,9 @@
 
       // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
       React.useEffect(() => {
-        document.title = 'Lab 01 \u2013 ' + tx.title + ' \u00B7 THWS BI Lab';
+        document.title = 'Lab 01 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
         document.documentElement.lang = lang;
+        BINTLab.setLanguage(lang);
       }, [lang, tx.title]);
 
       return (
@@ -906,8 +900,8 @@
           </a>
           <header className="header">
             <div className="header-left">
-              <a href="index.html" className="header-logo">{'BI Lab'}</a>
-              <a href={'index.html' + (lang === 'en' ? '?lang=en' : '')} className="header-back">{tx.backLabel}</a>
+              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
+              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
             </div>
             <div style={{ display: 'flex', gap: '0.35rem' }}>
               <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
@@ -1160,7 +1154,7 @@
             {/* ── Nav Bottom ── */}
             <div className="nav-bottom">
               <span style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{'Lab 01'}</span>
-              <a href={'lab-02-daten.html' + (lang === 'en' ? '?lang=en' : '')} className="nav-btn primary">
+              <a href={'lab-02-daten.html' + ('?lang=' + lang)} className="nav-btn primary">
                 {tx.navNext}
               </a>
             </div>
@@ -1169,7 +1163,7 @@
 
           {/* Footer */}
           <footer className="footer">
-            {'THWS Business School \u00B7 BI Lab \u00B7 Prof. Dr. Robert Butscher \u00B7 2026'}
+            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
           </footer>
 
         </div>

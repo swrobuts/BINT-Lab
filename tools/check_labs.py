@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Abnahmekriterien fuer das BI-Lab.
+"""Abnahmekriterien fuer das BINT-Lab.
 
 Prueft, was beim Selbststudium tatsaechlich weh tut, wenn es kaputt ist:
 
@@ -60,7 +60,7 @@ def record(ok, area, msg):
 def extract(lab: Path):
     out = subprocess.run(
         ["node", str(ROOT / "tools" / "extract_code.js"), str(lab)],
-        capture_output=True, text=True, check=True,
+        capture_output=True, text=True, encoding="utf-8", check=True,
     )
     return json.loads(out.stdout)
 
@@ -99,7 +99,7 @@ def looks_like_python(code):
                 or re.search(r"\b(df\[|px\.|pd\.|print\()", code))
 
 
-def check_python(quick=False):
+def check_python(quick=False, base_url=None):
     if quick:
         record(None, "Python", "uebersprungen (--quick)")
         return
@@ -108,8 +108,12 @@ def check_python(quick=False):
             if block["kind"] != "run" or not looks_like_python(block["code"]):
                 continue
             code = block["code"]
+            if base_url:
+                code = code.replace("https://swrobuts.github.io/BINT-Lab/", base_url.rstrip("/") + "/")
             # Dash-Apps starten einen Server - wir pruefen sie ohne app.run().
             headless = re.sub(r"^\s*app\.run\(.*$", "    pass", code, flags=re.M)
+            # Validate figure serialization without opening a GUI or requiring Jupyter.
+            headless = re.sub(r"\b(fig\w*)\.show\(\)", r"\1.to_json()", headless)
             with tempfile.TemporaryDirectory() as td:
                 # Genau die Dateien bereitstellen, die der Lernende ueber die
                 # Seite herunterladen kann - nicht mehr und nicht weniger.
@@ -120,7 +124,7 @@ def check_python(quick=False):
                 script = Path(td) / "block.py"
                 script.write_text(headless, encoding="utf-8")
                 proc = subprocess.run([sys.executable, "block.py"], cwd=td,
-                                      capture_output=True, text=True, timeout=180)
+                                      capture_output=True, text=True, encoding="utf-8", timeout=180)
             name = f"{lab.name}/{block['name']}"
             if proc.returncode == 0:
                 record(True, "Python", f"{name} laeuft durch")
@@ -228,7 +232,7 @@ SQL_COPY = re.compile(r"""FROM\s+'([^']+\.[a-z]+)'""", re.I)
 # Compose: - ./train.csv:/data/train.csv:ro
 MOUNT = re.compile(r"""^\s*-\s+\./([\w./-]+\.[a-z]+):""", re.M)
 # Eigene Pages-URL in lauffaehigem Code
-OWN_URL = re.compile(r"""https://swrobuts\.github\.io/sp_bi/([\w./-]+)""")
+OWN_URL = re.compile(r"""https://swrobuts\.github\.io/BINT-Lab/([\w./-]+)""")
 
 
 def check_data_availability():
@@ -283,6 +287,7 @@ def check_data_availability():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true", help="Python-Bloecke nicht ausfuehren")
+    ap.add_argument("--base-url", help="Eigene HTTP-Daten aus einer lokalen Vorschau laden")
     args = ap.parse_args()
 
     check_schema()
@@ -290,7 +295,7 @@ def main():
     check_language()
     check_compose()
     check_data_availability()
-    check_python(args.quick)
+    check_python(args.quick, args.base_url)
 
     failed = [r for r in results if r[0] is False]
     skipped = [r for r in results if r[0] is None]

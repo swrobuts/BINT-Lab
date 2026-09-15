@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 04 – Dashboard-Design &amp; Plotly Dash · THWS BI Lab</title>
+  <title>Lab 04 – Dashboard-Design &amp; Plotly Dash · THWS BINT-Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
@@ -212,10 +212,10 @@
        laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
        wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
        hat (faengt Transpilierungsfehler ab). -->
+  <script src="assets/site.js"></script>
   <script>
   (function () {
-    var isEn = new URLSearchParams(location.search).get('lang') === 'en'
-            || (localStorage.getItem('bi-lang') || '') === 'en';
+    var isEn = BINTLab.getLanguage() === 'en';
     var T = isEn ? {
       head: 'This page could not load',
       miss: 'The following libraries were not delivered:',
@@ -248,7 +248,7 @@
         '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
         body +
         '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BI Lab</a> &middot; THWS Business School</p>' +
+        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
         '</div>';
     }
 
@@ -283,21 +283,13 @@
     // ─── CodeBlock Component ──────────────────────────────────────────────────
     function CodeBlock({ code, lang, kind, note }) {
       const [copied, setCopied] = React.useState(false);
-      const copy = () => {
-        navigator.clipboard.writeText(code).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        }).catch(() => {
-          const el = document.createElement('textarea');
-          el.value = code;
-          document.body.appendChild(el);
-          el.select();
-          document.execCommand('copy');
-          document.body.removeChild(el);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        });
-      };
+    const [copyFailed, setCopyFailed] = React.useState(false);
+      const copy = async () => {
+      const ok = await BINTLab.copyText(code);
+      setCopied(ok);
+      setCopyFailed(!ok);
+      if (ok) setTimeout(() => setCopied(false), 1500);
+    };
       const labelCopy = lang === 'en' ? 'Copy' : 'Kopieren';
       const labelDone = lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert';
       return (
@@ -312,6 +304,7 @@
             </div>
           )}
           <pre className="code-block">{code}</pre>
+          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
           {note && <p className="code-note">{note}</p>}
           <button onClick={copy} style={{
             position: 'absolute', top: '0.5rem', right: '0.5rem',
@@ -735,7 +728,7 @@ gunicorn app:server -b 0.0.0.0:8050 --workers 2`,
       de: `# requirements.txt
 # Untergrenze = mindestens noetige Version, Obergrenze = naechstes Major.
 # Ohne Obergrenze bricht ein kuenftiges Major-Release die Uebung, ohne dass
-# am Kurs etwas geaendert wurde. Zuletzt getestet am 20.08.2026 mit
+# am Kurs etwas geaendert wurde. Gepruefte Kombination:
 # dash 3.4.0, plotly 6.5.2, pandas 3.0.0, gunicorn 24.1.1.
 dash>=3.0,<4
 plotly>=6.0,<7
@@ -744,7 +737,7 @@ gunicorn>=23.0,<25`,
       en: `# requirements.txt
 # Lower bound = minimum required version, upper bound = next major.
 # Without an upper bound a future major release breaks the exercise without
-# anything in the course having changed. Last tested on 20 August 2026 with
+# anything in the course having changed. Verified combination:
 # dash 3.4.0, plotly 6.5.2, pandas 3.0.0, gunicorn 24.1.1.
 dash>=3.0,<4
 plotly>=6.0,<7
@@ -764,7 +757,7 @@ CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
     const translations = {
       de: {
         title: 'Dashboard-Design & Plotly Dash',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bleiben \u00FCber Semester hinweg erreichbar.',
+        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
         desc: 'In diesem Lab lernen Sie, wie Sie nach bewährten Design-Prinzipien professionelle Dashboards gestalten, interaktive Charts mit Plotly Express erstellen und vollständige Web-Dashboards mit Plotly Dash bauen.',
         lernziele: [
           'Dashboard-Design-Prinzipien anwenden',
@@ -967,7 +960,7 @@ CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
 
       en: {
         title: 'Dashboard Design & Plotly Dash',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels stay reachable across semesters.',
+        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
         desc: 'In this lab you will learn how to design professional dashboards following proven design principles, create interactive charts with Plotly Express, and build complete web dashboards with Plotly Dash.',
         lernziele: [
           'Apply dashboard design principles',
@@ -1171,13 +1164,13 @@ CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
 
     // ─── App Component ────────────────────────────────────────────────────────
     function App() {
-      const urlLang = new URLSearchParams(window.location.search).get('lang');
-      const [lang, setLang] = useState(() => urlLang || localStorage.getItem('bi-lang') || 'de');
+
+      const [lang, setLang] = useState(BINTLab.getLanguage);
       const [activeSection, setActiveSection] = useState('design-prinzipien');
 
       const setLangAndStore = (l) => {
         setLang(l);
-        localStorage.setItem('bi-lang', l);
+        BINTLab.setLanguage(l);
       };
 
       useEffect(() => {
@@ -1200,8 +1193,9 @@ CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
 
       // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
       React.useEffect(() => {
-        document.title = 'Lab 04 \u2013 ' + tx.title + ' \u00B7 THWS BI Lab';
+        document.title = 'Lab 04 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
         document.documentElement.lang = lang;
+        BINTLab.setLanguage(lang);
       }, [lang, tx.title]);
 
       return (
@@ -1214,8 +1208,8 @@ CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
           </a>
           <header className="header">
             <div className="header-left">
-              <a href="index.html" className="header-logo">{'BI Lab'}</a>
-              <a href={'index.html' + (lang === 'en' ? '?lang=en' : '')} className="header-back">{tx.backLabel}</a>
+              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
+              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
             </div>
             <div style={{ display: 'flex', gap: '0.35rem' }}>
               <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
@@ -1510,10 +1504,10 @@ CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
 
             {/* ── Nav Bottom ── */}
             <div className="nav-bottom">
-              <a href={'lab-03-kpis.html' + (lang === 'en' ? '?lang=en' : '')} className="nav-btn">
+              <a href={'lab-03-kpis.html' + ('?lang=' + lang)} className="nav-btn">
                 {tx.navPrev}
               </a>
-              <a href={'lab-05-fallstudie.html' + (lang === 'en' ? '?lang=en' : '')} className="nav-btn primary">
+              <a href={'lab-05-fallstudie.html' + ('?lang=' + lang)} className="nav-btn primary">
                 {tx.navNext}
               </a>
             </div>
@@ -1522,7 +1516,7 @@ CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
 
           {/* Footer */}
           <footer className="footer">
-            {'THWS Business School \u00B7 BI Lab \u00B7 Prof. Dr. Robert Butscher \u00B7 2026'}
+            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
           </footer>
 
         </div>

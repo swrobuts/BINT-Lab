@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 02 &#8211; Daten: Quellen, Modelle, Qualit&auml;t &middot; THWS BI Lab</title>
+  <title>Lab 02 &#8211; Daten: Quellen, Modelle, Qualit&auml;t &middot; THWS BINT-Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
@@ -223,10 +223,10 @@
        laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
        wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
        hat (faengt Transpilierungsfehler ab). -->
+  <script src="assets/site.js"></script>
   <script>
   (function () {
-    var isEn = new URLSearchParams(location.search).get('lang') === 'en'
-            || (localStorage.getItem('bi-lang') || '') === 'en';
+    var isEn = BINTLab.getLanguage() === 'en';
     var T = isEn ? {
       head: 'This page could not load',
       miss: 'The following libraries were not delivered:',
@@ -259,7 +259,7 @@
         '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
         body +
         '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BI Lab</a> &middot; THWS Business School</p>' +
+        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
         '</div>';
     }
 
@@ -294,21 +294,13 @@
     // ─── CodeBlock Component ──────────────────────────────────────────────────
     function CodeBlock({ code, lang, kind, note }) {
       const [copied, setCopied] = React.useState(false);
-      const copy = () => {
-        navigator.clipboard.writeText(code).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        }).catch(() => {
-          const el = document.createElement('textarea');
-          el.value = code;
-          document.body.appendChild(el);
-          el.select();
-          document.execCommand('copy');
-          document.body.removeChild(el);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        });
-      };
+    const [copyFailed, setCopyFailed] = React.useState(false);
+      const copy = async () => {
+      const ok = await BINTLab.copyText(code);
+      setCopied(ok);
+      setCopyFailed(!ok);
+      if (ok) setTimeout(() => setCopied(false), 1500);
+    };
       return (
         <div style={{ position: 'relative', marginBottom: '1rem' }}>
           {kind && (
@@ -321,6 +313,7 @@
             </div>
           )}
           <pre className="code-block">{code}</pre>
+          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
           {note && <p className="code-note">{note}</p>}
           <button onClick={copy} style={{
             position: 'absolute', top: '0.5rem', right: '0.5rem',
@@ -432,7 +425,7 @@
     const translations = {
       de: {
         title: 'Daten: Quellen, Modelle, Qualit\u00E4t',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bleiben \u00FCber Semester hinweg erreichbar.',
+        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
         desc: 'Daten sind das Fundament jeder BI-L\u00F6sung. In diesem Lab lernen Sie, wie verschiedene Datenquellen angebunden werden, wie Star- und Snowflake-Schemata funktionieren und wie Datenqualit\u00E4tsprobleme erkannt und behoben werden.',
         lernziele: [
           'Verschiedene Datenquellen anbinden',
@@ -492,7 +485,7 @@
         dataKaggle: 'Originalquelle bei Kaggle',
         dataText: 'Alle Codebl\u00F6cke auf dieser Seite arbeiten mit Dateien, die hier bereitliegen. Die drei Beispielquellen (CSV, Excel, JSON) enthalten dieselben zw\u00F6lf Zeilen \u2013 daran l\u00E4sst sich pr\u00FCfen, ob alle Wege zum selben Ergebnis f\u00FChren. train.csv ist der Kursdatensatz f\u00FCr die Datenqualit\u00E4ts\u00FCbung: 9.800 Zeilen, TT/MM/JJJJ, Encoding latin-1.',
         dataLicense: 'Quelle: Superstore Sales Dataset von Rohit Sahoo (Kaggle), Lizenz GPL\u00A02. Die Beispieldateien umsatz.csv, bericht.xlsx und sales_api.json sind frei erfunden und dienen nur der \u00DCbung.',
-        s1CodePython: "# Drei Quellen, dieselben Zahlen. Alle drei Dateien stehen oben zum\n# Download und liegen im Repo unter data/beispiel/.\nimport pandas as pd\nimport requests\n\n# 1. CSV\ndf_csv = pd.read_csv('umsatz.csv')\n\n# 2. Excel - der Blattname gehoert zur Datei, nicht zur Sprache\ndf_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')\n\n# 3. REST-API: dieselben Daten, aber ueber HTTP.\n#    Die Nutzlast liegt unter dem Schluessel 'data' - deshalb steht er\n#    in json_normalize. Bei anderen APIs heisst er 'results' oder 'items';\n#    ein Blick in die Antwort spart hier viel Raterei.\nurl = 'https://swrobuts.github.io/sp_bi/data/beispiel/sales_api.json'\nresponse = requests.get(url, timeout=10)\nresponse.raise_for_status()          # wirft bei 404 statt still leer zu bleiben\ndf_api = pd.json_normalize(response.json()['data'])\n\nfor name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:\n    print(f\"{name:6} {df.shape}  Umsatz {df['Umsatz'].sum():,.2f}\")\n\n# Probe: drei Wege, ein Ergebnis. Genau darum geht es in diesem Abschnitt.\nassert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()\nprint('Alle drei Quellen stimmen ueberein.')",
+        s1CodePython: "# Drei Quellen, dieselben Zahlen. Alle drei Dateien stehen oben zum\n# Download und liegen im Repo unter data/beispiel/.\nimport pandas as pd\nimport requests\n\n# 1. CSV\ndf_csv = pd.read_csv('umsatz.csv')\n\n# 2. Excel - der Blattname gehoert zur Datei, nicht zur Sprache\ndf_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')\n\n# 3. REST-API: dieselben Daten, aber ueber HTTP.\n#    Die Nutzlast liegt unter dem Schluessel 'data' - deshalb steht er\n#    in json_normalize. Bei anderen APIs heisst er 'results' oder 'items';\n#    ein Blick in die Antwort spart hier viel Raterei.\nurl = 'https://swrobuts.github.io/BINT-Lab/data/beispiel/sales_api.json'\nresponse = requests.get(url, timeout=10)\nresponse.raise_for_status()          # wirft bei 404 statt still leer zu bleiben\ndf_api = pd.json_normalize(response.json()['data'])\n\nfor name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:\n    print(f\"{name:6} {df.shape}  Umsatz {df['Umsatz'].sum():,.2f}\")\n\n# Probe: drei Wege, ein Ergebnis. Genau darum geht es in diesem Abschnitt.\nassert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()\nprint('Alle drei Quellen stimmen ueberein.')",
         s1CodeNote: 'Voraussetzung: pip install pandas requests openpyxl, dazu umsatz.csv und bericht.xlsx aus dem Download oben im selben Verzeichnis. Die dritte Quelle wird \u00FCber HTTP geladen und braucht eine Internetverbindung. Sollausgabe: dreimal (12, 5) und dreimal Umsatz 243.209,05, danach \u201EAlle drei Quellen stimmen ueberein.\u201C',
         s1RunTitle: 'Dasselbe Muster auf dem Kursdatensatz train.csv',
         s1CodePythonRun: "# Dieselben drei Quellen, aber mit dem Kursdatensatz statt Platzhaltern.\n# train.csv liegt im selben Verzeichnis wie dieses Skript.\nimport pandas as pd\n\n# 1. CSV laden\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# 2. Datum: die Datei nutzt TT/MM/JJJJ -> dayfirst=True ist Pflicht,\n#    sonst bricht das Parsen ab, sobald der Tag groesser als 12 ist.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# 3. Struktur und Qualitaet pruefen\nprint(df.shape)                            # (9800, 18)\nprint(round(df['Sales'].sum(), 2))         # 2261536.78\nprint(df['Order ID'].nunique())            # 4922\nprint(df.isnull().sum()[lambda s: s > 0])  # Postal Code    11",
@@ -657,7 +650,7 @@
 
       en: {
         title: 'Data: Sources, Models, Quality',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels stay reachable across semesters.',
+        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
         desc: 'Data is the foundation of every BI solution. In this lab you will learn how to connect different data sources, how star and snowflake schemas work, and how to identify and fix data quality issues.',
         lernziele: [
           'Connect various data sources',
@@ -717,7 +710,7 @@
         dataKaggle: 'Original source on Kaggle',
         dataText: 'Every code block on this page works with files provided right here. The three example sources (CSV, Excel, JSON) contain the same twelve rows \u2013 that is how you check whether all routes lead to the same result. train.csv is the course dataset for the data-quality exercise: 9,800 rows, DD/MM/YYYY, encoding latin-1.',
         dataLicense: 'Source: Superstore Sales Dataset by Rohit Sahoo (Kaggle), licensed GPL\u00A02. The example files umsatz.csv, bericht.xlsx and sales_api.json are fictional and exist only for practice.',
-        s1CodePython: "# Three sources, the same numbers. All three files are available for\n# download above and live in the repo under data/beispiel/.\nimport pandas as pd\nimport requests\n\n# 1. CSV\ndf_csv = pd.read_csv('umsatz.csv')\n\n# 2. Excel - the sheet name belongs to the file, not to the language\ndf_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')\n\n# 3. REST API: the same data, but over HTTP.\n#    The payload sits under the key 'data' - that is why it appears in\n#    json_normalize. Other APIs call it 'results' or 'items'; looking at\n#    the actual response saves a lot of guesswork here.\nurl = 'https://swrobuts.github.io/sp_bi/data/beispiel/sales_api.json'\nresponse = requests.get(url, timeout=10)\nresponse.raise_for_status()          # raises on 404 instead of staying silently empty\ndf_api = pd.json_normalize(response.json()['data'])\n\nfor name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:\n    print(f\"{name:6} {df.shape}  revenue {df['Umsatz'].sum():,.2f}\")\n\n# Check: three routes, one result. That is the whole point of this section.\nassert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()\nprint('All three sources agree.')",
+        s1CodePython: "# Three sources, the same numbers. All three files are available for\n# download above and live in the repo under data/beispiel/.\nimport pandas as pd\nimport requests\n\n# 1. CSV\ndf_csv = pd.read_csv('umsatz.csv')\n\n# 2. Excel - the sheet name belongs to the file, not to the language\ndf_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')\n\n# 3. REST API: the same data, but over HTTP.\n#    The payload sits under the key 'data' - that is why it appears in\n#    json_normalize. Other APIs call it 'results' or 'items'; looking at\n#    the actual response saves a lot of guesswork here.\nurl = 'https://swrobuts.github.io/BINT-Lab/data/beispiel/sales_api.json'\nresponse = requests.get(url, timeout=10)\nresponse.raise_for_status()          # raises on 404 instead of staying silently empty\ndf_api = pd.json_normalize(response.json()['data'])\n\nfor name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:\n    print(f\"{name:6} {df.shape}  revenue {df['Umsatz'].sum():,.2f}\")\n\n# Check: three routes, one result. That is the whole point of this section.\nassert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()\nprint('All three sources agree.')",
         s1CodeNote: 'Prerequisites: pip install pandas requests openpyxl, plus umsatz.csv and bericht.xlsx from the download above in the same directory. The third source is fetched over HTTP and needs an internet connection. Expected output: three times (12, 5) and three times revenue 243,209.05, then \u201CAll three sources agree.\u201D',
         s1RunTitle: 'The same pattern on the course dataset train.csv',
         s1CodePythonRun: "# The same three sources, but with the course dataset instead of placeholders.\n# train.csv sits in the same directory as this script.\nimport pandas as pd\n\n# 1. Load CSV\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# 2. Dates: the file uses DD/MM/YYYY -> dayfirst=True is mandatory,\n#    otherwise parsing breaks as soon as the day exceeds 12.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# 3. Check structure and quality\nprint(df.shape)                            # (9800, 18)\nprint(round(df['Sales'].sum(), 2))         # 2261536.78\nprint(df['Order ID'].nunique())            # 4922\nprint(df.isnull().sum()[lambda s: s > 0])  # Postal Code    11",
@@ -883,13 +876,13 @@
 
     // ─── App Component ────────────────────────────────────────────────────────
     function App() {
-      const urlLang = new URLSearchParams(window.location.search).get('lang');
-      const [lang, setLang] = useState(() => urlLang || localStorage.getItem('bi-lang') || 'de');
+
+      const [lang, setLang] = useState(BINTLab.getLanguage);
       const [activeSection, setActiveSection] = useState('datenquellen');
 
       const setLangAndStore = (l) => {
         setLang(l);
-        localStorage.setItem('bi-lang', l);
+        BINTLab.setLanguage(l);
       };
 
       useEffect(() => {
@@ -912,8 +905,9 @@
 
       // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
       React.useEffect(() => {
-        document.title = 'Lab 02 \u2013 ' + tx.title + ' \u00B7 THWS BI Lab';
+        document.title = 'Lab 02 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
         document.documentElement.lang = lang;
+        BINTLab.setLanguage(lang);
       }, [lang, tx.title]);
 
       return (
@@ -926,8 +920,8 @@
           </a>
           <header className="header">
             <div className="header-left">
-              <a href="index.html" className="header-logo">{'BI Lab'}</a>
-              <a href={'index.html' + (lang === 'en' ? '?lang=en' : '')} className="header-back">{tx.backLabel}</a>
+              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
+              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
             </div>
             <div style={{ display: 'flex', gap: '0.35rem' }}>
               <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
@@ -1199,10 +1193,10 @@
 
             {/* ── Nav Bottom ── */}
             <div className="nav-bottom">
-              <a href={'lab-01-grundlagen.html' + (lang === 'en' ? '?lang=en' : '')} className="nav-btn">
+              <a href={'lab-01-grundlagen.html' + ('?lang=' + lang)} className="nav-btn">
                 {tx.navPrev}
               </a>
-              <a href={'lab-03-kpis.html' + (lang === 'en' ? '?lang=en' : '')} className="nav-btn primary">
+              <a href={'lab-03-kpis.html' + ('?lang=' + lang)} className="nav-btn primary">
                 {tx.navNext}
               </a>
             </div>
@@ -1211,7 +1205,7 @@
 
           {/* Footer */}
           <footer className="footer">
-            {'THWS Business School \u00B7 BI Lab \u00B7 Prof. Dr. Robert Butscher \u00B7 2026'}
+            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
           </footer>
 
         </div>

@@ -50,7 +50,7 @@ function playwrightCandidates() {
 async function launch() {
   const errors = [];
   for (const pw of playwrightCandidates()) {
-    for (const opts of [{}, { channel: 'chrome' }]) {
+    for (const opts of [{}, { channel: 'chrome' }, { channel: 'msedge' }]) {
       try { return await pw.chromium.launch(opts); }
       catch (e) { errors.push(e.message.split('\n')[0]); }
     }
@@ -60,12 +60,13 @@ async function launch() {
   process.exit(2);
 }
 
-const BASE = process.argv[2] || 'http://localhost:8765';
+const ARGS = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
+const BASE = (ARGS[0] || 'http://localhost:8765').replace(/\/$/, '');
 // Ohne dritten Parameter werden die sieben Lernseiten geprueft. Mit einer
 // kommagetrennten Pfadliste laesst sich stattdessen etwas anderes pruefen -
 // zum Beispiel eine laufende Starter-Dash-App, die keine Sprachvarianten hat.
-const PAGES = process.argv[3]
-  ? process.argv[3].split(',').map((p) => p.trim()).filter(Boolean)
+const PAGES = ARGS[1]
+  ? ARGS[1].split(',').map((p) => p.trim()).filter(Boolean)
   : ['index.html', 'lab-01-grundlagen.html', 'lab-02-daten.html',
      'lab-03-kpis.html', 'lab-04-dashboards.html',
      'lab-05-fallstudie.html', 'lab-06-souveraenitaet.html'];
@@ -75,24 +76,27 @@ const LANGS = process.argv.includes('--no-lang') ? [null] : ['de', 'en'];
 // Mindestinhalt deutlich kleiner als bei einer Lab-Seite.
 const MIN_LEN = process.argv.includes('--no-lang') ? 40 : 1500;
 
-(async () => {
+async function main() {
   const browser = await launch();
   const fails = [];
   let checked = 0;
+  let failedCombinations = 0;
 
   for (const w of WIDTHS) {
     const ctx = await browser.newContext({ viewport: { width: w, height: 900 } });
     const page = await ctx.newPage();
+    let pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
     for (const p of PAGES) {
       for (const lang of LANGS) {
-        const url = lang ? `${BASE}/${p}?lang=${lang}` : `${BASE}/${p}`;
-        await page.goto(url, { waitUntil: 'networkidle' });
+        const before = fails.length;
+        pageErrors = [];
+        const path = p.replace(/^\//, '');
+        const url = lang ? `${BASE}/${path}?lang=${lang}` : `${BASE}/${path}`;
+        await page.goto(url, { waitUntil: MIN_LEN < 1500 ? 'domcontentloaded' : 'networkidle' });
         // Babel transpiliert im Browser - kurz warten, bis gemountet ist.
-        await page.waitForFunction(
-          () => (document.getElementById('root') || {}).children?.length > 0,
-          null, { timeout: 20000 }
-        ).catch(() => {});
-        if (MIN_LEN < 1500) await page.waitForTimeout(3500);  // Dash-Callbacks abwarten
+        await page.waitForSelector(MIN_LEN < 1500
+          ? '.js-plotly-plot .main-svg' : '#root h1', { timeout: 20000 }).catch(() => {});
         const r = await page.evaluate(() => ({
           sw: document.documentElement.scrollWidth,
           iw: window.innerWidth,
@@ -113,6 +117,9 @@ const MIN_LEN = process.argv.includes('--no-lang') ? 40 : 1500;
         }));
         checked++;
         const at = `${p}${lang ? ' ' + lang : ''} @${w}px`;
+        for (const error of pageErrors) fails.push(`${at}: JavaScript: ${error}`);
+        if (MIN_LEN < 1500 && await page.locator('.js-plotly-plot .main-svg').count() === 0)
+          fails.push(`${at}: Dash-Diagramme nicht gerendert`);
         if (r.sw > r.iw) fails.push(`${at}: scrollWidth ${r.sw} > innerWidth ${r.iw}`);
         if (r.len < MIN_LEN) fails.push(`${at}: nicht gerendert (${r.len} Zeichen)`);
         if (r.bad) fails.push(`${at}: Fehlertext im sichtbaren Inhalt`);
@@ -123,6 +130,7 @@ const MIN_LEN = process.argv.includes('--no-lang') ? 40 : 1500;
           else if (!r.skipTargetOk) fails.push(`${at}: Sprunglink zeigt ins Leere`);
           if (!r.langLabelled) fails.push(`${at}: Sprachbutton ohne aria-label/aria-pressed`);
         }
+        if (fails.length > before) failedCombinations++;
       }
     }
     await ctx.close();
@@ -130,6 +138,9 @@ const MIN_LEN = process.argv.includes('--no-lang') ? 40 : 1500;
   await browser.close();
 
   fails.forEach((f) => console.log('[FAIL]', f));
-  console.log(`\n${checked - fails.length} von ${checked} Kombinationen bestanden`);
+  console.log(`\n${checked - failedCombinations} von ${checked} Kombinationen bestanden`);
   process.exit(fails.length ? 1 : 0);
-})();
+}
+
+module.exports = { launch, PAGES };
+if (require.main === module) main().catch((error) => { console.error(error); process.exit(1); });

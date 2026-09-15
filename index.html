@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BI Lab · Modul Business Intelligence · THWS Business School</title>
+  <title>BINT-Lab · Modul Business Intelligence · THWS Business School</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- Tailwind CSS 2 wurde entfernt: keine einzige Tailwind-Utility-Klasse wurde benutzt
@@ -179,7 +179,7 @@
     .hero-title {
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 800;
-      font-size: 12rem;
+      font-size: clamp(3rem, 11vw, 7.5rem);
       color: white;
       line-height: 0.95;
       margin-bottom: 0.5rem;
@@ -373,7 +373,7 @@
     }
     @media (max-width: 900px) { .labs-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) {
-      .hero-title { font-size: 4rem; }
+      .hero-title { font-size: clamp(2.3rem, 10vw, 4rem); }
       .hero-subtitle { font-size: 1.4rem; }
       .labs-grid { grid-template-columns: 1fr; }
       .stat-item + .stat-item::before { display: none; }
@@ -803,10 +803,10 @@
        laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
        wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
        hat (faengt Transpilierungsfehler ab). -->
+  <script src="assets/site.js"></script>
   <script>
   (function () {
-    var isEn = new URLSearchParams(location.search).get('lang') === 'en'
-            || (localStorage.getItem('bi-lang') || '') === 'en';
+    var isEn = BINTLab.getLanguage() === 'en';
     var T = isEn ? {
       head: 'This page could not load',
       miss: 'The following libraries were not delivered:',
@@ -839,7 +839,7 @@
         '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
         body +
         '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BI Lab</a> &middot; THWS Business School</p>' +
+        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
         '</div>';
     }
 
@@ -875,11 +875,11 @@
       de: {
         navSub: 'Modul Business Intelligence',
         heroTag: 'THWS BUSINESS SCHOOL',
-        heroTitle: 'BI Lab',
+        heroTitle: 'BINT-Lab',
         heroEyebrow: '',
         heroSubtitle: 'Power BI \u00B7 Python \u00B7 Plotly Dash',
         heroDesc: 'Die Companion-Site zum Kurs \u201CBusiness Intelligence\u201D',
-        badge1: 'Sommersemester 2026',
+
         badge3: 'Prof. Dr. Robert Butscher',
         ctaLabs: 'Zu den Labs \u2192',
         ctaGithub: 'GitHub \u2192',
@@ -893,7 +893,7 @@
         labLink: 'Zum Lab',
         footerTagline: 'Business Intelligence \u00B7 THWS',
         footerNavLabel: 'Labs',
-        footerText: 'THWS Business School \u00B7 BI Lab \u00B7 Prof. Dr. Robert Butscher \u00B7 2026',
+        footerText: 'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher',
         labTime: 'Zeitbedarf',
         labPrereq: 'Voraussetzung',
         progressTitle: 'Dein Fortschritt',
@@ -967,7 +967,7 @@
         sectionDashboards: 'Implementierte Dashboards',
         dashboardsDesc: 'Diese Dashboards laufen produktiv \u2013 gebaut mit dem Stack aus diesem Kurs.',
         dashboards: [
-          { name: 'WHI Dashboard', url: 'https://whi-dashboard.butscher.cloud', desc: 'World Happiness Index \u2013 L\u00E4ndervergleich 2015\u20132025', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
+          { name: 'WHI Dashboard', url: 'https://whi-dashboard.butscher.cloud', desc: 'World Happiness Index \u2013 L\u00E4ndervergleich', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
           { name: 'Alkohol Dashboard', url: 'https://alc-dashboard.butscher.cloud', desc: 'Alkoholkonsum-Analyse nach L\u00E4ndern und Jahren', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
           { name: 'Rainforest Dashboard', url: 'https://rainforest.butscher.cloud', desc: 'Amazonas-Abholzung und Klimadaten interaktiv', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
           { name: 'Rechnungsanalyse', url: 'https://invoices.butscher.cloud', desc: 'KI-gest\u00FCtzte Rechnungsanalyse mit n8n-Automatisierung', tech: 'Chart.js \u00B7 Supabase \u00B7 n8n' },
@@ -976,11 +976,11 @@
       en: {
         navSub: 'Module Business Intelligence',
         heroTag: 'THWS BUSINESS SCHOOL',
-        heroTitle: 'BI Lab',
+        heroTitle: 'BINT-Lab',
         heroEyebrow: '',
         heroSubtitle: 'Power BI \u00B7 Python \u00B7 Plotly Dash',
         heroDesc: 'Companion site for the course \u201CBusiness Intelligence\u201D',
-        badge1: 'Summer Semester 2026',
+
         badge3: 'Prof. Dr. Robert Butscher',
         ctaLabs: 'To the Labs \u2192',
         ctaGithub: 'GitHub \u2192',
@@ -994,7 +994,7 @@
         labLink: 'Go to Lab',
         footerTagline: 'Business Intelligence \u00B7 THWS',
         footerNavLabel: 'Labs',
-        footerText: 'THWS Business School \u00B7 BI Lab \u00B7 Prof. Dr. Robert Butscher \u00B7 2026',
+        footerText: 'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher',
         labTime: 'Time needed',
         labPrereq: 'Prerequisite',
         progressTitle: 'Your progress',
@@ -1068,7 +1068,7 @@
         sectionDashboards: 'Live Dashboards',
         dashboardsDesc: 'These dashboards run in production \u2013 built with the stack from this course.',
         dashboards: [
-          { name: 'WHI Dashboard', url: 'https://whi-dashboard.butscher.cloud', desc: 'World Happiness Index \u2013 Country comparison 2015\u20132025', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
+          { name: 'WHI Dashboard', url: 'https://whi-dashboard.butscher.cloud', desc: 'World Happiness Index \u2013 Country comparison', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
           { name: 'Alcohol Dashboard', url: 'https://alc-dashboard.butscher.cloud', desc: 'Alcohol consumption analysis by country and year', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
           { name: 'Rainforest Dashboard', url: 'https://rainforest.butscher.cloud', desc: 'Amazon deforestation and climate data interactive', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
           { name: 'Invoice Analysis', url: 'https://invoices.butscher.cloud', desc: 'AI-powered invoice analysis with n8n automation', tech: 'Chart.js \u00B7 Supabase \u00B7 n8n' },
@@ -1079,15 +1079,15 @@
     var bonusCriteria = [
       { titleDe: 'Datensouver\u00E4nit\u00E4t', titleEn: 'Data Sovereignty', descDe: 'Speicherort und Zugriff selbst bestimmen', descEn: 'Decide storage location and access yourself' },
       { titleDe: 'Weniger Lock-in', titleEn: 'Less Lock-in', descDe: 'Offene Formate, wechselbare Anbieter', descEn: 'Open formats, replaceable vendors' },
-      { titleDe: 'DSGVO-Konformit\u00E4t', titleEn: 'GDPR Compliance', descDe: 'Daten bleiben in der EU', descEn: 'Data stays within the EU' },
-      { titleDe: 'Kostenersparnis', titleEn: 'Cost Savings', descDe: 'Open Source, keine unmittelbaren Lizenzkosten', descEn: 'Open source, no licence fees (infrastructure and operations still cost)' },
+      { titleDe: 'Kontrollierbarer Datenstandort', titleEn: 'Controllable Data Location', descDe: 'EU/EWR-Hosting bewusst konfigurieren und nachweisen', descEn: 'Deliberately configure and demonstrate EU/EEA hosting' },
+      { titleDe: 'Andere Kostenstruktur', titleEn: 'Different Cost Structure', descDe: 'Keine unmittelbaren Lizenzkosten, daf\u00FCr Infrastruktur, Betrieb und Personal', descEn: 'No direct licence fees, but infrastructure, operations and staff' },
       { titleDe: 'Eigene Infrastruktur', titleEn: 'Your Own Infrastructure', descDe: 'Eigene Regeln \u2013 und eigener Betriebsaufwand', descEn: 'Your rules \u2013 and your operational effort' },
     ];
 
     function App() {
-      const urlLang = new URLSearchParams(window.location.search).get('lang');
-      const [lang, setLang] = useState(() => urlLang || localStorage.getItem('bi-lang') || 'de');
-      const toggleLang = (l) => { setLang(l); localStorage.setItem('bi-lang', l); };
+
+      const [lang, setLang] = useState(BINTLab.getLanguage);
+      const toggleLang = (l) => { setLang(l); BINTLab.setLanguage(l); };
 
       // Fortschritt je Lab. Bewusst nur localStorage: kein Konto, kein Server,
       // keine personenbezogenen Daten - fuer eine Hochschule die unkomplizierteste
@@ -1095,7 +1095,7 @@
       const [done, setDone] = useState(() => {
         try {
           const saved = JSON.parse(localStorage.getItem('bi-lab-progress') || '[]');
-          return Array.isArray(saved) ? saved.filter((x) => typeof x === 'string') : [];
+          return Array.isArray(saved) ? [...new Set(saved.filter((x) => /^(0[1-6])$/.test(x) && typeof x === 'string'))] : [];
         } catch (e) { return []; }
       });
       useEffect(() => {
@@ -1123,8 +1123,9 @@
 
       // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
       useEffect(() => {
-        document.title = lang === 'en' ? 'BI Lab \u00B7 Module Business Intelligence \u00B7 THWS Business School' : 'BI Lab \u00B7 Modul Business Intelligence \u00B7 THWS Business School';
+        document.title = lang === 'en' ? 'BINT-Lab \u00B7 Module Business Intelligence \u00B7 THWS Business School' : 'BINT-Lab \u00B7 Modul Business Intelligence \u00B7 THWS Business School';
         document.documentElement.lang = lang;
+        BINTLab.setLanguage(lang);
       }, [lang]);
       const heroColor = lang === 'en' ? '#0D9488' : '#1E3A8A';
       const geoCircleColor = lang === 'en' ? '#0F766E' : '#1E40AF';
@@ -1148,7 +1149,7 @@
                 color: lang === 'en' ? '#0D9488' : '#1E3A8A',
                 letterSpacing: '-0.01em'
               }}>
-                {'BI Lab'}
+                {'BINT-Lab'}
               </span>
               <span style={{
                 color: '#9CA3AF',
@@ -1208,7 +1209,7 @@
                   {t.heroDesc}
                 </p>
                 <div className="course-badges">
-                  <span className="course-badge">{t.badge1}</span>
+
                   <span className="course-badge">{t.badge3}</span>
                 </div>
                 <div className="cta-row">
@@ -1216,7 +1217,7 @@
                     {t.ctaLabs}
                   </a>
                   <a
-                    href="https://github.com/swrobuts/sp_bi"
+                    href="https://github.com/swrobuts/BINT-Lab"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-outline-white"
@@ -1325,7 +1326,7 @@
                     <dt>{t.labPrereq}</dt><dd>{lab.prereq}</dd>
                   </dl>
                   <a
-                    href={`${lab.link}${lang === 'en' ? '?lang=en' : ''}`}
+                    href={`${lab.link}${'?lang=' + lang}`}
                     className="btn-lab-link"
                   >
                     {t.labLink}
@@ -1372,7 +1373,7 @@
                   </ul>
                 </div>
                 <a
-                  href={`lab-06-souveraenitaet.html${lang === 'en' ? '?lang=en' : ''}`}
+                  href={`lab-06-souveraenitaet.html${'?lang=' + lang}`}
                   className="btn-bonus-link"
                 >
                   <span>{t.bonusLink}</span>
@@ -1413,7 +1414,7 @@
             <div className="footer-inner">
               <div>
                 <div className="footer-sep"></div>
-                <div className="footer-logo">{'BI Lab'}</div>
+                <div className="footer-logo">{'BINT-Lab'}</div>
                 <div className="footer-tagline">{t.footerTagline}</div>
               </div>
               <div>
@@ -1422,7 +1423,7 @@
                   {t.labs.map((lab) => (
                     <a
                       key={lab.num}
-                      href={`${lab.link}${lang === 'en' ? '?lang=en' : ''}`}
+                      href={`${lab.link}${'?lang=' + lang}`}
                     >
                       {`${lab.num} - ${lab.title}`}
                     </a>

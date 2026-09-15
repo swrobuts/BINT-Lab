@@ -15,7 +15,7 @@ Die JSON-Datei ist zusätzlich über HTTP erreichbar und wird im Lab genau so
 geladen:
 
 ```
-https://swrobuts.github.io/sp_bi/data/beispiel/sales_api.json
+https://swrobuts.github.io/BINT-Lab/data/beispiel/sales_api.json
 ```
 
 ## Spalten

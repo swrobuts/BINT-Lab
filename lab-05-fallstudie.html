@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 05 &#8211; Fallstudie: Retail Analytics &middot; THWS BI Lab</title>
+  <title>Lab 05 &#8211; Fallstudie: Retail Analytics &middot; THWS BINT-Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
@@ -180,10 +180,10 @@
        laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
        wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
        hat (faengt Transpilierungsfehler ab). -->
+  <script src="assets/site.js"></script>
   <script>
   (function () {
-    var isEn = new URLSearchParams(location.search).get('lang') === 'en'
-            || (localStorage.getItem('bi-lang') || '') === 'en';
+    var isEn = BINTLab.getLanguage() === 'en';
     var T = isEn ? {
       head: 'This page could not load',
       miss: 'The following libraries were not delivered:',
@@ -216,7 +216,7 @@
         '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
         body +
         '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BI Lab</a> &middot; THWS Business School</p>' +
+        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
         '</div>';
     }
 
@@ -251,21 +251,13 @@
     // ─── CodeBlock Component ──────────────────────────────────────────────────
     function CodeBlock({ code, lang, kind, note }) {
       const [copied, setCopied] = React.useState(false);
-      const copy = () => {
-        navigator.clipboard.writeText(code).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        }).catch(() => {
-          const el = document.createElement('textarea');
-          el.value = code;
-          document.body.appendChild(el);
-          el.select();
-          document.execCommand('copy');
-          document.body.removeChild(el);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        });
-      };
+    const [copyFailed, setCopyFailed] = React.useState(false);
+      const copy = async () => {
+      const ok = await BINTLab.copyText(code);
+      setCopied(ok);
+      setCopyFailed(!ok);
+      if (ok) setTimeout(() => setCopied(false), 1500);
+    };
       const labelCopy = lang === 'en' ? 'Copy' : 'Kopieren';
       const labelDone = lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert';
       return (
@@ -280,6 +272,7 @@
             </div>
           )}
           <pre className="code-block">{code}</pre>
+          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
           {note && <p className="code-note">{note}</p>}
           <button onClick={copy} style={{
             position: 'absolute', top: '0.5rem', right: '0.5rem',
@@ -394,7 +387,7 @@
     const translations = {
       de: {
         title: 'Fallstudie: Retail Analytics',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bleiben \u00FCber Semester hinweg erreichbar.',
+        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
         desc: 'Kompletten BI-Workflow von Rohdaten bis Dashboard durchlaufen \u2013 parallel in Power BI und Python/Dash.',
         lernziele: [
           'Kompletten BI-Workflow durchlaufen',
@@ -490,7 +483,7 @@
           ['Lernkurve', 'Flach (keine Programmierung)', 'Steil (Python + Dash)'],
           ['Flexibilit\u00E4t', 'Begrenzt auf built-in Visuals', 'Unbegrenzt (jede Python-Lib)'],
           ['Deployment', 'Power BI Service (Cloud)', 'Docker / Render / Railway'],
-          ['Kosten', 'Kostenpflichtige Pro-Lizenz je Benutzer/Monat \u2013 aktuellen Preis bei Microsoft pr\u00FCfen (Stand 08/2026: 12,10 \u20AC bei j\u00E4hrlicher Abrechnung, zzgl. MwSt.)', 'Open Source (Hosting-Kosten)'],
+          ['Kosten', 'Kostenpflichtige Pro-Lizenz je Benutzer/Monat \u2013 aktuellen Preis bei Microsoft pr\u00FCfen', 'Open Source (Hosting-Kosten)'],
           ['Zielgruppe', 'Business-Analysten', 'Data Engineers / Scientists'],
         ],
         s6DeployTitle: 'Deployment-Optionen f\u00FCr Dash',
@@ -533,7 +526,7 @@
 
       en: {
         title: 'Case Study: Retail Analytics',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels stay reachable across semesters.',
+        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
         desc: 'Run the complete BI workflow from raw data to dashboard \u2013 in parallel using Power BI and Python/Dash.',
         lernziele: [
           'Run the complete BI workflow',
@@ -629,7 +622,7 @@
           ['Learning Curve', 'Flat (no programming)', 'Steep (Python + Dash)'],
           ['Flexibility', 'Limited to built-in visuals', 'Unlimited (any Python lib)'],
           ['Deployment', 'Power BI Service (Cloud)', 'Docker / Render / Railway'],
-          ['Cost', 'Paid Pro licence per user/month \u2013 check the current price with Microsoft (as of 08/2026: \u20AC12.10 billed annually, excl. VAT)', 'Open Source (hosting costs)'],
+          ['Cost', 'Paid Pro licence per user/month \u2013 check the current price with Microsoft', 'Open Source (hosting costs)'],
           ['Target Audience', 'Business analysts', 'Data engineers / scientists'],
         ],
         s6DeployTitle: 'Deployment Options for Dash',
@@ -687,21 +680,21 @@
 
     const CODE_DASH = {
 
-      de: "# app.py – Superstore Retail Analytics Dashboard\nimport dash\nfrom dash import dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = dash.Dash(__name__)\n\n# Ein Dashboard, das auf dem Handy bricht, ist kein fertiges Dashboard.\n# Feste Spaltenzahlen (repeat(4, 1fr)) sprengen jedes schmale Display,\n# deshalb liegt das Raster in CSS mit Media Queries statt in Inline-Styles.\napp.index_string = \"\"\"<!DOCTYPE html>\n<html>\n  <head>\n    {%metas%}<title>{%title%}</title>{%favicon%}{%css%}\n    <style>\n      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,\n             'Segoe UI', sans-serif; }\n      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }\n      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }\n      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }\n      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;\n                    padding: 1rem 2rem; background: #f8fafc; }\n      /* min-width: 0 ist noetig, sonst schrumpfen Flex-Kinder nicht unter\n         ihre Inhaltsbreite - derselbe Fallstrick wie bei den Lab-Seiten. */\n      .filter-row > div { flex: 1 1 240px; min-width: 0; }\n      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }\n      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }\n                                   .chart-grid { grid-template-columns: 1fr 1fr; } }\n      /* Plotly zeichnet in SVG und richtet sich nicht von allein nach dem\n         Container - ohne diese Regel ragen die Diagramme heraus. */\n      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }\n    </style>\n  </head>\n  <body>{%app_entry%}<footer>{%config%}{%scripts%}{%renderer%}</footer></body>\n</html>\"\"\"\n\n# Daten laden und vorbereiten\ndf = pd.read_csv('train.csv', encoding='latin-1')\n# TT/MM/JJJJ -> dayfirst=True zwingend\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()\n\n# Farben als Python-Konstanten (NICHT CSS-Variablen!)\n# Plotly rendert zu SVG/Canvas, nicht ins DOM –\n# var(--col-primary) funktioniert dort nicht.\nCOL_PRIMARY = '#1E3A8A'\nCOL_ACCENT  = '#2563EB'\n\napp.layout = html.Div([\n    # Header\n    html.Div([\n        html.H1('Superstore Analytics Dashboard',\n                style={'margin': '0', 'fontSize': '1.5rem'}),\n    ], style={'background': COL_PRIMARY, 'color': 'white',\n              'padding': '1rem 2rem'}),\n\n    # Filter\n    html.Div([\n        html.Div([\n            html.Label('Segment:'),\n            dcc.Dropdown(\n                id='segment-filter',\n                options=[{'label': s, 'value': s}\n                         for s in df['Segment'].unique()],\n                value=df['Segment'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ], style={'flex': 1}),\n        html.Div([\n            html.Label('Region:'),\n            dcc.Dropdown(\n                id='region-filter',\n                options=[{'label': r, 'value': r}\n                         for r in df['Region'].unique()],\n                value=df['Region'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ], style={'flex': 1}),\n    ], className='filter-row'),\n\n    # KPI Cards\n    html.Div(id='kpi-cards', className='kpi-grid'),\n\n    # Charts\n    html.Div([\n        dcc.Graph(id='trend-chart', config={'responsive': True}),\n        dcc.Graph(id='category-chart', config={'responsive': True}),\n    ], className='chart-grid'),\n\n    dcc.Graph(id='scatter-chart', config={'responsive': True},\n              style={'padding': '0 2rem 2rem'}),\n])\n\ndef kpi_card(title, value, color=COL_PRIMARY):\n    return html.Div([\n        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',\n                               'color': color}),\n        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',\n                               'textTransform': 'uppercase',\n                               'letterSpacing': '0.08em'}),\n    ], style={'background': 'white', 'padding': '1.25rem',\n              'border': '1px solid #e5e7eb',\n              'borderLeft': f'4px solid {color}'})\n\n@app.callback(\n    Output('kpi-cards', 'children'),\n    Output('trend-chart', 'figure'),\n    Output('category-chart', 'figure'),\n    Output('scatter-chart', 'figure'),\n    Input('segment-filter', 'value'),\n    Input('region-filter', 'value')\n)\ndef update_dashboard(segments, regions):\n    fdf = df[df['Segment'].isin(segments) &\n             df['Region'].isin(regions)]\n\n    # KPI Cards\n    total_sales = fdf['Sales'].sum()\n    orders = fdf['Order ID'].nunique()\n    positions = len(fdf)\n    avg_order = total_sales / orders if orders else 0\n\n    cards = [\n        kpi_card('Umsatz', f'${total_sales:,.0f}'),\n        kpi_card('Bestellungen', f'{orders:,}'),\n        kpi_card('Ø Bestellwert', f'${avg_order:,.0f}', COL_ACCENT),\n        kpi_card('Positionen', f'{positions:,}'),\n    ]\n\n    # Trend\n    trend = fdf.groupby('Month')['Sales'].sum().reset_index()\n    fig1 = px.line(trend, x='Month', y='Sales',\n                   title='Umsatz-Trend (monatlich)',\n                   color_discrete_sequence=[COL_ACCENT])\n    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Kategorie\n    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()\n    fig2 = px.bar(by_cat, x='Category', y='Sales',\n                  title='Umsatz nach Kategorie',\n                  color_discrete_sequence=[COL_PRIMARY])\n    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Scatter\n    by_sub = fdf.groupby('Sub-Category').agg(\n        Sales=('Sales','sum'), Positionen=('Order ID','count')\n    ).reset_index()\n    fig3 = px.scatter(by_sub, x='Positionen', y='Sales',\n                      text='Sub-Category', size='Sales',\n                      title='Umsatz vs. Bestellpositionen nach Sub-Kategorie',\n                      color_discrete_sequence=[COL_ACCENT])\n    fig3.update_traces(textposition='top center')\n    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    return cards, fig1, fig2, fig3\n\nif __name__ == '__main__':\n    app.run(debug=True)",
+      de: "# app.py – Superstore Retail Analytics Dashboard\nimport dash\nfrom dash import dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = dash.Dash(__name__)\n\n# Ein Dashboard, das auf dem Handy bricht, ist kein fertiges Dashboard.\n# Feste Spaltenzahlen (repeat(4, 1fr)) sprengen jedes schmale Display,\n# deshalb liegt das Raster in CSS mit Media Queries statt in Inline-Styles.\napp.index_string = \"\"\"<!DOCTYPE html>\n<html>\n  <head>\n    {%metas%}<title>{%title%}</title>{%favicon%}{%css%}\n    <style>\n      *, *::before, *::after { box-sizing: border-box; }\n      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,\n             'Segoe UI', sans-serif; }\n      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }\n      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }\n      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }\n      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;\n                    padding: 1rem 2rem; background: #f8fafc; }\n      /* min-width: 0 ist noetig, sonst schrumpfen Flex-Kinder nicht unter\n         ihre Inhaltsbreite - derselbe Fallstrick wie bei den Lab-Seiten. */\n      .filter-row > div { flex: 1 1 240px; min-width: 0; }\n      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }\n      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }\n                                   .chart-grid { grid-template-columns: 1fr 1fr; } }\n      /* Plotly zeichnet in SVG und richtet sich nicht von allein nach dem\n         Container - ohne diese Regel ragen die Diagramme heraus. */\n      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }\n    </style>\n  </head>\n  <body>{%app_entry%}<footer>{%config%}{%scripts%}{%renderer%}</footer></body>\n</html>\"\"\"\n\n# Daten laden und vorbereiten\ndf = pd.read_csv('train.csv', encoding='latin-1')\n# TT/MM/JJJJ -> dayfirst=True zwingend\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()\n\n# Farben als Python-Konstanten (NICHT CSS-Variablen!)\n# Plotly rendert zu SVG/Canvas, nicht ins DOM –\n# var(--col-primary) funktioniert dort nicht.\nCOL_PRIMARY = '#1E3A8A'\nCOL_ACCENT  = '#2563EB'\n\napp.layout = html.Div([\n    # Header\n    html.Div([\n        html.H1('Superstore Analytics Dashboard',\n                style={'margin': '0', 'fontSize': '1.5rem'}),\n    ], style={'background': COL_PRIMARY, 'color': 'white',\n              'padding': '1rem 2rem'}),\n\n    # Filter\n    html.Div([\n        html.Div([\n            html.Label('Segment:'),\n            dcc.Dropdown(\n                id='segment-filter',\n                options=[{'label': s, 'value': s}\n                         for s in df['Segment'].unique()],\n                value=df['Segment'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n        html.Div([\n            html.Label('Region:'),\n            dcc.Dropdown(\n                id='region-filter',\n                options=[{'label': r, 'value': r}\n                         for r in df['Region'].unique()],\n                value=df['Region'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n    ], className='filter-row'),\n\n    # KPI Cards\n    html.Div(id='kpi-cards', className='kpi-grid'),\n\n    # Charts\n    html.Div([\n        dcc.Graph(id='trend-chart', config={'responsive': True}),\n        dcc.Graph(id='category-chart', config={'responsive': True}),\n    ], className='chart-grid'),\n\n    dcc.Graph(id='scatter-chart', config={'responsive': True},\n              style={'padding': '0 2rem 2rem'}),\n])\n\ndef kpi_card(title, value, color=COL_PRIMARY):\n    return html.Div([\n        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',\n                               'color': color}),\n        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',\n                               'textTransform': 'uppercase',\n                               'letterSpacing': '0.08em'}),\n    ], style={'background': 'white', 'padding': '1.25rem',\n              'border': '1px solid #e5e7eb',\n              'borderLeft': f'4px solid {color}'})\n\n@app.callback(\n    Output('kpi-cards', 'children'),\n    Output('trend-chart', 'figure'),\n    Output('category-chart', 'figure'),\n    Output('scatter-chart', 'figure'),\n    Input('segment-filter', 'value'),\n    Input('region-filter', 'value')\n)\ndef update_dashboard(segments, regions):\n    fdf = df[df['Segment'].isin(segments) &\n             df['Region'].isin(regions)]\n\n    # KPI Cards\n    total_sales = fdf['Sales'].sum()\n    orders = fdf['Order ID'].nunique()\n    positions = len(fdf)\n    avg_order = total_sales / orders if orders else 0\n\n    cards = [\n        kpi_card('Umsatz', f'${total_sales:,.0f}'),\n        kpi_card('Bestellungen', f'{orders:,}'),\n        kpi_card('Ø Bestellwert', f'${avg_order:,.0f}', COL_ACCENT),\n        kpi_card('Positionen', f'{positions:,}'),\n    ]\n\n    # Trend\n    trend = fdf.groupby('Month')['Sales'].sum().reset_index()\n    fig1 = px.line(trend, x='Month', y='Sales',\n                   title='Umsatz-Trend (monatlich)',\n                   color_discrete_sequence=[COL_ACCENT])\n    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Kategorie\n    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()\n    fig2 = px.bar(by_cat, x='Category', y='Sales',\n                  title='Umsatz nach Kategorie',\n                  color_discrete_sequence=[COL_PRIMARY])\n    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Scatter\n    by_sub = fdf.groupby('Sub-Category').agg(\n        Sales=('Sales','sum'), Positionen=('Order ID','count')\n    ).reset_index()\n    fig3 = px.scatter(by_sub, x='Positionen', y='Sales',\n                      text='Sub-Category', size='Sales',\n                      title='Umsatz vs. Bestellpositionen nach Sub-Kategorie',\n                      color_discrete_sequence=[COL_ACCENT])\n    fig3.update_traces(textposition='top center')\n    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    return cards, fig1, fig2, fig3\n\nif __name__ == '__main__':\n    app.run(debug=True)",
 
-      en: "# app.py - Superstore Retail Analytics Dashboard\nimport dash\nfrom dash import dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = dash.Dash(__name__)\n\n# A dashboard that breaks on a phone is not a finished dashboard.\n# Fixed column counts (repeat(4, 1fr)) blow up every narrow screen, so the\n# grid lives in CSS with media queries instead of inline styles.\napp.index_string = \"\"\"<!DOCTYPE html>\n<html>\n  <head>\n    {%metas%}<title>{%title%}</title>{%favicon%}{%css%}\n    <style>\n      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,\n             'Segoe UI', sans-serif; }\n      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }\n      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }\n      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }\n      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;\n                    padding: 1rem 2rem; background: #f8fafc; }\n      /* min-width: 0 is required, otherwise flex children will not shrink\n         below their content width - the same trap as on the lab pages. */\n      .filter-row > div { flex: 1 1 240px; min-width: 0; }\n      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }\n      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }\n                                   .chart-grid { grid-template-columns: 1fr 1fr; } }\n      /* Plotly draws to SVG and does not follow its container on its own -\n         without this rule the charts stick out. */\n      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }\n    </style>\n  </head>\n  <body>{%app_entry%}<footer>{%config%}{%scripts%}{%renderer%}</footer></body>\n</html>\"\"\"\n\n# Load and prepare the data\ndf = pd.read_csv('train.csv', encoding='latin-1')\n# DD/MM/YYYY -> dayfirst=True is mandatory\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()\n\n# Colours as Python constants (NOT CSS variables!)\n# Plotly renders to SVG/Canvas, not into the DOM -\n# var(--col-primary) does not work there.\nCOL_PRIMARY = '#1E3A8A'\nCOL_ACCENT  = '#2563EB'\n\napp.layout = html.Div([\n    # Header\n    html.Div([\n        html.H1('Superstore Analytics Dashboard',\n                style={'margin': '0', 'fontSize': '1.5rem'}),\n    ], style={'background': COL_PRIMARY, 'color': 'white',\n              'padding': '1rem 2rem'}),\n\n    # Filter\n    html.Div([\n        html.Div([\n            html.Label('Segment:'),\n            dcc.Dropdown(\n                id='segment-filter',\n                options=[{'label': s, 'value': s}\n                         for s in df['Segment'].unique()],\n                value=df['Segment'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ], style={'flex': 1}),\n        html.Div([\n            html.Label('Region:'),\n            dcc.Dropdown(\n                id='region-filter',\n                options=[{'label': r, 'value': r}\n                         for r in df['Region'].unique()],\n                value=df['Region'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ], style={'flex': 1}),\n    ], className='filter-row'),\n\n    # KPI Cards\n    html.Div(id='kpi-cards', className='kpi-grid'),\n\n    # Charts\n    html.Div([\n        dcc.Graph(id='trend-chart', config={'responsive': True}),\n        dcc.Graph(id='category-chart', config={'responsive': True}),\n    ], className='chart-grid'),\n\n    dcc.Graph(id='scatter-chart', config={'responsive': True},\n              style={'padding': '0 2rem 2rem'}),\n])\n\ndef kpi_card(title, value, color=COL_PRIMARY):\n    return html.Div([\n        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',\n                               'color': color}),\n        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',\n                               'textTransform': 'uppercase',\n                               'letterSpacing': '0.08em'}),\n    ], style={'background': 'white', 'padding': '1.25rem',\n              'border': '1px solid #e5e7eb',\n              'borderLeft': f'4px solid {color}'})\n\n@app.callback(\n    Output('kpi-cards', 'children'),\n    Output('trend-chart', 'figure'),\n    Output('category-chart', 'figure'),\n    Output('scatter-chart', 'figure'),\n    Input('segment-filter', 'value'),\n    Input('region-filter', 'value')\n)\ndef update_dashboard(segments, regions):\n    fdf = df[df['Segment'].isin(segments) &\n             df['Region'].isin(regions)]\n\n    # KPI Cards\n    total_sales = fdf['Sales'].sum()\n    orders = fdf['Order ID'].nunique()\n    positions = len(fdf)\n    avg_order = total_sales / orders if orders else 0\n\n    cards = [\n        kpi_card('Revenue', f'${total_sales:,.0f}'),\n        kpi_card('Orders', f'{orders:,}'),\n        kpi_card('Avg order value', f'${avg_order:,.0f}', COL_ACCENT),\n        kpi_card('Line items', f'{positions:,}'),\n    ]\n\n    # Trend\n    trend = fdf.groupby('Month')['Sales'].sum().reset_index()\n    fig1 = px.line(trend, x='Month', y='Sales',\n                   title='Revenue trend (monthly)',\n                   color_discrete_sequence=[COL_ACCENT])\n    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Category\n    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()\n    fig2 = px.bar(by_cat, x='Category', y='Sales',\n                  title='Revenue by category',\n                  color_discrete_sequence=[COL_PRIMARY])\n    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Scatter\n    by_sub = fdf.groupby('Sub-Category').agg(\n        Sales=('Sales','sum'), LineItems=('Order ID','count')\n    ).reset_index()\n    fig3 = px.scatter(by_sub, x='LineItems', y='Sales',\n                      text='Sub-Category', size='Sales',\n                      title='Revenue vs. line items by sub-category',\n                      color_discrete_sequence=[COL_ACCENT])\n    fig3.update_traces(textposition='top center')\n    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    return cards, fig1, fig2, fig3\n\nif __name__ == '__main__':\n    app.run(debug=True)",
+      en: "# app.py - Superstore Retail Analytics Dashboard\nimport dash\nfrom dash import dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = dash.Dash(__name__)\n\n# A dashboard that breaks on a phone is not a finished dashboard.\n# Fixed column counts (repeat(4, 1fr)) blow up every narrow screen, so the\n# grid lives in CSS with media queries instead of inline styles.\napp.index_string = \"\"\"<!DOCTYPE html>\n<html>\n  <head>\n    {%metas%}<title>{%title%}</title>{%favicon%}{%css%}\n    <style>\n      *, *::before, *::after { box-sizing: border-box; }\n      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,\n             'Segoe UI', sans-serif; }\n      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }\n      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }\n      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }\n      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;\n                    padding: 1rem 2rem; background: #f8fafc; }\n      /* min-width: 0 is required, otherwise flex children will not shrink\n         below their content width - the same trap as on the lab pages. */\n      .filter-row > div { flex: 1 1 240px; min-width: 0; }\n      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }\n      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }\n                                   .chart-grid { grid-template-columns: 1fr 1fr; } }\n      /* Plotly draws to SVG and does not follow its container on its own -\n         without this rule the charts stick out. */\n      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }\n    </style>\n  </head>\n  <body>{%app_entry%}<footer>{%config%}{%scripts%}{%renderer%}</footer></body>\n</html>\"\"\"\n\n# Load and prepare the data\ndf = pd.read_csv('train.csv', encoding='latin-1')\n# DD/MM/YYYY -> dayfirst=True is mandatory\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()\n\n# Colours as Python constants (NOT CSS variables!)\n# Plotly renders to SVG/Canvas, not into the DOM -\n# var(--col-primary) does not work there.\nCOL_PRIMARY = '#1E3A8A'\nCOL_ACCENT  = '#2563EB'\n\napp.layout = html.Div([\n    # Header\n    html.Div([\n        html.H1('Superstore Analytics Dashboard',\n                style={'margin': '0', 'fontSize': '1.5rem'}),\n    ], style={'background': COL_PRIMARY, 'color': 'white',\n              'padding': '1rem 2rem'}),\n\n    # Filter\n    html.Div([\n        html.Div([\n            html.Label('Segment:'),\n            dcc.Dropdown(\n                id='segment-filter',\n                options=[{'label': s, 'value': s}\n                         for s in df['Segment'].unique()],\n                value=df['Segment'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n        html.Div([\n            html.Label('Region:'),\n            dcc.Dropdown(\n                id='region-filter',\n                options=[{'label': r, 'value': r}\n                         for r in df['Region'].unique()],\n                value=df['Region'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n    ], className='filter-row'),\n\n    # KPI Cards\n    html.Div(id='kpi-cards', className='kpi-grid'),\n\n    # Charts\n    html.Div([\n        dcc.Graph(id='trend-chart', config={'responsive': True}),\n        dcc.Graph(id='category-chart', config={'responsive': True}),\n    ], className='chart-grid'),\n\n    dcc.Graph(id='scatter-chart', config={'responsive': True},\n              style={'padding': '0 2rem 2rem'}),\n])\n\ndef kpi_card(title, value, color=COL_PRIMARY):\n    return html.Div([\n        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',\n                               'color': color}),\n        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',\n                               'textTransform': 'uppercase',\n                               'letterSpacing': '0.08em'}),\n    ], style={'background': 'white', 'padding': '1.25rem',\n              'border': '1px solid #e5e7eb',\n              'borderLeft': f'4px solid {color}'})\n\n@app.callback(\n    Output('kpi-cards', 'children'),\n    Output('trend-chart', 'figure'),\n    Output('category-chart', 'figure'),\n    Output('scatter-chart', 'figure'),\n    Input('segment-filter', 'value'),\n    Input('region-filter', 'value')\n)\ndef update_dashboard(segments, regions):\n    fdf = df[df['Segment'].isin(segments) &\n             df['Region'].isin(regions)]\n\n    # KPI Cards\n    total_sales = fdf['Sales'].sum()\n    orders = fdf['Order ID'].nunique()\n    positions = len(fdf)\n    avg_order = total_sales / orders if orders else 0\n\n    cards = [\n        kpi_card('Revenue', f'${total_sales:,.0f}'),\n        kpi_card('Orders', f'{orders:,}'),\n        kpi_card('Avg order value', f'${avg_order:,.0f}', COL_ACCENT),\n        kpi_card('Line items', f'{positions:,}'),\n    ]\n\n    # Trend\n    trend = fdf.groupby('Month')['Sales'].sum().reset_index()\n    fig1 = px.line(trend, x='Month', y='Sales',\n                   title='Revenue trend (monthly)',\n                   color_discrete_sequence=[COL_ACCENT])\n    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Category\n    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()\n    fig2 = px.bar(by_cat, x='Category', y='Sales',\n                  title='Revenue by category',\n                  color_discrete_sequence=[COL_PRIMARY])\n    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Scatter\n    by_sub = fdf.groupby('Sub-Category').agg(\n        Sales=('Sales','sum'), LineItems=('Order ID','count')\n    ).reset_index()\n    fig3 = px.scatter(by_sub, x='LineItems', y='Sales',\n                      text='Sub-Category', size='Sales',\n                      title='Revenue vs. line items by sub-category',\n                      color_discrete_sequence=[COL_ACCENT])\n    fig3.update_traces(textposition='top center')\n    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    return cards, fig1, fig2, fig3\n\nif __name__ == '__main__':\n    app.run(debug=True)",
 
     };
 
     // ─── App Component ────────────────────────────────────────────────────────
     function App() {
-      const urlLang = new URLSearchParams(window.location.search).get('lang');
-      const [lang, setLang] = useState(() => urlLang || localStorage.getItem('bi-lang') || 'de');
+
+      const [lang, setLang] = useState(BINTLab.getLanguage);
       const [activeSection, setActiveSection] = useState('ueberblick');
 
       const setLangAndStore = (l) => {
         setLang(l);
-        localStorage.setItem('bi-lang', l);
+        BINTLab.setLanguage(l);
       };
 
       useEffect(() => {
@@ -724,8 +717,9 @@
 
       // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
       React.useEffect(() => {
-        document.title = 'Lab 05 \u2013 ' + tx.title + ' \u00B7 THWS BI Lab';
+        document.title = 'Lab 05 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
         document.documentElement.lang = lang;
+        BINTLab.setLanguage(lang);
       }, [lang, tx.title]);
 
       return (
@@ -738,8 +732,8 @@
           </a>
           <header className="header">
             <div className="header-left">
-              <a href="index.html" className="header-logo">{'BI Lab'}</a>
-              <a href={'index.html' + (lang === 'en' ? '?lang=en' : '')} className="header-back">{tx.backLabel}</a>
+              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
+              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
             </div>
             <div style={{ display: 'flex', gap: '0.35rem' }}>
               <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
@@ -1012,10 +1006,10 @@
 
             {/* ── Nav Bottom ── */}
             <div className="nav-bottom">
-              <a href={'lab-04-dashboards.html' + (lang === 'en' ? '?lang=en' : '')} className="nav-btn">
+              <a href={'lab-04-dashboards.html' + ('?lang=' + lang)} className="nav-btn">
                 {tx.navPrev}
               </a>
-              <a href={'lab-06-souveraenitaet.html' + (lang === 'en' ? '?lang=en' : '')} className="nav-btn primary">
+              <a href={'lab-06-souveraenitaet.html' + ('?lang=' + lang)} className="nav-btn primary">
                 {tx.navNext}
               </a>
             </div>
@@ -1024,7 +1018,7 @@
 
           {/* Footer */}
           <footer className="footer">
-            {'THWS Business School \u00B7 BI Lab \u00B7 Prof. Dr. Robert Butscher \u00B7 2026'}
+            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
           </footer>
 
         </div>

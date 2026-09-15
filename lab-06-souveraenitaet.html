@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 06 – Digitale Souveränität &amp; Open-Source BI · THWS BI Lab</title>
+  <title>Lab 06 – Digitale Souveränität &amp; Open-Source BI · THWS BINT-Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
@@ -165,10 +165,10 @@
        laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
        wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
        hat (faengt Transpilierungsfehler ab). -->
+  <script src="assets/site.js"></script>
   <script>
   (function () {
-    var isEn = new URLSearchParams(location.search).get('lang') === 'en'
-            || (localStorage.getItem('bi-lang') || '') === 'en';
+    var isEn = BINTLab.getLanguage() === 'en';
     var T = isEn ? {
       head: 'This page could not load',
       miss: 'The following libraries were not delivered:',
@@ -201,7 +201,7 @@
         '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
         body +
         '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BI Lab</a> &middot; THWS Business School</p>' +
+        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
         '</div>';
     }
 
@@ -232,22 +232,14 @@
 <script type="text/babel">
   function CodeBlock({ code, lang, kind, note }) {
     const [copied, setCopied] = React.useState(false);
+    const [copyFailed, setCopyFailed] = React.useState(false);
     const copyLabel = lang === 'en' ? 'Copy' : 'Kopieren';
     const copiedLabel = lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert';
-    const copy = () => {
-      navigator.clipboard.writeText(code).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }).catch(() => {
-        const el = document.createElement('textarea');
-        el.value = code;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      });
+    const copy = async () => {
+      const ok = await BINTLab.copyText(code);
+      setCopied(ok);
+      setCopyFailed(!ok);
+      if (ok) setTimeout(() => setCopied(false), 1500);
     };
     return (
       <div style={{ position: 'relative', marginBottom: '1rem' }}>
@@ -261,6 +253,7 @@
           </div>
         )}
         <pre className="code-block">{code}</pre>
+          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
         {note && <p className="code-note">{note}</p>}
         <button onClick={copy} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: copied ? '#059669' : '#E5E7EB', color: copied ? 'white' : '#374151', border: 'none', padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif' }}>{copied ? copiedLabel : copyLabel}</button>
       </div>
@@ -366,9 +359,9 @@
   }
 
   function App() {
-    const urlLang = new URLSearchParams(window.location.search).get('lang');
-    const [lang, setLang] = React.useState(() => urlLang || localStorage.getItem('bi-lang') || 'de');
-    const toggleLang = (l) => { setLang(l); localStorage.setItem('bi-lang', l); };
+
+    const [lang, setLang] = React.useState(BINTLab.getLanguage);
+    const toggleLang = (l) => { setLang(l); BINTLab.setLanguage(l); };
 
     const [activeSection, setActiveSection] = React.useState('ueberblick');
 
@@ -416,7 +409,7 @@
 
     const t = {
       de: {
-        logo: 'THWS BI Lab',
+        logo: 'THWS BINT-Lab',
         back: '\u2190 Zur Kurs\u00fcbersicht',
         backHref: 'index.html',
         badge: 'Lab 06',
@@ -447,7 +440,7 @@
         ],
         s2Title: 'Was ist Digitale Souver\u00e4nit\u00e4t?',
         s2P1: 'Digitale Souver\u00e4nit\u00e4t bezeichnet die F\u00e4higkeit von Organisationen und Staaten, ihre digitale Infrastruktur selbst zu kontrollieren \u2013 von Hardware und Software bis hin zu Daten, Algorithmen und Plattformen (Floridi, 2020).',
-        s2P2: 'Auf EU-Ebene werden Initiativen wie GAIA-X, die European Cloud Initiative und der EU Data Act \u2013 Verordnung (EU) 2023/2854, anwendbar seit 12.09.2025 \u2013 vorangetrieben, um europ\u00e4ische Datensouver\u00e4nit\u00e4t gegen\u00fcber US-amerikanischen Hyperscalern (AWS, Azure, GCP) zu st\u00e4rken. Auch der EU AI Act (2024) ber\u00fchrt die Souver\u00e4nitätsfrage, indem er Transparenzpflichten f\u00fcr KI-Systeme fordert.',
+        s2P2: 'Auf EU-Ebene werden Initiativen wie GAIA-X, die European Cloud Initiative und der EU Data Act \u2013 Verordnung (EU) 2023/2854 \u2013 vorangetrieben, um europ\u00e4ische Datensouver\u00e4nit\u00e4t gegen\u00fcber US-amerikanischen Hyperscalern (AWS, Azure, GCP) zu st\u00e4rken. Auch der EU AI Act (2024) ber\u00fchrt die Souver\u00e4nitätsfrage, indem er Transparenzpflichten f\u00fcr KI-Systeme fordert.',
         s2P3: 'F\u00fcr Business Intelligence stellen sich folgende Kernfragen:',
         s2Bullets: [
           'Wo liegen meine Daten \u2013 auf welchem Server, in welchem Land?',
@@ -468,7 +461,7 @@
         s3P1: 'Cloud Lock-in entsteht, wenn der Wechsel zu einem alternativen Anbieter technisch oder wirtschaftlich prohibitiv wird. Im BI-Kontext sind propriet\u00e4re Datenmodelle, DAX/M-Formeln, Berechtigungsstrukturen und API-Abh\u00e4ngigkeiten die Haupttreiber. Plattformen wie Microsoft Fabric verst\u00e4rken diesen Effekt: Wenn Ingestion, Transformation, Warehouse und Reporting gemeinsam auf OneLake liegen, w\u00e4chst die Wechselh\u00fcrde mit jedem zus\u00e4tzlichen Workload.',
         s3ConceptTitle: 'Total Cost of Ownership (TCO) bei BI-Tools',
         s3ConceptItems: [
-          'Direkte Kosten: Lizenzgeb\u00fchren pro User/Monat (Power BI Pro: 14 $, Power BI PPU: 24 $ \u2013 Stand seit 1. April 2025; Tableau Creator: ~75 $, Viewer: ~15 $; Looker: Enterprise-Pricing auf Anfrage) oder Kapazit\u00e4tsmodell (Microsoft Fabric F-SKU, ab F64 lesen Nutzer mit kostenloser Lizenz)',
+          'Direkte Kosten: Lizenzgebuehren pro Nutzer oder Kapazitaet. Preise, Abrechnungsmodell und enthaltene Funktionen beim jeweiligen Anbieter pruefen.',
           'Migrationskosten: Aufwand f\u00fcr Datenexport, Dashboard-Neubau, Schulung bei Anbieterwechsel',
           'Opportunit\u00e4tskosten: Funktionen, die nur im \u00d6kosystem des Anbieters verf\u00fcgbar sind (z.B. Copilot in Power BI)',
           'Risikokosten: Preiserh\u00f6hungen, Service-Einstellungen, regulatorische Konflikte (CLOUD Act)',
@@ -483,7 +476,7 @@
           'On-Premises-Optionen existieren: Power BI Report Server, Tableau Server, Qlik Sense Enterprise',
         ],
         s4Title: 'Open-Source BI im \u00dcberblick',
-        s4P1: 'Open-Source-BI-Tools verlagern die Kontrolle \u00fcber Daten und Infrastruktur zu dir \u2013 zusammen mit der Verantwortung f\u00fcr Betrieb, Updates und Sicherung. Entscheidend ist dabei das Lizenzmodell: Apache 2.0 erlaubt kommerzielle Nutzung ohne Einschr\u00e4nkungen, AGPL verlangt, den korrespondierenden Quellcode einer \u00e4nderten Anwendung ihren Netzwerk-Nutzern zug\u00e4nglich zu machen, und MIT ist \u00e4hnlich permissiv wie Apache.',
+        s4P1: 'Open-Source-BI-Tools verlagern die Kontrolle \u00fcber Daten und Infrastruktur zu dir \u2013 zusammen mit der Verantwortung f\u00fcr Betrieb, Updates und Sicherung. Entscheidend ist dabei das Lizenzmodell: Apache 2.0 erlaubt kommerzielle Nutzung und propriet\u00e4re Weiterentwicklung, sofern die Lizenz- und Hinweispflichten eingehalten werden. AGPL verpflichtet Betreiber einer ver\u00e4nderten, \u00fcber ein Netzwerk angebotenen Fassung, den Nutzern dieser Fassung den korrespondierenden Quellcode zug\u00e4nglich zu machen. MIT ist \u00e4hnlich permissiv wie Apache 2.0.',
         s4TableTitle: 'Open-Source Alternativen im Vergleich',
         s4ThTool: 'Tool',
         s4ThLicense: 'Lizenz',
@@ -504,7 +497,7 @@
         s5Title: 'Docker Setup: Self-Hosted Metabase',
         s5Intro: 'Mit Docker Compose l\u00e4sst sich ein vollst\u00e4ndiger Self-Hosted BI-Stack in wenigen Minuten aufsetzen. Das folgende Beispiel zeigt Metabase mit PostgreSQL als Metadatenbank.',
         starterTitle: 'Starterpaket herunterladen',
-        starterText: 'Enth\u00e4lt die docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example und eine README mit Sollwerten und Fehlerbildern. Zuletzt vollst\u00e4ndig durchgespielt am 20.08.2026: Stack startet, importiert 9.800 Zeilen und liefert dieselben Zahlen wie pandas.',
+        starterText: 'Enth\u00e4lt die docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example und eine README mit Sollwerten und Fehlerbildern. Der Stack importiert 9.800 Zeilen und liefert dieselben Zahlen wie pandas.',
         starterBtn: 'lab-06-stack.zip',
         s5TipText: 'Voraussetzungen: Docker Desktop installiert. Download: https://www.docker.com/products/docker-desktop',
         s5BashIntro: 'Stack starten und pr\u00fcfen:',
@@ -528,7 +521,7 @@
         s5ImportVerifyTitle: 'Erfolgskontrolle und Aufraeumen',
         s5ImportMbTitle: 'Datenbank in Metabase eintragen',
         s5ImportMbText: 'Einstellungen -> Datenbanken -> Datenbank hinzufuegen: Typ PostgreSQL, Host warehouse, Port 5432, Datenbank superstore, Benutzer superstore, Passwort aus der .env. Host ist warehouse, nicht localhost: Metabase laeuft in einem eigenen Container, dort waere localhost Metabase selbst. Im Compose-Netzwerk erreichen sich die Dienste ueber ihren Dienstnamen und den Container-Port 5432 - nicht ueber den nach aussen veroeffentlichten Port 5433. Vom eigenen Rechner aus gilt umgekehrt localhost:5433.',
-        s5ImportTimeNote: 'Zeitbedarf: 10-20 Minuten, bis der Stack steht (davon der groesste Teil Image-Download), danach 45-90 Minuten fuer Onboarding und Dashboards. Zuletzt vollstaendig durchgespielt am 20.08.2026.',
+        s5ImportTimeNote: 'Zeitbedarf: 10-20 Minuten, bis der Stack steht (davon der groesste Teil Image-Download), danach 45-90 Minuten fuer Onboarding und Dashboards.',
         selfCheckTitle: 'Selbstcheck (1 Minute)',
         selfCheckItems: [
           'docker compose ps zeigt metabase, postgres und warehouse als running.',
@@ -590,7 +583,7 @@
         ],
         s9Title: 'YouTube-Ressourcen',
         s9Intro: 'Empfohlene Video-Ressourcen zu Open-Source BI, Docker und Datensouver\u00e4nit\u00e4t:',
-        ytNote: 'Externe Ziele: Die Links f\u00fchren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00e4le bleiben \u00fcber Semester hinweg erreichbar.',
+        ytNote: 'Externe Ziele: Die Links f\u00fchren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00e4le bieten eine zentrale Anlaufstelle.',
         s9Resources: [
           {
             title: 'Metabase \u2013 Official Getting Started',
@@ -622,7 +615,7 @@
         quizIntro: 'Teste dein Wissen zu Digitaler Souver\u00e4nit\u00e4t und Open-Source BI:',
         quizQuestions: [
           { q: 'Was ist der Haupttreiber f\u00fcr Cloud Lock-in bei BI-Tools?', options: ['Zu hohe Lizenzkosten', 'Propriet\u00e4re Datenformate und API-Abh\u00e4ngigkeiten', 'Fehlende Internet-Anbindung', 'Zu viele Nutzer im Team'], correct: 1, explanation: 'Lock-in entsteht prim\u00e4r durch propriet\u00e4re Formate (DAX, VizQL, LookML) und API-Abh\u00e4ngigkeiten, die einen Wechsel technisch aufwendig machen.' },
-          { q: 'Welches EU-Gesetz regelt den Zugang zu und die Nutzung von Daten (anwendbar seit 12.09.2025)?', options: ['DSGVO', 'EU AI Act', 'EU Data Act', 'ePrivacy-Verordnung'], correct: 2, explanation: 'Der EU Data Act (Verordnung (EU) 2023/2854) trat im Januar 2024 in Kraft und gilt seit dem 12. September 2025. Er regelt den fairen Zugang zu und die Nutzung von Daten, insbesondere IoT-Daten und Cloud-Wechsel-Rechte.' },
+          { q: 'Welches EU-Gesetz regelt den Zugang zu und die Nutzung von Daten?', options: ['DSGVO', 'EU AI Act', 'EU Data Act', 'ePrivacy-Verordnung'], correct: 2, explanation: 'Der EU Data Act (Verordnung (EU) 2023/2854). Er regelt den fairen Zugang zu und die Nutzung von Daten, insbesondere IoT-Daten und Cloud-Wechsel-Rechte.' },
           { q: 'Welche Lizenz verlangt, den Quellcode einer ge\u00e4nderten Anwendung auch dann herauszugeben, wenn sie nur \u00fcber das Netzwerk angeboten wird?', options: ['MIT', 'Apache 2.0', 'AGPL 3.0', 'BSD'], correct: 2, explanation: 'Die AGPL 3.0 (z.B. Metabase, Grafana) schliesst die \u201eASP-L\u00fccke\u201c: Wer eine ge\u00e4nderte Fassung \u00fcber ein Netzwerk bereitstellt, muss deren Nutzern den korrespondierenden Quellcode anbieten. Der unver\u00e4nderte Betrieb l\u00f6st diese Pflicht nicht aus, und eine Ver\u00f6ffentlichung gegen\u00fcber der Allgemeinheit verlangt die Lizenz nicht.' },
           { q: 'Welches Tool eignet sich am besten f\u00fcr einen dbt-basierten Modern Data Stack?', options: ['Power BI', 'Metabase', 'Lightdash', 'Grafana'], correct: 2, explanation: 'Lightdash ist speziell f\u00fcr dbt-Workflows konzipiert und bietet native Metrics-Layer-Integration.' },
           { q: 'Was fordert Art. 32 DSGVO von Verantwortlichen?', options: ['Einwilligung der Nutzer', 'Technische und organisatorische Ma\u00dfnahmen (TOMs)', 'Datenschutzfolgenabsch\u00e4tzung', 'Verbot von Cloud-Nutzung'], correct: 1, explanation: 'Art. 32 DSGVO verpflichtet zur Umsetzung geeigneter technischer und organisatorischer Ma\u00dfnahmen (TOMs) zur Sicherheit der Datenverarbeitung.' },
@@ -632,7 +625,7 @@
         sumItems: [
           'Digitale Souver\u00e4nit\u00e4t umfasst Daten-, Technologie- und regulatorische Souver\u00e4nit\u00e4t (Floridi, 2020).',
           'Cloud Lock-in entsteht durch propriet\u00e4re Formate, APIs und \u00d6kosystem-Abh\u00e4ngigkeiten \u2013 TCO-Analyse hilft bei der Bewertung.',
-          'Der EU Data Act \u2013 VO (EU) 2023/2854, anwendbar seit 12.09.2025 \u2013 und der AI Act st\u00e4rken europ\u00e4ische Datensouver\u00e4nit\u00e4t und Cloud-Wechselrechte.',
+          'Der EU Data Act \u2013 VO (EU) 2023/2854 \u2013 und der AI Act st\u00e4rken europ\u00e4ische Datensouver\u00e4nit\u00e4t und Cloud-Wechselrechte.',
           'Open-Source BI (Superset, Metabase, Grafana, Dash, Lightdash, Evidence) verlagert Kontrolle und Betriebsverantwortung zu dir \u2013 Lizenzmodelle beachten.',
           'Docker Compose erm\u00f6glicht schnelles Self-Hosted-Deployment \u2013 HTTPS und Backup-Strategie nicht vergessen.',
           'DSGVO-Compliance erfordert systematische Pr\u00fcfung: AVV, SCCs, TIA, TOMs, L\u00f6schkonzept.',
@@ -640,10 +633,10 @@
         ],
         navBack: '\u2190 Lab 05: Fallstudie',
         navBackHref: 'lab-05-fallstudie.html',
-        footer: '\u00a9 2025\u20132026 THWS Business School \u00b7 BI Lab \u00b7 Alle Rechte vorbehalten',
+        footer: '\u00a9 THWS Business School \u00b7 BINT-Lab \u00b7 Alle Rechte vorbehalten',
       },
       en: {
-        logo: 'THWS BI Lab',
+        logo: 'THWS BINT-Lab',
         back: '\u2190 Back to Course Overview',
         backHref: 'index.html',
         badge: 'Lab 06',
@@ -674,7 +667,7 @@
         ],
         s2Title: 'What is Digital Sovereignty?',
         s2P1: 'Digital sovereignty refers to the ability of organizations and states to control their own digital infrastructure \u2013 from hardware and software to data, algorithms, and platforms (Floridi, 2020).',
-        s2P2: 'At the EU level, initiatives such as GAIA-X, the European Cloud Initiative, and the EU Data Act \u2013 Regulation (EU) 2023/2854, applicable since 12 September 2025 \u2013 aim to strengthen European data sovereignty against US hyperscalers (AWS, Azure, GCP). The EU AI Act (2024) also touches on sovereignty by requiring transparency obligations for AI systems.',
+        s2P2: 'At the EU level, initiatives such as GAIA-X, the European Cloud Initiative, and the EU Data Act \u2013 Regulation (EU) 2023/2854 \u2013 aim to strengthen European data sovereignty against US hyperscalers (AWS, Azure, GCP). The EU AI Act (2024) also touches on sovereignty by requiring transparency obligations for AI systems.',
         s2P3: 'For Business Intelligence, the core questions are:',
         s2Bullets: [
           'Where is my data stored \u2013 on which server, in which country?',
@@ -695,7 +688,7 @@
         s3P1: 'Cloud lock-in occurs when switching to an alternative provider becomes technically or economically prohibitive. In the BI context, proprietary data models, DAX/M formulas, permission structures, and API dependencies are the main drivers. Platforms such as Microsoft Fabric amplify this: once ingestion, transformation, warehousing and reporting all sit on OneLake, the switching barrier grows with every additional workload.',
         s3ConceptTitle: 'Total Cost of Ownership (TCO) for BI Tools',
         s3ConceptItems: [
-          'Direct costs: license fees per user/month (Power BI Pro: $14, Power BI PPU: $24 \u2013 as of 1 April 2025; Tableau Creator: ~$75, Viewer: ~$15; Looker: enterprise pricing on request) or a capacity model (Microsoft Fabric F-SKU; from F64 free-licence users may read reports)',
+          'Direct costs: licence fees per user or capacity. Check pricing, billing models and included features with each vendor.',
           'Migration costs: Effort for data export, dashboard rebuilding, training when switching providers',
           'Opportunity costs: Features only available within the vendor ecosystem (e.g., Copilot in Power BI)',
           'Risk costs: Price increases, service discontinuation, regulatory conflicts (CLOUD Act)',
@@ -710,7 +703,7 @@
           'On-premises options exist: Power BI Report Server, Tableau Server, Qlik Sense Enterprise',
         ],
         s4Title: 'Open-Source BI Overview',
-        s4P1: 'Open-source BI tools shift control over data and infrastructure to you \u2013 together with the responsibility for operations, updates and backups. The license model is decisive: Apache 2.0 allows commercial use without restrictions, AGPL requires making the corresponding source of a modified application available to its network users, and MIT is similarly permissive to Apache.',
+        s4P1: 'Open-source BI tools shift control over data and infrastructure to you \u2013 together with the responsibility for operations, updates and backups. The license model is decisive: Apache 2.0 allows commercial use and proprietary derivative development, provided the licence and attribution obligations are met. AGPL requires operators of a modified version offered over a network to make the corresponding source code available to that version\'s users. MIT is similarly permissive to Apache 2.0.',
         s4TableTitle: 'Open-Source Alternatives Compared',
         s4ThTool: 'Tool',
         s4ThLicense: 'License',
@@ -731,7 +724,7 @@
         s5Title: 'Docker Setup: Self-Hosted Metabase',
         s5Intro: 'With Docker Compose, a complete self-hosted BI stack can be set up in minutes. The following example shows Metabase with PostgreSQL as the metadata database.',
         starterTitle: 'Download the starter package',
-        starterText: 'Contains docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example and a README with expected values and failure symptoms. Last fully rehearsed on 20 August 2026: the stack starts, imports 9,800 rows and produces the same numbers as pandas.',
+        starterText: 'Contains docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example and a README with expected values and failure symptoms. The stack imports 9,800 rows and produces the same numbers as pandas.',
         starterBtn: 'lab-06-stack.zip',
         s5TipText: 'Prerequisites: Docker Desktop installed. Download: https://www.docker.com/products/docker-desktop',
         s5BashIntro: 'Start and verify the stack:',
@@ -755,7 +748,7 @@
         s5ImportVerifyTitle: 'Success check and cleanup',
         s5ImportMbTitle: 'Register the database in Metabase',
         s5ImportMbText: 'Settings -> Databases -> Add database: type PostgreSQL, host warehouse, port 5432, database superstore, user superstore, password from .env. The host is warehouse, not localhost: Metabase runs in its own container, where localhost would be Metabase itself. Inside the compose network the services reach each other by service name and container port 5432 - not via the published port 5433. From your own machine it is the other way round: localhost:5433.',
-        s5ImportTimeNote: 'Time needed: 10-20 minutes until the stack is up (mostly image download), then 45-90 minutes for onboarding and dashboards. Last fully rehearsed on 20 August 2026.',
+        s5ImportTimeNote: 'Time needed: 10-20 minutes until the stack is up (mostly image download), then 45-90 minutes for onboarding and dashboards.',
         selfCheckTitle: 'Self-check (1 minute)',
         selfCheckItems: [
           'docker compose ps shows metabase, postgres and warehouse as running.',
@@ -817,7 +810,7 @@
         ],
         s9Title: 'YouTube Resources',
         s9Intro: 'Recommended video resources on open-source BI, Docker, and data sovereignty:',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels stay reachable across semesters.',
+        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
         s9Resources: [
           {
             title: 'Metabase \u2013 Official Getting Started',
@@ -849,7 +842,7 @@
         quizIntro: 'Test your knowledge on Digital Sovereignty and Open-Source BI:',
         quizQuestions: [
           { q: 'What is the main driver of cloud lock-in for BI tools?', options: ['License costs too high', 'Proprietary data formats and API dependencies', 'Lack of internet connectivity', 'Too many users on the team'], correct: 1, explanation: 'Lock-in primarily arises from proprietary formats (DAX, VizQL, LookML) and API dependencies that make switching technically complex.' },
-          { q: 'Which EU law regulates access to and use of data (applicable since 12 Sep 2025)?', options: ['GDPR', 'EU AI Act', 'EU Data Act', 'ePrivacy Regulation'], correct: 2, explanation: 'The EU Data Act (Regulation (EU) 2023/2854) entered into force in January 2024 and has applied since 12 September 2025. It regulates fair access to and use of data, particularly IoT data and cloud switching rights.' },
+          { q: 'Which EU law regulates access to and use of data?', options: ['GDPR', 'EU AI Act', 'EU Data Act', 'ePrivacy Regulation'], correct: 2, explanation: 'The EU Data Act (Regulation (EU) 2023/2854). It regulates fair access to and use of data, particularly IoT data and cloud switching rights.' },
           { q: 'Which license requires releasing the source of a modified application even when it is only offered over a network?', options: ['MIT', 'Apache 2.0', 'AGPL 3.0', 'BSD'], correct: 2, explanation: 'AGPL 3.0 (e.g., Metabase, Grafana) closes the \u201cASP loophole\u201d: whoever offers a modified version over a network must provide its users with the corresponding source. Running it unmodified does not trigger this, and the licence does not require publishing to the general public.' },
           { q: 'Which tool is best suited for a dbt-based modern data stack?', options: ['Power BI', 'Metabase', 'Lightdash', 'Grafana'], correct: 2, explanation: 'Lightdash is specifically designed for dbt workflows and offers native metrics layer integration.' },
           { q: 'What does Art. 32 GDPR require from data controllers?', options: ['User consent', 'Technical and organizational measures (TOMs)', 'Data protection impact assessment', 'Prohibition of cloud use'], correct: 1, explanation: 'Art. 32 GDPR requires the implementation of appropriate technical and organizational measures (TOMs) for data processing security.' },
@@ -859,7 +852,7 @@
         sumItems: [
           'Digital sovereignty encompasses data, technology, and regulatory sovereignty (Floridi, 2020).',
           'Cloud lock-in arises from proprietary formats, APIs, and ecosystem dependencies \u2013 TCO analysis helps assess the situation.',
-          'The EU Data Act \u2013 Regulation (EU) 2023/2854, applicable since 12 September 2025 \u2013 and the AI Act strengthen European data sovereignty and cloud switching rights.',
+          'The EU Data Act \u2013 Regulation (EU) 2023/2854 \u2013 and the AI Act strengthen European data sovereignty and cloud switching rights.',
           'Open-source BI (Superset, Metabase, Grafana, Dash, Lightdash, Evidence) shifts control and operational responsibility to you \u2013 mind the license models.',
           'Docker Compose enables fast self-hosted deployment \u2013 don\u2019t forget HTTPS and backup strategy.',
           'GDPR compliance requires systematic checks: DPA, SCCs, TIA, TOMs, deletion concept.',
@@ -867,7 +860,7 @@
         ],
         navBack: '\u2190 Lab 05: Case Study',
         navBackHref: 'lab-05-fallstudie.html',
-        footer: '\u00a9 2025\u20132026 THWS Business School \u00b7 BI Lab \u00b7 All rights reserved',
+        footer: '\u00a9 THWS Business School \u00b7 BINT-Lab \u00b7 All rights reserved',
       },
     };
 
@@ -875,8 +868,9 @@
 
     // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
     React.useEffect(() => {
-      document.title = 'Lab 06 \u2013 ' + c.pageTitle + ' \u00B7 THWS BI Lab';
+      document.title = 'Lab 06 \u2013 ' + c.pageTitle + ' \u00B7 THWS BINT-Lab';
       document.documentElement.lang = lang;
+        BINTLab.setLanguage(lang);
     }, [lang, c.pageTitle]);
 
     // Code strings as regular strings (safe, no ${} collision risk)
@@ -902,7 +896,7 @@
     };
 
 
-    // Import des Kursdatensatzes in die Analysedatenbank. Getestet am 20.08.2026
+    // Import des Kursdatensatzes in die Analysedatenbank.
 
     // gegen postgres:17-alpine und metabase/metabase:v0.63.13.
 
@@ -942,7 +936,7 @@
         </a>
         <header className="header">
           <div className="header-left">
-            <a href="index.html" className="header-logo">{c.logo}</a>
+            <a href={'index.html?lang=' + lang} className="header-logo">{c.logo}</a>
             <a href={c.backHref} className="header-back">{c.back}</a>
           </div>
           <div style={{ display: 'flex', gap: '0.35rem' }}>

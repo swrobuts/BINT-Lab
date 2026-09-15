@@ -70,22 +70,31 @@ def check(app_name):
         (work / "app.py").write_text(code, encoding="utf-8")
         shutil.copy(CSV, work / "train.csv")
 
+        # Browser requests can fill an unread stderr pipe and block Flask.
+        log_path = work / "server.log"
+        log = log_path.open("w+b")
         proc = subprocess.Popen([sys.executable, "app.py"], cwd=work,
-                                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                                stdout=log, stderr=log)
         base = f"http://127.0.0.1:{port}"
         try:
             if not wait_for(base + "/", proc):
-                err = (proc.stderr.read().decode(errors="replace")[-400:]
-                       if proc.stderr else "")
+                proc.terminate()
+                try:
+                    proc.wait(timeout=15)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
+                err = log_path.read_text(encoding="utf-8", errors="replace")[-400:]
                 print(f"[FAIL] {app_name}: App startet nicht. {err.strip()}")
                 return False
             print(f"[OK  ] {app_name}: startet und antwortet auf {base}")
 
             res = subprocess.run(
                 ["node", str(ROOT / "tools" / "check_responsive.js"), base, "/", "--no-lang"],
-                capture_output=True, text=True)
+                capture_output=True, text=True, encoding="utf-8", timeout=180)
             print(res.stdout.strip())
             if res.returncode != 0:
+                print(res.stderr.strip())
                 print(f"[FAIL] {app_name}: Responsive-Test fehlgeschlagen")
                 return False
             print(f"[OK  ] {app_name}: keine Ueberbreite bei 320-1440 px")
@@ -96,6 +105,8 @@ def check(app_name):
                 proc.wait(timeout=15)
             except subprocess.TimeoutExpired:
                 proc.kill()
+                proc.wait()
+            log.close()
 
 
 def main():

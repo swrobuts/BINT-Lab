@@ -14,6 +14,7 @@ app.index_string = """<!DOCTYPE html>
   <head>
     {%metas%}<title>{%title%}</title>{%favicon%}{%css%}
     <style>
+      *, *::before, *::after { box-sizing: border-box; }
       body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,
              'Segoe UI', sans-serif; }
       .kpi-grid, .chart-grid { display: grid; gap: 1rem; }
@@ -66,7 +67,7 @@ app.layout = html.Div([
                 value=df['Segment'].unique().tolist(),
                 multi=True, clearable=False
             ),
-        ], style={'flex': 1}),
+        ]),
         html.Div([
             html.Label('Region:'),
             dcc.Dropdown(
@@ -76,7 +77,7 @@ app.layout = html.Div([
                 value=df['Region'].unique().tolist(),
                 multi=True, clearable=False
             ),
-        ], style={'flex': 1}),
+        ]),
     ], className='filter-row'),
 
     # KPI Cards
