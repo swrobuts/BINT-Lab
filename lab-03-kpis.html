@@ -432,6 +432,7 @@
           { href: '#python',           label: 'Python \u00C4quivalente' },
           { href: '#kpi-tabelle',      label: 'KPI-Tabelle' },
           { href: '#filter-kontext',   label: 'Filter-Kontext' },
+          { href: '#tableau',          label: 'Tableau' },
           { href: '#youtube',          label: 'Ressourcen' },
           { href: '#quiz',             label: 'Quiz' },
           { href: '#zusammenfassung',  label: 'Zusammenfassung' },
@@ -492,18 +493,47 @@
         ],
 
         s3Title: 'KPI-Tabelle',
-        s3Desc: 'Die wichtigsten Business-KPIs auf einen Blick \u2013 mit Formel, DAX-Funktion und Python-\u00C4quivalent.',
-        s3Headers: ['KPI', 'Formel', 'DAX-Funktion', 'Python (Pandas)'],
+        s3Desc: 'Die wichtigsten Business-KPIs auf einen Blick \u2013 mit Formel, DAX-Funktion, Python- und Tableau-\u00C4quivalent.',
+        s3Headers: ['KPI', 'Formel', 'DAX-Funktion', 'Python (Pandas)', 'Tableau'],
         s3Rows: [
-          ['Gesamtumsatz', '\u03A3 Betrag', 'SUM()', '.sum()'],
-          ['Bruttogewinn', 'Umsatz \u2212 COGS', 'SUM() \u2212 SUM()', 'Subtraktion'],
-          ['Marge %', 'Gewinn / Umsatz \u00D7 100', 'DIVIDE()', '/ * 100'],
-          ['YoY-Wachstum', '(Jetzt \u2212 VJ) / VJ', 'SAMEPERIODLASTYEAR', 'pct_change()'],
-          ['Conversion Rate', 'K\u00E4ufe / Besuche', 'DIVIDE()', '/'],
-          ['Customer LTV', '\u00D8 Bestellwert \u00D7 Frequenz', 'AVERAGEX + COUNTROWS', 'groupby + mean'],
-          ['Churn Rate', 'Abgewanderte / Gesamt', 'COUNTROWS + DIVIDE', 'count + /'],
+          ['Gesamtumsatz', '\u03A3 Betrag', 'SUM()', '.sum()', 'SUM()'],
+          ['Bruttogewinn', 'Umsatz \u2212 COGS', 'SUM() \u2212 SUM()', 'Subtraktion', 'SUM() \u2212 SUM()'],
+          ['Marge %', 'Gewinn / Umsatz \u00D7 100', 'DIVIDE()', '/ * 100', 'SUM() / SUM()'],
+          ['YoY-Wachstum', '(Jetzt \u2212 VJ) / VJ', 'SAMEPERIODLASTYEAR', 'pct_change()', 'LOOKUP(..., -1)'],
+          ['Conversion Rate', 'K\u00E4ufe / Besuche', 'DIVIDE()', '/', 'COUNTD() / COUNTD()'],
+          ['Customer LTV', '\u00D8 Bestellwert \u00D7 Frequenz', 'AVERAGEX + COUNTROWS', 'groupby + mean', '{FIXED [Kunde] : SUM()}'],
+          ['Churn Rate', 'Abgewanderte / Gesamt', 'COUNTROWS + DIVIDE', 'count + /', 'COUNTD() / COUNTD()'],
         ],
 
+
+        tabTitle: 'Dieselben KPIs in Tableau',
+        tabDesc: 'Tableau kennt kein CALCULATE. Was in DAX der Filterkontext ist, verteilt sich hier auf zwei Werkzeuge: Level-of-Detail-Ausdr\u00fccke legen die Ebene fest, auf der gerechnet wird, Tabellenberechnungen rechnen \u00fcber das, was die Ansicht bereits zeigt. Wer diesen Unterschied verstanden hat, liest beide Sprachen.',
+        tabMapTitle: 'DAX und Tableau nebeneinander',
+        tabMapHeaders: ['Aufgabe', 'DAX', 'Tableau', 'Worin der Unterschied liegt'],
+        tabMapRows: [
+          ['Summe im aktuellen Filter', 'SUM(Umsatz[Betrag])', 'SUM([Sales])', 'gleich'],
+          ['Summe mit zus\u00e4tzlichem Filter', 'CALCULATE(SUM(...), Region = \"West\")', 'SUM(IF [Region] = \"West\" THEN [Sales] END)', 'Tableau filtert im Ausdruck statt \u00fcber eine Kontextfunktion'],
+          ['Bezug auf die Gesamtsumme', 'CALCULATE(SUM(...), ALL(...))', '{ FIXED : SUM([Sales]) }', 'der LOD-Ausdruck rechnet vor der Ansicht und ignoriert deren Filter'],
+          ['Anteil an der Ansicht', 'DIVIDE(..., CALCULATE(..., ALL(...)))', 'SUM([Sales]) / TOTAL(SUM([Sales]))', 'die Tabellenberechnung rechnet nur \u00fcber das Sichtbare'],
+          ['Vorjahreswert', 'SAMEPERIODLASTYEAR', 'LOOKUP(SUM([Sales]), -1)', 'Tableau greift auf die vorige Zelle zu, nicht auf einen Kalender'],
+          ['Rang', 'RANKX(ALL(...), ...)', 'RANK(SUM([Sales]))', 'in der Wirkung gleich'],
+          ['Zwischenergebnis benennen', 'VAR / RETURN', 'eigenes berechnetes Feld', 'Tableau kennt keine Variablen innerhalb eines Ausdrucks'],
+        ],
+        tabCodeTitle: 'Berechnete Felder f\u00fcr train.csv',
+        tabCodeNote: 'Jedes Feld einzeln anlegen \u00fcber Analyse \u203a Berechnetes Feld erstellen. Die Feldnamen in eckigen Klammern entsprechen den Spalten der CSV-Datei.',
+        tabCode: '// Gesamtumsatz\nSUM([Sales])\n\n// Umsatz West \u2013 in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Anteil am Gesamtumsatz \u2013 LOD, unabh\u00e4ngig von der Ansicht\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Anteil an der Ansicht \u2013 Tabellenberechnung\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Umsatz des Vorjahres \u2013 Jahr muss in der Ansicht liegen\nLOOKUP(SUM([Sales]), -1)\n\n// Wachstum gegen\u00fcber dem Vorjahr\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Rang nach Umsatz\nRANK(SUM([Sales]))\n\n// Umsatz je Kunde \u2013 unabh\u00e4ngig von der Ansicht\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Erstbestellung je Kunde\n{ FIXED [Customer ID] : MIN([Order Date]) }\n\n// Durchschnittlicher Bestellwert\nSUM([Sales]) / COUNTD([Order ID])',
+        tabLODTitle: 'LOD oder Tabellenberechnung?',
+        tabLODText: 'Die Faustregel steckt in der Reihenfolge, in der Tableau rechnet: Ein FIXED-Ausdruck entsteht, bevor die Filter der Ansicht greifen \u2013 sein Ergebnis bleibt stabil, egal was gerade sichtbar ist. Eine Tabellenberechnung entsteht danach und sieht nur noch, was die Ansicht zeigt. Der Anteil der Region West betr\u00e4gt mit FIXED immer 31,4 %; mit TOTAL() ist es der Anteil an den gerade sichtbaren Regionen. Beide Zahlen sind richtig \u2013 sie beantworten verschiedene Fragen.',
+        tabDateTitle: 'Wenn das Bestelldatum als Text ankommt',
+        tabDateText: 'In train.csv steht das Datum als 08/11/2017, also Tag zuerst. Liest Tableau die Spalte als Text ein, legen Sie ein berechnetes Feld an: DATEPARSE(\"dd/MM/yyyy\", [Order Date]). Pr\u00fcfen Sie das Ergebnis an einer Zahl, die Sie kennen \u2013 das Wachstum 2018 muss 20,3 % ergeben. Kommt etwas anderes heraus, wurden Tag und Monat vertauscht.',
+        tabCheckTitle: 'Selbstcheck (1 Minute)',
+        tabCheckItems: [
+          'Gesamtumsatz 2.261.536,78 \u2013 dieselbe Zahl wie in Power BI und in Python.',
+          'Umsatz West 710.219,68, Anteil 31,4 % \u2013 die Probe auf den LOD-Ausdruck.',
+          'Wachstum 2018 gegen\u00fcber 2017 rund 20,3 %, 2016 zeigt \u22124,3 %.',
+          'Im Rang nach Unterkategorie stehen Phones, Chairs und Storage vorn.',
+          '4.922 Bestellungen, durchschnittlicher Bestellwert 459,48.',
+        ],
         s4Title: 'Filter-Kontext',
         s4Desc: 'Das Verst\u00E4ndnis des Filter-Kontexts ist der Schl\u00FCssel zu machtvollem DAX. Es gibt zwei grundlegende Kontexte in DAX:',
         s4RowTitle: 'Row Context (Zeilen-Kontext)',
@@ -623,6 +653,7 @@
           { href: '#python',           label: 'Python Equivalents' },
           { href: '#kpi-tabelle',      label: 'KPI Table' },
           { href: '#filter-kontext',   label: 'Filter Context' },
+          { href: '#tableau',          label: 'Tableau' },
           { href: '#youtube',          label: 'Resources' },
           { href: '#quiz',             label: 'Quiz' },
           { href: '#zusammenfassung',  label: 'Summary' },
@@ -683,18 +714,47 @@
         ],
 
         s3Title: 'KPI Table',
-        s3Desc: 'The most important business KPIs at a glance \u2013 with formula, DAX function and Python equivalent.',
-        s3Headers: ['KPI', 'Formula', 'DAX Function', 'Python (Pandas)'],
+        s3Desc: 'The most important business KPIs at a glance \u2013 with formula, DAX function, Python and Tableau equivalent.',
+        s3Headers: ['KPI', 'Formula', 'DAX Function', 'Python (Pandas)', 'Tableau'],
         s3Rows: [
-          ['Total Revenue', '\u03A3 Amount', 'SUM()', '.sum()'],
-          ['Gross Profit', 'Revenue \u2212 COGS', 'SUM() \u2212 SUM()', 'Subtraction'],
-          ['Margin %', 'Profit / Revenue \u00D7 100', 'DIVIDE()', '/ * 100'],
-          ['YoY Growth', '(Now \u2212 PY) / PY', 'SAMEPERIODLASTYEAR', 'pct_change()'],
-          ['Conversion Rate', 'Purchases / Visits', 'DIVIDE()', '/'],
-          ['Customer LTV', 'Avg Order Value \u00D7 Frequency', 'AVERAGEX + COUNTROWS', 'groupby + mean'],
-          ['Churn Rate', 'Churned / Total', 'COUNTROWS + DIVIDE', 'count + /'],
+          ['Total Revenue', '\u03A3 Amount', 'SUM()', '.sum()', 'SUM()'],
+          ['Gross Profit', 'Revenue \u2212 COGS', 'SUM() \u2212 SUM()', 'Subtraction', 'SUM() \u2212 SUM()'],
+          ['Margin %', 'Profit / Revenue \u00D7 100', 'DIVIDE()', '/ * 100', 'SUM() / SUM()'],
+          ['YoY Growth', '(Now \u2212 PY) / PY', 'SAMEPERIODLASTYEAR', 'pct_change()', 'LOOKUP(..., -1)'],
+          ['Conversion Rate', 'Purchases / Visits', 'DIVIDE()', '/', 'COUNTD() / COUNTD()'],
+          ['Customer LTV', 'Avg Order Value \u00D7 Frequency', 'AVERAGEX + COUNTROWS', 'groupby + mean', '{FIXED [Customer] : SUM()}'],
+          ['Churn Rate', 'Churned / Total', 'COUNTROWS + DIVIDE', 'count + /', 'COUNTD() / COUNTD()'],
         ],
 
+
+        tabTitle: 'The same KPIs in Tableau',
+        tabDesc: 'Tableau has no CALCULATE. What DAX calls filter context is split across two tools here: level-of-detail expressions set the level at which a value is computed, table calculations compute across what the view already shows. Understand that difference and you can read both languages.',
+        tabMapTitle: 'DAX and Tableau side by side',
+        tabMapHeaders: ['Task', 'DAX', 'Tableau', 'Where they differ'],
+        tabMapRows: [
+          ['Sum in the current filter', 'SUM(Sales[Amount])', 'SUM([Sales])', 'identical'],
+          ['Sum with an extra filter', 'CALCULATE(SUM(...), Region = \"West\")', 'SUM(IF [Region] = \"West\" THEN [Sales] END)', 'Tableau filters inside the expression instead of through a context function'],
+          ['Reference to the grand total', 'CALCULATE(SUM(...), ALL(...))', '{ FIXED : SUM([Sales]) }', 'the LOD expression is computed before the view and ignores its filters'],
+          ['Share of the view', 'DIVIDE(..., CALCULATE(..., ALL(...)))', 'SUM([Sales]) / TOTAL(SUM([Sales]))', 'the table calculation only covers what is visible'],
+          ['Previous year', 'SAMEPERIODLASTYEAR', 'LOOKUP(SUM([Sales]), -1)', 'Tableau reads the previous cell, not a calendar'],
+          ['Rank', 'RANKX(ALL(...), ...)', 'RANK(SUM([Sales]))', 'same effect'],
+          ['Naming an intermediate result', 'VAR / RETURN', 'a separate calculated field', 'Tableau has no variables inside an expression'],
+        ],
+        tabCodeTitle: 'Calculated fields for train.csv',
+        tabCodeNote: 'Create each field separately via Analysis \u203a Create Calculated Field. The field names in square brackets match the columns of the CSV file.',
+        tabCode: '// Gesamtumsatz\nSUM([Sales])\n\n// Umsatz West \u2013 in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Anteil am Gesamtumsatz \u2013 LOD, unabh\u00e4ngig von der Ansicht\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Anteil an der Ansicht \u2013 Tabellenberechnung\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Umsatz des Vorjahres \u2013 Jahr muss in der Ansicht liegen\nLOOKUP(SUM([Sales]), -1)\n\n// Wachstum gegen\u00fcber dem Vorjahr\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Rang nach Umsatz\nRANK(SUM([Sales]))\n\n// Umsatz je Kunde \u2013 unabh\u00e4ngig von der Ansicht\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Erstbestellung je Kunde\n{ FIXED [Customer ID] : MIN([Order Date]) }\n\n// Durchschnittlicher Bestellwert\nSUM([Sales]) / COUNTD([Order ID])',
+        tabLODTitle: 'LOD or table calculation?',
+        tabLODText: 'The rule of thumb follows Tableau order of operations: a FIXED expression is computed before the filters of the view apply, so its result stays stable no matter what is visible. A table calculation happens afterwards and only sees what the view shows. The share of the West region is always 31.4% with FIXED; with TOTAL() it is the share of the regions currently visible. Both numbers are correct \u2013 they answer different questions.',
+        tabDateTitle: 'When the order date arrives as text',
+        tabDateText: 'In train.csv the date reads 08/11/2017, day first. If Tableau imports the column as text, create a calculated field: DATEPARSE(\"dd/MM/yyyy\", [Order Date]). Check the result against a number you know \u2013 growth in 2018 must come out at 20.3%. Anything else means day and month were swapped.',
+        tabCheckTitle: 'Self-check (1 minute)',
+        tabCheckItems: [
+          'Total revenue 2,261,536.78 \u2013 the same number as in Power BI and Python.',
+          'West revenue 710,219.68, share 31.4% \u2013 the check on the LOD expression.',
+          'Growth 2018 over 2017 about 20.3%, 2016 shows \u22124.3%.',
+          'The rank by sub-category is led by Phones, Chairs and Storage.',
+          '4,922 orders, average order value 459.48.',
+        ],
         s4Title: 'Filter Context',
         s4Desc: 'Understanding the filter context is the key to powerful DAX. There are two fundamental contexts in DAX:',
         s4RowTitle: 'Row Context',
@@ -973,6 +1033,7 @@
                       <td>{row[1]}</td>
                       <td><code>{row[2]}</code></td>
                       <td><code>{row[3]}</code></td>
+                      <td><code>{row[4]}</code></td>
                     </tr>
                   ))}
                 </tbody>
@@ -1019,6 +1080,53 @@
               <div className="info-box" style={{ marginTop: '1.5rem' }}>
                 <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s4VarTitle}</h4>
                 <p style={{ margin: 0 }}>{tx.s4VarText}</p>
+              </div>
+            </section>
+
+
+            {/* -- Section 4b: Tableau -- */}
+            <section id="tableau" className="section-block">
+              <h2>{tx.tabTitle}</h2>
+              <div className="bauhaus-accent-line"></div>
+              <p>{tx.tabDesc}</p>
+
+              <h3 style={{ marginTop: '1.75rem' }}>{tx.tabMapTitle}</h3>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>{tx.tabMapHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
+                  </thead>
+                  <tbody>
+                    {tx.tabMapRows.map((row, i) => (
+                      <tr key={i}>
+                        <td style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: 'var(--col-primary)' }}>{row[0]}</td>
+                        <td><code>{row[1]}</code></td>
+                        <td><code>{row[2]}</code></td>
+                        <td style={{ fontSize: '0.86rem', color: '#374151' }}>{row[3]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
+                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.tabLODTitle}</h4>
+                <p style={{ margin: 0 }}>{tx.tabLODText}</p>
+              </div>
+
+              <h4 style={{ marginTop: '1.75rem' }}>{tx.tabCodeTitle}</h4>
+              <CodeBlock code={tx.tabCode} lang={lang} kind="run" note={tx.tabCodeNote} />
+
+              <div className="tip-box" style={{ marginTop: '1rem' }}>
+                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.tabDateTitle}</h4>
+                <p style={{ margin: 0 }}>{tx.tabDateText}</p>
+              </div>
+
+              <div className="challenge-box" style={{ marginTop: '1.5rem' }}>
+                <h4 style={{ marginTop: 0 }}>{tx.tabCheckTitle}</h4>
+                <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
+                  {tx.tabCheckItems.map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
               </div>
             </section>
 

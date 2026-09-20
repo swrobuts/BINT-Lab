@@ -401,6 +401,7 @@
           { href: '#datenerkundung',   label: '1: Datenerkundung' },
           { href: '#kpi-hierarchie',   label: '2: KPI-Hierarchie' },
           { href: '#powerbi-steps',    label: '3: Power BI' },
+          { href: '#tableau',          label: '3b: Tableau' },
           { href: '#dash-steps',       label: '4: Plotly Dash' },
           { href: '#reflexion',        label: '5: Reflexion' },
           { href: '#ressourcen',       label: 'Ressourcen' },
@@ -464,6 +465,28 @@
           { label: 'Slicer & Formatierung', text: 'Slicer f\u00FCr: Jahr, Region, Kategorie. Einheitliche Farben, Datenbeschriftungen aktivieren.' },
         ],
 
+        s4bTitle: 'Schritt 3b \u2013 Tableau Step by Step',
+        s4bIntro: 'Dieselbe Fallstudie in Tableau Desktop oder Tableau Public. Die berechneten Felder entsprechen den DAX-Measures aus Schritt\u00A03.',
+        s4bSteps: [
+          { label: 'Verbindung zur CSV herstellen', text: 'Startseite \u2192 Verbinden \u2192 Zu einer Datei \u2192 Textdatei \u2192 train.csv ausw\u00E4hlen. Tableau \u00F6ffnet die Datenquellenseite mit der Tabelle im Canvas. Der Reiter Blatt\u00A01 unten links wechselt zum ersten Arbeitsblatt. Encoding auf UTF-8 belassen; erscheinen in Customer Name verstellte Zeichen, in der Datenquelle auf Windows-1252 umstellen.' },
+          { label: 'Datumsspalte pr\u00FCfen', text: 'In der Datenquellenvorschau das Typsymbol \u00FCber Order Date pr\u00FCfen. Ein Kalendersymbol steht f\u00FCr Datum, Abc f\u00FCr Text. Das Bestelldatum steht als 08/11/2017, also Tag zuerst. Liest Tableau die Spalte als Text, hilft ein berechnetes Feld DATEPARSE("dd/MM/yyyy", [Order Date]); alle zeitbezogenen Ansichten verwenden dann dieses Feld. Kontrolle: der Zeitraum reicht vom 03.01.2015 bis zum 30.12.2018.' },
+          { label: 'Berechnete Felder anlegen', text: 'Analyse \u2192 Berechnetes Feld erstellen. Die folgenden acht Felder anlegen und unter dem Namen aus der jeweiligen Kommentarzeile speichern.', hasCode: true },
+          { label: 'Eine Ansicht je KPI', text: 'Pro Arbeitsblatt eine Kennzahl. Umsatzverlauf: Order Date als Jahr in Spalten, Gesamtumsatz in Zeilen, Markierungstyp Linie. Umsatz je Kategorie: Category in Zeilen, Gesamtumsatz in Spalten, absteigend sortiert. Umsatz je Region: Region in Zeilen, Gesamtumsatz in Spalten, Anteil am Gesamtumsatz auf Beschriftung. Umsatz je Unterkategorie: Sub-Category in Zeilen, Gesamtumsatz in Spalten. Wachstum: Jahr in Spalten, Wachstum gegen\u00FCber dem Vorjahr in Zeilen \u2013 LOOKUP liest den Vorjahreswert aus der Ansicht, das Jahr muss daher in der Ansicht liegen.' },
+          { label: 'Ansichten zu einem Dashboard zusammensetzen', text: 'Dashboard \u2192 Neues Dashboard, Gr\u00F6\u00DFe auf Automatisch. Die Arbeitsbl\u00E4tter aus der linken Liste auf die Fl\u00E4che ziehen: Kennzahlen oben, Detailansichten darunter. Am Rand eines Arbeitsblatts \u00F6ffnet das Dropdown den Eintrag Als Filter verwenden; eine Auswahl dort filtert die \u00FCbrigen Ansichten. Der Wirkungsbereich l\u00E4sst sich \u00FCber Filter \u2192 Anwenden auf \u2192 Ausgew\u00E4hlte Arbeitsbl\u00E4tter einschr\u00E4nken.' },
+          { label: 'Arbeitsmappe als .twbx weitergeben', text: 'Datei \u2192 Speichern unter \u2192 Verpackte Arbeitsmappe (.twbx). Die twbx-Datei enth\u00E4lt Arbeitsmappe und Datenextrakt zusammen, die Empfangenden brauchen train.csv nicht. Eine .twb speichert nur den Verweis auf den lokalen Pfad und bleibt auf fremden Rechnern leer. Tableau Public ver\u00F6ffentlicht jede gespeicherte Arbeitsmappe im Web \u2013 vertrauliche Daten geh\u00F6ren in Tableau Desktop mit lokaler Speicherung.' },
+        ],
+        s4bLodNote: 'Anteil am Gesamtumsatz und Anteil an der Ansicht liefern verschiedene Werte. { FIXED : SUM([Sales]) } ignoriert die Dimensionsfilter der Ansicht und ergibt immer 2.261.536,78; ein Kontextfilter wirkt dagegen auch auf diesen Ausdruck. TOTAL(SUM([Sales])) bezieht sich auf die Zeilen der aktuellen Ansicht und \u00E4ndert sich mit jedem Filter.',
+        runNoteTableau: 'Voraussetzung: train.csv ist als Datenquelle verbunden und Order Date liegt als Datum vor. Sollwerte ohne Filter: Gesamtumsatz 2.261.536,78 \u00B7 Umsatz West 710.219,68 \u00B7 Anteil West 31,4\u00A0% \u00B7 \u00D8 Bestellwert 459,48. Anteil an der Ansicht, Umsatz des Vorjahres und Wachstum sind Tabellenberechnungen und h\u00E4ngen von den Feldern in der Ansicht ab.',
+        s4bCheckTitle: 'Selbstcheck',
+        s4bCheckItems: [
+          'Die Datenquelle meldet 9.800 Zeilen und 18 Spalten. Eine Profit-Spalte enth\u00E4lt diese Datei nicht, Deckungsbeitr\u00E4ge lassen sich daraus nicht berechnen.',
+          'Gesamtumsatz 2.261.536,78. Umsatz West 710.219,68, Anteil am Gesamtumsatz 31,4\u00A0%.',
+          'Jahresums\u00E4tze: 2015 479.856,21 \u00B7 2016 459.436,01 \u00B7 2017 600.192,55 \u00B7 2018 722.052,02. Enden die Jahre 2012 oder fehlen Zeilen, wurde das Datum als MM/dd/yyyy gelesen.',
+          'Wachstum gegen\u00FCber dem Vorjahr: 2016 \u22124,3\u00A0%, 2017 +30,6\u00A0%, 2018 +20,3\u00A0%. Zeigt die Spalte 2015 einen Wert, l\u00E4uft die Tabellenberechnung in die falsche Richtung.',
+          'St\u00E4rkste Unterkategorien: Phones 327.782,45 \u00B7 Chairs 322.822,73 \u00B7 Storage 219.343,39.',
+          '4.922 Bestellungen, 793 Kunden, \u00D8 Bestellwert 459,48. COUNTD([Order ID]) und nicht COUNT, sonst z\u00E4hlt Tableau die 9.800 Positionen.',
+        ],
+
         s5Title: 'Schritt 4 \u2013 Plotly Dash Step by Step',
         s5Intro: 'Die folgende Dash-App repliziert das Power-BI-Dashboard in Python. In app.py speichern und mit python app.py starten.',
 
@@ -475,16 +498,18 @@
           'Welches w\u00FCrdest du bei einem Kunden ohne Python-Kenntnisse einsetzen?',
           'Wie w\u00FCrdest du die Dash-App produktiv deployen?',
           'Welches Tool eignet sich besser f\u00FCr nicht-technische Stakeholder \u2013 und warum?',
+          'Welche Berechnung geh\u00F6rt in Tableau in ein LOD-Feld, welche in eine Table Calculation?',
         ],
-        s6CompareTitle: 'Vergleich: Power BI vs. Plotly Dash',
-        s6CompareHeaders: ['Kriterium', 'Power BI', 'Plotly Dash'],
+        s6CompareTitle: 'Vergleich: Power BI, Tableau und Plotly Dash',
+        s6CompareHeaders: ['Kriterium', 'Power BI', 'Tableau', 'Plotly Dash'],
         s6CompareRows: [
-          ['Setup', 'GUI, Drag & Drop', 'Python-Code'],
-          ['Lernkurve', 'Flach (keine Programmierung)', 'Steil (Python + Dash)'],
-          ['Flexibilit\u00E4t', 'Begrenzt auf built-in Visuals', 'Unbegrenzt (jede Python-Lib)'],
-          ['Deployment', 'Power BI Service (Cloud)', 'Docker / Render / Railway'],
-          ['Kosten', 'Kostenpflichtige Pro-Lizenz je Benutzer/Monat \u2013 aktuellen Preis bei Microsoft pr\u00FCfen', 'Open Source (Hosting-Kosten)'],
-          ['Zielgruppe', 'Business-Analysten', 'Data Engineers / Scientists'],
+          ['Setup', 'GUI, Drag & Drop', 'GUI, Drag & Drop', 'Python-Code'],
+          ['Lernkurve', 'Flach (keine Programmierung)', 'Flach f\u00FCr Ansichten, eigene Syntax f\u00FCr LOD und Table Calculations', 'Steil (Python + Dash)'],
+          ['Formelsprache', 'DAX', 'Tableau-Berechnungen mit LOD-Ausdr\u00FCcken und Table Calculations', 'pandas und Python'],
+          ['Flexibilit\u00E4t', 'Begrenzt auf built-in Visuals', 'Begrenzt auf die Markierungstypen, Erweiterung \u00FCber Dashboard-Erweiterungen', 'Unbegrenzt (jede Python-Lib)'],
+          ['Deployment', 'Power BI Service (Cloud)', 'Tableau Server, Tableau Cloud oder Weitergabe als .twbx', 'Docker / Render / Railway'],
+          ['Kosten', 'Kostenpflichtige Pro-Lizenz je Benutzer/Monat \u2013 aktuellen Preis bei Microsoft pr\u00FCfen', 'Kostenpflichtige Creator-Lizenz je Benutzer/Monat \u2013 aktuellen Preis bei Tableau pr\u00FCfen; Tableau Public ist kostenlos und ver\u00F6ffentlicht die Arbeitsmappe', 'Open Source (Hosting-Kosten)'],
+          ['Zielgruppe', 'Business-Analysten', 'Business-Analysten mit Schwerpunkt auf explorativer Analyse', 'Data Engineers / Scientists'],
         ],
         s6DeployTitle: 'Deployment-Optionen f\u00FCr Dash',
         s6DeployText: 'Gunicorn als WSGI-Server \u2192 Docker-Container \u2192 Hosting auf Render, Railway oder eigenem Server mit Traefik als Reverse Proxy. F\u00FCr Prototypen: Streamlit Cloud (kostenlos, keine Docker-Kenntnisse n\u00F6tig).',
@@ -515,6 +540,7 @@
           'KPI-Hierarchien strukturieren Dashboards: strategisch \u2192 operativ \u2192 Warnsignale.',
           'Power BI eignet sich f\u00FCr Business-Analysten (GUI, kein Code, schneller Einstieg).',
           'Plotly Dash bietet maximale Flexibilit\u00E4t f\u00FCr Data Scientists (Python, Open Source).',
+          'Tableau deckt denselben Workflow mit eigenen Berechnungen ab: LOD-Ausdr\u00FCcke f\u00FCr ansichtsunabh\u00E4ngige Werte, Table Calculations f\u00FCr Werte relativ zur Ansicht.',
           'Plotly rendert zu SVG/Canvas \u2013 CSS-Variablen funktionieren dort nicht (Hex-Werte verwenden).',
           'CRISP-DM (Shearer, 2000) liefert den methodischen Rahmen f\u00FCr BI-Projekte.',
           'Produktives Deployment: Gunicorn \u2192 Docker \u2192 Cloud-Hosting (Render, Railway).',
@@ -540,6 +566,7 @@
           { href: '#datenerkundung',   label: '1: Data Exploration' },
           { href: '#kpi-hierarchie',   label: '2: KPI Hierarchy' },
           { href: '#powerbi-steps',    label: '3: Power BI' },
+          { href: '#tableau',          label: '3b: Tableau' },
           { href: '#dash-steps',       label: '4: Plotly Dash' },
           { href: '#reflexion',        label: '5: Reflection' },
           { href: '#ressourcen',       label: 'Resources' },
@@ -603,6 +630,28 @@
           { label: 'Slicers & Formatting', text: 'Slicers for: Year, Region, Category. Consistent colours, enable data labels.' },
         ],
 
+        s4bTitle: 'Step 3b \u2013 Tableau Step by Step',
+        s4bIntro: 'The same case study in Tableau Desktop or Tableau Public. The calculated fields match the DAX measures from step\u00A03.',
+        s4bSteps: [
+          { label: 'Connect to the CSV', text: 'Start page \u2192 Connect \u2192 To a File \u2192 Text file \u2192 select train.csv. Tableau opens the data source page with the table on the canvas. The Sheet\u00A01 tab in the bottom left switches to the first worksheet. Leave the encoding at UTF-8; if Customer Name shows garbled characters, switch the data source to Windows-1252.' },
+          { label: 'Check the date column', text: 'In the data source preview, check the type icon above Order Date. A calendar icon means date, Abc means text. The order date is stored as 08/11/2017, day first. If Tableau reads the column as text, a calculated field DATEPARSE("dd/MM/yyyy", [Order Date]) fixes it; every time-based view then uses that field. Check: the period runs from 03/01/2015 to 30/12/2018.' },
+          { label: 'Create calculated fields', text: 'Analysis \u2192 Create Calculated Field. Create the following eight fields and save each one under the name given in its comment line.', hasCode: true },
+          { label: 'One view per KPI', text: 'One metric per worksheet. Revenue over time: Order Date as year on Columns, Total Revenue on Rows, mark type Line. Revenue by category: Category on Rows, Total Revenue on Columns, sorted descending. Revenue by region: Region on Rows, Total Revenue on Columns, Share of Total Revenue on Label. Revenue by sub-category: Sub-Category on Rows, Total Revenue on Columns. Growth: year on Columns, Growth over the previous year on Rows \u2013 LOOKUP reads the prior value from the view, so the year has to be in the view.' },
+          { label: 'Assemble the views into a dashboard', text: 'Dashboard \u2192 New Dashboard, size set to Automatic. Drag the worksheets from the list on the left onto the canvas: metrics at the top, detail views below. The dropdown at the edge of a worksheet offers Use as Filter; a selection there filters the remaining views. Filter \u2192 Apply to Worksheets \u2192 Selected Worksheets narrows the scope.' },
+          { label: 'Share the workbook as .twbx', text: 'File \u2192 Save As \u2192 Packaged Workbook (.twbx). The twbx file holds workbook and data extract together, so recipients do not need train.csv. A .twb only stores the reference to the local path and stays empty on other machines. Tableau Public publishes every saved workbook on the web \u2013 confidential data belongs in Tableau Desktop with local storage.' },
+        ],
+        s4bLodNote: 'Share of Total Revenue and Share of the View return different numbers. { FIXED : SUM([Sales]) } ignores the dimension filters of the view and always returns 2,261,536.78; a context filter does apply to it. TOTAL(SUM([Sales])) refers to the rows of the current view and changes with every filter.',
+        runNoteTableau: 'Prerequisites: train.csv connected as a data source and Order Date typed as a date. Expected values without filters: total revenue 2,261,536.78 \u00B7 revenue West 710,219.68 \u00B7 share West 31.4% \u00B7 average order value 459.48. Share of the view, previous year revenue and growth are table calculations and depend on the fields in the view.',
+        s4bCheckTitle: 'Self-check',
+        s4bCheckItems: [
+          'The data source reports 9,800 rows and 18 columns. This file has no Profit column, so contribution margins cannot be derived from it.',
+          'Total revenue 2,261,536.78. Revenue West 710,219.68, share of total revenue 31.4%.',
+          'Annual revenue: 2015 479,856.21 \u00B7 2016 459,436.01 \u00B7 2017 600,192.55 \u00B7 2018 722,052.02. If the years end in 2012 or rows go missing, the date was read as MM/dd/yyyy.',
+          'Growth over the previous year: 2016 \u22124.3%, 2017 +30.6%, 2018 +20.3%. If the 2015 column shows a value, the table calculation runs in the wrong direction.',
+          'Strongest sub-categories: Phones 327,782.45 \u00B7 Chairs 322,822.73 \u00B7 Storage 219,343.39.',
+          '4,922 orders, 793 customers, average order value 459.48. Use COUNTD([Order ID]) rather than COUNT, otherwise Tableau counts the 9,800 line items.',
+        ],
+
         s5Title: 'Step 4 \u2013 Plotly Dash Step by Step',
         s5Intro: 'The following Dash app replicates the Power BI dashboard in Python. Save as app.py and start with python app.py.',
 
@@ -614,16 +663,18 @@
           'Which would you use for a client without Python knowledge?',
           'How would you deploy the Dash app to production?',
           'Which tool is better suited for non-technical stakeholders \u2013 and why?',
+          'Which calculation belongs in a Tableau LOD field, which one in a table calculation?',
         ],
-        s6CompareTitle: 'Comparison: Power BI vs. Plotly Dash',
-        s6CompareHeaders: ['Criterion', 'Power BI', 'Plotly Dash'],
+        s6CompareTitle: 'Comparison: Power BI, Tableau and Plotly Dash',
+        s6CompareHeaders: ['Criterion', 'Power BI', 'Tableau', 'Plotly Dash'],
         s6CompareRows: [
-          ['Setup', 'GUI, Drag & Drop', 'Python code'],
-          ['Learning Curve', 'Flat (no programming)', 'Steep (Python + Dash)'],
-          ['Flexibility', 'Limited to built-in visuals', 'Unlimited (any Python lib)'],
-          ['Deployment', 'Power BI Service (Cloud)', 'Docker / Render / Railway'],
-          ['Cost', 'Paid Pro licence per user/month \u2013 check the current price with Microsoft', 'Open Source (hosting costs)'],
-          ['Target Audience', 'Business analysts', 'Data engineers / scientists'],
+          ['Setup', 'GUI, Drag & Drop', 'GUI, Drag & Drop', 'Python code'],
+          ['Learning Curve', 'Flat (no programming)', 'Flat for views, own syntax for LOD and table calculations', 'Steep (Python + Dash)'],
+          ['Formula Language', 'DAX', 'Tableau calculations with LOD expressions and table calculations', 'pandas and Python'],
+          ['Flexibility', 'Limited to built-in visuals', 'Limited to the mark types, extendable via dashboard extensions', 'Unlimited (any Python lib)'],
+          ['Deployment', 'Power BI Service (Cloud)', 'Tableau Server, Tableau Cloud or sharing a .twbx file', 'Docker / Render / Railway'],
+          ['Cost', 'Paid Pro licence per user/month \u2013 check the current price with Microsoft', 'Paid Creator licence per user/month \u2013 check the current price with Tableau; Tableau Public is free and publishes the workbook', 'Open Source (hosting costs)'],
+          ['Target Audience', 'Business analysts', 'Business analysts focused on exploratory analysis', 'Data engineers / scientists'],
         ],
         s6DeployTitle: 'Deployment Options for Dash',
         s6DeployText: 'Gunicorn as WSGI server \u2192 Docker container \u2192 hosting on Render, Railway or own server with Traefik as reverse proxy. For prototypes: Streamlit Cloud (free, no Docker knowledge required).',
@@ -654,6 +705,7 @@
           'KPI hierarchies structure dashboards: strategic \u2192 operational \u2192 warning signals.',
           'Power BI suits business analysts (GUI, no code, quick start).',
           'Plotly Dash offers maximum flexibility for data scientists (Python, open source).',
+          'Tableau covers the same workflow with its own calculations: LOD expressions for view-independent values, table calculations for values relative to the view.',
           'Plotly renders to SVG/Canvas \u2013 CSS variables do not work there (use hex values).',
           'CRISP-DM (Shearer, 2000) provides the methodological framework for BI projects.',
           'Production deployment: Gunicorn \u2192 Docker \u2192 cloud hosting (Render, Railway).',
@@ -678,6 +730,14 @@
 
     };
 
+    const CODE_TABLEAU = {
+
+      de: "// Gesamtumsatz\nSUM([Sales])\n\n// Umsatz West - in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Anteil am Gesamtumsatz - LOD, unabhaengig von der Ansicht\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Anteil an der Ansicht - Tabellenberechnung\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Umsatz des Vorjahres - Jahr muss in der Ansicht liegen\nLOOKUP(SUM([Sales]), -1)\n\n// Wachstum gegenueber dem Vorjahr\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Umsatz je Kunde\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Durchschnittlicher Bestellwert\nSUM([Sales]) / COUNTD([Order ID])",
+
+      en: "// Total revenue\nSUM([Sales])\n\n// Revenue West - in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Share of total revenue - LOD, independent of the view\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Share of the view - table calculation\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Previous year revenue - the year must be in the view\nLOOKUP(SUM([Sales]), -1)\n\n// Growth over the previous year\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Revenue per customer\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Average order value\nSUM([Sales]) / COUNTD([Order ID])",
+
+    };
+
     const CODE_DASH = {
 
       de: "# app.py – Superstore Retail Analytics Dashboard\nimport dash\nfrom dash import dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = dash.Dash(__name__)\n\n# Ein Dashboard, das auf dem Handy bricht, ist kein fertiges Dashboard.\n# Feste Spaltenzahlen (repeat(4, 1fr)) sprengen jedes schmale Display,\n# deshalb liegt das Raster in CSS mit Media Queries statt in Inline-Styles.\napp.index_string = \"\"\"<!DOCTYPE html>\n<html>\n  <head>\n    {%metas%}<title>{%title%}</title>{%favicon%}{%css%}\n    <style>\n      *, *::before, *::after { box-sizing: border-box; }\n      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,\n             'Segoe UI', sans-serif; }\n      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }\n      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }\n      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }\n      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;\n                    padding: 1rem 2rem; background: #f8fafc; }\n      /* min-width: 0 ist noetig, sonst schrumpfen Flex-Kinder nicht unter\n         ihre Inhaltsbreite - derselbe Fallstrick wie bei den Lab-Seiten. */\n      .filter-row > div { flex: 1 1 240px; min-width: 0; }\n      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }\n      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }\n                                   .chart-grid { grid-template-columns: 1fr 1fr; } }\n      /* Plotly zeichnet in SVG und richtet sich nicht von allein nach dem\n         Container - ohne diese Regel ragen die Diagramme heraus. */\n      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }\n    </style>\n  </head>\n  <body>{%app_entry%}<footer>{%config%}{%scripts%}{%renderer%}</footer></body>\n</html>\"\"\"\n\n# Daten laden und vorbereiten\ndf = pd.read_csv('train.csv', encoding='latin-1')\n# TT/MM/JJJJ -> dayfirst=True zwingend\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()\n\n# Farben als Python-Konstanten (NICHT CSS-Variablen!)\n# Plotly rendert zu SVG/Canvas, nicht ins DOM –\n# var(--col-primary) funktioniert dort nicht.\nCOL_PRIMARY = '#1E3A8A'\nCOL_ACCENT  = '#2563EB'\n\napp.layout = html.Div([\n    # Header\n    html.Div([\n        html.H1('Superstore Analytics Dashboard',\n                style={'margin': '0', 'fontSize': '1.5rem'}),\n    ], style={'background': COL_PRIMARY, 'color': 'white',\n              'padding': '1rem 2rem'}),\n\n    # Filter\n    html.Div([\n        html.Div([\n            html.Label('Segment:'),\n            dcc.Dropdown(\n                id='segment-filter',\n                options=[{'label': s, 'value': s}\n                         for s in df['Segment'].unique()],\n                value=df['Segment'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n        html.Div([\n            html.Label('Region:'),\n            dcc.Dropdown(\n                id='region-filter',\n                options=[{'label': r, 'value': r}\n                         for r in df['Region'].unique()],\n                value=df['Region'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n    ], className='filter-row'),\n\n    # KPI Cards\n    html.Div(id='kpi-cards', className='kpi-grid'),\n\n    # Charts\n    html.Div([\n        dcc.Graph(id='trend-chart', config={'responsive': True}),\n        dcc.Graph(id='category-chart', config={'responsive': True}),\n    ], className='chart-grid'),\n\n    dcc.Graph(id='scatter-chart', config={'responsive': True},\n              style={'padding': '0 2rem 2rem'}),\n])\n\ndef kpi_card(title, value, color=COL_PRIMARY):\n    return html.Div([\n        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',\n                               'color': color}),\n        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',\n                               'textTransform': 'uppercase',\n                               'letterSpacing': '0.08em'}),\n    ], style={'background': 'white', 'padding': '1.25rem',\n              'border': '1px solid #e5e7eb',\n              'borderLeft': f'4px solid {color}'})\n\n@app.callback(\n    Output('kpi-cards', 'children'),\n    Output('trend-chart', 'figure'),\n    Output('category-chart', 'figure'),\n    Output('scatter-chart', 'figure'),\n    Input('segment-filter', 'value'),\n    Input('region-filter', 'value')\n)\ndef update_dashboard(segments, regions):\n    fdf = df[df['Segment'].isin(segments) &\n             df['Region'].isin(regions)]\n\n    # KPI Cards\n    total_sales = fdf['Sales'].sum()\n    orders = fdf['Order ID'].nunique()\n    positions = len(fdf)\n    avg_order = total_sales / orders if orders else 0\n\n    cards = [\n        kpi_card('Umsatz', f'${total_sales:,.0f}'),\n        kpi_card('Bestellungen', f'{orders:,}'),\n        kpi_card('Ø Bestellwert', f'${avg_order:,.0f}', COL_ACCENT),\n        kpi_card('Positionen', f'{positions:,}'),\n    ]\n\n    # Trend\n    trend = fdf.groupby('Month')['Sales'].sum().reset_index()\n    fig1 = px.line(trend, x='Month', y='Sales',\n                   title='Umsatz-Trend (monatlich)',\n                   color_discrete_sequence=[COL_ACCENT])\n    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Kategorie\n    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()\n    fig2 = px.bar(by_cat, x='Category', y='Sales',\n                  title='Umsatz nach Kategorie',\n                  color_discrete_sequence=[COL_PRIMARY])\n    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Scatter\n    by_sub = fdf.groupby('Sub-Category').agg(\n        Sales=('Sales','sum'), Positionen=('Order ID','count')\n    ).reset_index()\n    fig3 = px.scatter(by_sub, x='Positionen', y='Sales',\n                      text='Sub-Category', size='Sales',\n                      title='Umsatz vs. Bestellpositionen nach Sub-Kategorie',\n                      color_discrete_sequence=[COL_ACCENT])\n    fig3.update_traces(textposition='top center')\n    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    return cards, fig1, fig2, fig3\n\nif __name__ == '__main__':\n    app.run(debug=True)",
@@ -698,7 +758,7 @@
       };
 
       useEffect(() => {
-        const sections = ['ueberblick', 'datenerkundung', 'kpi-hierarchie', 'powerbi-steps', 'dash-steps', 'reflexion', 'ressourcen', 'quiz', 'zusammenfassung'];
+        const sections = ['ueberblick', 'datenerkundung', 'kpi-hierarchie', 'powerbi-steps', 'tableau', 'dash-steps', 'reflexion', 'ressourcen', 'quiz', 'zusammenfassung'];
         const handler = () => {
           for (let i = sections.length - 1; i >= 0; i--) {
             const el = document.getElementById(sections[i]);
@@ -896,6 +956,34 @@
               ))}
             </section>
 
+            {/* ── Section 4b: Tableau Steps ── */}
+            <section id="tableau" className="section-block">
+              <h2>{tx.s4bTitle}</h2>
+              <div className="bauhaus-accent-line"></div>
+              <p>{tx.s4bIntro}</p>
+              {tx.s4bSteps.map((step, i) => (
+                <div key={i} className="step-block">
+                  <span className="step-number">{i + 1}</span>
+                  <div className="step-content">
+                    <h4 style={{ marginTop: 0 }}>{step.label}</h4>
+                    <p style={{ margin: '0.25rem 0' }}>{step.text}</p>
+                    {step.hasCode && (
+                      <React.Fragment>
+                        <CodeBlock code={CODE_TABLEAU[lang]} lang={lang} kind="run" note={tx.runNoteTableau} />
+                        <p style={{ fontSize: '0.85rem', color: '#4B5563' }}>{tx.s4bLodNote}</p>
+                      </React.Fragment>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div className="challenge-box">
+                <h4 style={{ marginTop: 0 }}>{tx.s4bCheckTitle}</h4>
+                <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
+                  {tx.s4bCheckItems.map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+            </section>
+
             {/* ── Section 5: Plotly Dash ── */}
             <section id="dash-steps" className="section-block">
               <h2>{tx.s5Title}</h2>
@@ -935,9 +1023,11 @@
                 <tbody>
                   {tx.s6CompareRows.map((row, i) => (
                     <tr key={i}>
-                      <td style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}>{row[0]}</td>
-                      <td>{row[1]}</td>
-                      <td>{row[2]}</td>
+                      {row.map((cell, j) => (
+                        j === 0
+                          ? <td key={j} style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}>{cell}</td>
+                          : <td key={j}>{cell}</td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
