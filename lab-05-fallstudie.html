@@ -465,6 +465,9 @@
           { label: 'Slicer & Formatierung', text: 'Slicer f\u00FCr: Jahr, Region, Kategorie. Einheitliche Farben, Datenbeschriftungen aktivieren.' },
         ],
 
+        twbxTitle: 'Fertige Arbeitsmappe herunterladen',
+        twbxText: 'BINT_Tableau_Uebung.twbx enthält train.csv und alle zehn berechneten Felder aus diesem Abschnitt. Die Datei ist gepackt – sie läuft ohne weitere Verbindung in Tableau Desktop und in Tableau Public. Zum Nachbauen erst selbst rechnen, dann vergleichen.',
+        twbxBtn: 'BINT_Tableau_Uebung.twbx',
         s4bTitle: 'Schritt 3b \u2013 Tableau Step by Step',
         s4bIntro: 'Dieselbe Fallstudie in Tableau Desktop oder Tableau Public. Die berechneten Felder entsprechen den DAX-Measures aus Schritt\u00A03.',
         s4bSteps: [
@@ -630,6 +633,9 @@
           { label: 'Slicers & Formatting', text: 'Slicers for: Year, Region, Category. Consistent colours, enable data labels.' },
         ],
 
+        twbxTitle: 'Download the finished workbook',
+        twbxText: 'BINT_Tableau_Uebung.twbx ships train.csv together with all ten calculated fields from this section. It is a packaged workbook – it opens in Tableau Desktop and Tableau Public without any further connection. Build your own version first, then compare.',
+        twbxBtn: 'BINT_Tableau_Uebung.twbx',
         s4bTitle: 'Step 3b \u2013 Tableau Step by Step',
         s4bIntro: 'The same case study in Tableau Desktop or Tableau Public. The calculated fields match the DAX measures from step\u00A03.',
         s4bSteps: [
@@ -961,6 +967,15 @@
               <h2>{tx.s4bTitle}</h2>
               <div className="bauhaus-accent-line"></div>
               <p>{tx.s4bIntro}</p>
+              <div className="tip-box" style={{ marginTop: '1.25rem' }}>
+                <h4 style={{ marginTop: 0 }}>{tx.twbxTitle}</h4>
+                <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem' }}>{tx.twbxText}</p>
+              <a href="starter/BINT_Tableau_Uebung.twbx" download
+                 style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none',
+                          padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
+                {tx.twbxBtn}
+              </a>
+              </div>
               {tx.s4bSteps.map((step, i) => (
                 <div key={i} className="step-block">
                   <span className="step-number">{i + 1}</span>
