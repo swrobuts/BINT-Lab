@@ -9,3 +9,7 @@ starter/*/train.csv
 Quizfragen_BasisVorlesung/
 bi-quiz/
 .playwright-mcp/
+
+# Tableau-Wiederherstellungs- und Sperrdateien
+.~*.twbr
+*.twbr
