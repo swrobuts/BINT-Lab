@@ -190,18 +190,23 @@ print(f"Period:              {df['Order Date'].min():%d/%m/%Y} to {df['Order Dat
     <div class="accent-line"></div>
   <ol class="schritte">
     <li>
-      <!-- SCREENSHOT: powerbi-get-data · Start → Daten abrufen → Text/CSV → train.csv -->
-      <strong><span lang="de">CSV importieren</span><span lang="en">Import CSV</span></strong>
+    <strong><span lang="de">CSV importieren</span><span lang="en">Import CSV</span></strong>
       <span><span lang="de">Start → Daten abrufen → Text/CSV → train.csv auswählen → Laden. Danach die Tabelle im Feldbereich von „train“ in „Orders“ umbenennen – die DAX-Measures in Schritt 3 referenzieren Orders. Ebenfalls wichtig: Order Date und Ship Date im Power Query Editor als Datum (TT/MM/JJJJ) typisieren.</span><span lang="en">Home → Get Data → Text/CSV → select train.csv → Load. Then rename the table in the Fields pane from “train” to “Orders” – the DAX measures in step 3 reference Orders. Also important: set Order Date and Ship Date to Date (DD/MM/YYYY) in the Power Query Editor.</span></span>
+<figure class="abbildung">
+      <img src="assets/img/powerbi-get-data.png" alt="Dialog „Neue Quelle“ in Power BI Desktop mit Kacheln für Excel-Arbeitsmappe, Text/CSV, XML, JSON, SQL Server und weitere Konnektoren" data-alt-en="The “New source” dialog in Power BI Desktop with tiles for Excel workbook, Text/CSV, XML, JSON, SQL Server and further connectors" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Power BI Desktop: Start → Daten abrufen → Weitere … öffnet die Quellenauswahl mit den Konnektoren.</span><span lang="en">Power BI Desktop: Home → Get Data → More … opens the source selection with the connectors.</span></figcaption>
+    </figure>
     </li>
     <li>
-      <!-- SCREENSHOT: powerbi-power-query-editor · Power Query Editor, Order Date und Ship Date als Datum (TT/MM/JJJJ) -->
-      <strong><span lang="de">Power Query – Datentransformation</span><span lang="en">Power Query – Data Transformation</span></strong>
-      <span><span lang="de">Sicherstellen: Order Date als Datum/Uhrzeit, Spalten prüfen auf Nullwerte, Datentypen kontrollieren.</span><span lang="en">Ensure: Order Date is Date/Time type, check columns for null values, verify data types.</span></span>
+    <strong><span lang="de">Power Query – Datentransformation</span><span lang="en">Power Query – Data Transformation</span></strong>
+      <span><span lang="de">Sicherstellen: Order Date als Datum, Spalten prüfen auf Nullwerte, Datentypen kontrollieren. Stolperfalle bei deutscher Oberfläche: Die automatische Typerkennung liest die Spalte Sales mit deutschem Gebietsschema, aus 957.5775 wird die Ganzzahl 9575775 und der Gesamtumsatz landet bei rund 1 Mrd. statt 2.261.536,78. Abhilfe: den Schritt „Geänderter Spaltentyp“ löschen, dann Sales über Typ ändern → Mit Gebietsschema als Dezimalzahl mit Gebietsschema Englisch (USA) typisieren und Order Date und Ship Date danach als Datum setzen.</span><span lang="en">Ensure: Order Date is Date type, check columns for null values, verify data types. Pitfall with a German interface: automatic type detection reads the Sales column with the German locale, 957.5775 becomes the whole number 9575775 and total revenue ends up around 1 billion instead of 2,261,536.78. Fix: delete the “Changed Type” step, then set Sales via Change Type → Using Locale to Decimal Number with locale English (United States), and set Order Date and Ship Date to Date afterwards.</span></span>
+<figure class="abbildung">
+      <img src="assets/img/powerbi-power-query-editor.png" alt="Power Query Editor mit der Tabelle Orders, markierter Spalte Order Date und geöffnetem Datentyp-Dropdown mit Dezimalzahl, Ganze Zahl, Datum und weiteren Typen" data-alt-en="Power Query Editor with the Orders table, the selected Order Date column and the open data type dropdown listing decimal number, whole number, date and further types" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Power Query Editor, Registerkarte Transformieren: Für die markierte Spalte Order Date ist der Datentyp Datum gewählt; das Dropdown zeigt die verfügbaren Typen.</span><span lang="en">Power Query Editor, Transform tab: the selected column Order Date has the data type Date; the dropdown shows the available types.</span></figcaption>
+    </figure>
     </li>
     <li>
-      <!-- SCREENSHOT: powerbi-new-measure · Modellierung → Neues Measure, Formelleiste mit Umsatz = SUM(Orders[Sales]) -->
-      <strong><span lang="de">Measures erstellen</span><span lang="en">Create Measures</span></strong>
+    <strong><span lang="de">Measures erstellen</span><span lang="en">Create Measures</span></strong>
       <span><span lang="de">Im Datenmodell unter „New Measure“ die folgenden DAX-Ausdrücke anlegen:</span><span lang="en">In the data model under “New Measure”, create the following DAX expressions:</span></span>
 <div class="codeblock" data-kind="run" data-name="CODE_MEASURES" data-title="measures.dax">
 <pre class="code-block" lang="de">-- 1. Kalendertabelle anlegen (Modellierung -&gt; Neue Tabelle)
@@ -304,11 +309,18 @@ DIVIDE([Revenue] - [Revenue_PY], [Revenue_PY], 0) * 100
 -- the full version of the Superstore dataset.</pre>
 <p class="code-note"><span lang="de">Voraussetzung: train.csv ist importiert und die Tabelle in Orders umbenannt (Schritt 1). Sollwerte: Umsatz 2.261.536,78 · Bestellungen 4.922 · Positionen 9.800 · Ø Bestellwert 459,48 · YoY_Wachstum 2018 gegenüber 2017 rund 20,3 %.</span><span lang="en">Prerequisites: train.csv imported and the table renamed to Orders (step 1). Expected values: revenue 2,261,536.78 · orders 4,922 · line items 9,800 · average order value 459.48 · YoY growth 2018 over 2017 about 20.3%.</span></p>
 </div>
+<figure class="abbildung">
+      <img src="assets/img/powerbi-new-measure.png" alt="Power BI Desktop mit Measuretools und der Formelleiste Umsatz = SUM(Orders[Sales]); rechts der Feldbereich mit den Measures Bestellungen, Ø Bestellwert, Positionen und Umsatz" data-alt-en="Power BI Desktop with measure tools and the formula bar Umsatz = SUM(Orders[Sales]); on the right the field pane with the measures Bestellungen, Ø Bestellwert, Positionen and Umsatz" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Neues Measure: Die Formelleiste zeigt Umsatz = SUM(Orders[Sales]); das Measure erscheint danach im Feldbereich der Tabelle Orders.</span><span lang="en">New measure: the formula bar shows Umsatz = SUM(Orders[Sales]); the measure then appears in the field pane of the Orders table.</span></figcaption>
+    </figure>
     </li>
     <li>
-      <!-- SCREENSHOT: powerbi-dashboard · Fertiges Dashboard: vier KPI-Karten, Trendlinie, Kategorie-Balken, Regionskarte, Streudiagramm -->
-      <strong><span lang="de">Dashboard aufbauen</span><span lang="en">Build Dashboard</span></strong>
-      <span><span lang="de">4 KPI-Cards oben (Umsatz, Bestellungen, Ø Bestellwert, Positionen), Umsatz-Trend-Linie (monatlich), Kategorie-Balkendiagramm, Region-Karte, Streudiagramm Umsatz vs. Bestellpositionen je Sub-Kategorie.</span><span lang="en">4 KPI cards at the top (Revenue, Orders, Avg. Order Value, Line Items), Revenue trend line (monthly), Category bar chart, Region map, scatter of revenue vs. line items per sub-category.</span></span>
+    <strong><span lang="de">Dashboard aufbauen</span><span lang="en">Build Dashboard</span></strong>
+      <span><span lang="de">4 KPI-Cards oben (Umsatz, Bestellungen, Ø Bestellwert, Positionen), Umsatz-Trend-Linie (monatlich), Kategorie-Balkendiagramm, Region-Karte (Kartenvisuals müssen unter Datei → Optionen → Sicherheit erlaubt sein, sonst ein Treemap je Region), Streudiagramm Umsatz vs. Bestellpositionen je Sub-Kategorie.</span><span lang="en">4 KPI cards at the top (Revenue, Orders, Avg. Order Value, Line Items), Revenue trend line (monthly), Category bar chart, region map (map visuals must be allowed under File → Options → Security, otherwise a treemap per region), scatter of revenue vs. line items per sub-category.</span></span>
+<figure class="abbildung">
+      <img src="assets/img/powerbi-dashboard.png" alt="Power-BI-Bericht mit vier Kennzahlkarten, einer Linie Umsatz nach Jahr und Monat, einem Balkendiagramm Umsatz nach Category und einem Streudiagramm Positionen und Umsatz nach Sub-Category" data-alt-en="Power BI report with four KPI cards, a line chart of revenue by year and month, a bar chart of revenue by category and a scatter plot of line items and revenue by sub-category" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Das fertige Power-BI-Dashboard: vier Kennzahlkarten (2,26 Mio. Umsatz, 4.922 Bestellungen, 459,48 Ø Bestellwert, 9.800 Positionen), Umsatzverlauf je Monat, Balken je Kategorie und Streudiagramm je Sub-Kategorie.</span><span lang="en">The finished Power BI dashboard: four KPI cards (2.26M revenue, 4,922 orders, 459.48 average order value, 9,800 line items), monthly revenue trend, bars per category and scatter plot per sub-category.</span></figcaption>
+    </figure>
     </li>
     <li>
       <strong><span lang="de">Slicer &amp; Formatierung</span><span lang="en">Slicers &amp; Formatting</span></strong>
@@ -330,17 +342,19 @@ DIVIDE([Revenue] - [Revenue_PY], [Revenue_PY], 0) * 100
     </div>
   <ol class="schritte">
     <li>
-      <!-- SCREENSHOT: tableau-data-source · Datenquellenseite nach dem Verbinden von train.csv, Tabelle im Canvas, Vorschau darunter -->
-      <strong><span lang="de">Verbindung zur CSV herstellen</span><span lang="en">Connect to the CSV</span></strong>
+    <strong><span lang="de">Verbindung zur CSV herstellen</span><span lang="en">Connect to the CSV</span></strong>
       <span><span lang="de">Startseite → Verbinden → Zu einer Datei → Textdatei → train.csv auswählen. Tableau öffnet die Datenquellenseite mit der Tabelle im Canvas. Der Reiter Blatt 1 unten links wechselt zum ersten Arbeitsblatt. Encoding auf UTF-8 belassen; erscheinen in Customer Name verstellte Zeichen, in der Datenquelle auf Windows-1252 umstellen.</span><span lang="en">Start page → Connect → To a File → Text file → select train.csv. Tableau opens the data source page with the table on the canvas. The Sheet 1 tab in the bottom left switches to the first worksheet. Leave the encoding at UTF-8; if Customer Name shows garbled characters, switch the data source to Windows-1252.</span></span>
+<figure class="abbildung">
+      <img src="assets/img/tableau-data-source.png" alt="Tableau-Datenquellenseite mit der Verbindung train, der Tabelle train.csv im Canvas, der Feldliste mit Typen und einer Datenvorschau" data-alt-en="Tableau data source page with the connection train, the table train.csv in the canvas, the field list with types and a data preview" width="1800" height="1163" loading="lazy" />
+      <figcaption><span lang="de">Datenquellenseite in Tableau Desktop nach dem Verbinden von train.csv: Tabelle im Canvas, darunter Felder mit Datentyp und die Vorschau der 9.800 Zeilen.</span><span lang="en">Data source page in Tableau Desktop after connecting train.csv: table in the canvas, fields with data type below and the preview of the 9,800 rows.</span></figcaption>
+    </figure>
     </li>
     <li>
       <strong><span lang="de">Datumsspalte prüfen</span><span lang="en">Check the date column</span></strong>
       <span><span lang="de">In der Datenquellenvorschau das Typsymbol über Order Date prüfen. Ein Kalendersymbol steht für Datum, Abc für Text. Das Bestelldatum steht als 08/11/2017, also Tag zuerst. Liest Tableau die Spalte als Text, hilft ein berechnetes Feld DATEPARSE("dd/MM/yyyy", [Order Date]); alle zeitbezogenen Ansichten verwenden dann dieses Feld. Kontrolle: der Zeitraum reicht vom 03.01.2015 bis zum 30.12.2018.</span><span lang="en">In the data source preview, check the type icon above Order Date. A calendar icon means date, Abc means text. The order date is stored as 08/11/2017, day first. If Tableau reads the column as text, a calculated field DATEPARSE("dd/MM/yyyy", [Order Date]) fixes it; every time-based view then uses that field. Check: the period runs from 03/01/2015 to 30/12/2018.</span></span>
     </li>
     <li>
-      <!-- SCREENSHOT: tableau-calculated-field · Analyse → Berechnetes Feld erstellen, Dialog mit SUM([Sales]) / MIN({ FIXED : SUM([Sales]) }) -->
-      <strong><span lang="de">Berechnete Felder anlegen</span><span lang="en">Create calculated fields</span></strong>
+    <strong><span lang="de">Berechnete Felder anlegen</span><span lang="en">Create calculated fields</span></strong>
       <span><span lang="de">Analyse → Berechnetes Feld erstellen. Die folgenden Felder anlegen und unter dem Namen aus der jeweiligen Kommentarzeile speichern.</span><span lang="en">Analysis → Create Calculated Field. Create the following fields and save each one under the name given in its comment line.</span></span>
 <div class="codeblock" data-kind="run" data-name="CODE_TABLEAU">
 <pre class="code-block" lang="de">// Gesamtumsatz
@@ -394,15 +408,22 @@ SUM([Sales]) / COUNTD([Order ID])</pre>
       <div class="info-box">
         <p><span lang="de">Anteil am Gesamtumsatz und Anteil an der Ansicht liefern verschiedene Werte. { FIXED : SUM([Sales]) } ignoriert die Dimensionsfilter der Ansicht und ergibt immer 2.261.536,78; ein Kontextfilter wirkt dagegen auch auf diesen Ausdruck. TOTAL(SUM([Sales])) bezieht sich auf die Zeilen der aktuellen Ansicht und ändert sich mit jedem Filter.</span><span lang="en">Share of Total Revenue and Share of the View return different numbers. { FIXED : SUM([Sales]) } ignores the dimension filters of the view and always returns 2,261,536.78; a context filter does apply to it. TOTAL(SUM([Sales])) refers to the rows of the current view and changes with every filter.</span></p>
       </div>
+<figure class="abbildung">
+      <img src="assets/img/tableau-calculated-field.png" alt="Dialog „Berechnetes Feld“ in Tableau mit dem Namen Anteil am Gesamtumsatz und der Formel SUM([Sales]) / MIN({ FIXED : SUM([Sales]) }); Statuszeile „Die Berechnung ist gültig“" data-alt-en="The calculated field dialog in Tableau with the name Anteil am Gesamtumsatz and the formula SUM([Sales]) / MIN({ FIXED : SUM([Sales]) }); status line “The calculation is valid”" width="1600" height="1008" loading="lazy" />
+      <figcaption><span lang="de">Analyse → Berechnetes Feld erstellen: Name und Formel, hier der LOD-Ausdruck für den Anteil am Gesamtumsatz. Tableau meldet unten, ob die Berechnung gültig ist.</span><span lang="en">Analysis → Create Calculated Field: name and formula, here the LOD expression for the share of total revenue. Tableau reports at the bottom whether the calculation is valid.</span></figcaption>
+    </figure>
     </li>
     <li>
       <strong><span lang="de">Eine Ansicht je KPI</span><span lang="en">One view per KPI</span></strong>
       <span><span lang="de">Pro Arbeitsblatt eine Kennzahl. Umsatzverlauf: Order Date als Jahr in Spalten, Gesamtumsatz in Zeilen, Markierungstyp Linie. Umsatz je Kategorie: Category in Zeilen, Gesamtumsatz in Spalten, absteigend sortiert. Umsatz je Region: Region in Zeilen, Gesamtumsatz in Spalten, Anteil am Gesamtumsatz auf Beschriftung. Umsatz je Unterkategorie: Sub-Category in Zeilen, Gesamtumsatz in Spalten. Wachstum: Jahr in Spalten, Wachstum gegenüber dem Vorjahr in Zeilen – LOOKUP liest den Vorjahreswert aus der Ansicht, das Jahr muss daher in der Ansicht liegen.</span><span lang="en">One metric per worksheet. Revenue over time: Order Date as year on Columns, Total Revenue on Rows, mark type Line. Revenue by category: Category on Rows, Total Revenue on Columns, sorted descending. Revenue by region: Region on Rows, Total Revenue on Columns, Share of Total Revenue on Label. Revenue by sub-category: Sub-Category on Rows, Total Revenue on Columns. Growth: year on Columns, Growth over the previous year on Rows – LOOKUP reads the prior value from the view, so the year has to be in the view.</span></span>
     </li>
     <li>
-      <!-- SCREENSHOT: tableau-dashboard · Fertiges Tableau-Dashboard: Kennzahlen oben, Detailansichten darunter, „Als Filter verwenden“ aktiv -->
-      <strong><span lang="de">Ansichten zu einem Dashboard zusammensetzen</span><span lang="en">Assemble the views into a dashboard</span></strong>
+    <strong><span lang="de">Ansichten zu einem Dashboard zusammensetzen</span><span lang="en">Assemble the views into a dashboard</span></strong>
       <span><span lang="de">Dashboard → Neues Dashboard, Größe auf Automatisch. Die Arbeitsblätter aus der linken Liste auf die Fläche ziehen: Kennzahlen oben, Detailansichten darunter. Am Rand eines Arbeitsblatts öffnet das Dropdown den Eintrag Als Filter verwenden; eine Auswahl dort filtert die übrigen Ansichten. Der Wirkungsbereich lässt sich über Filter → Anwenden auf → Ausgewählte Arbeitsblätter einschränken.</span><span lang="en">Dashboard → New Dashboard, size set to Automatic. Drag the worksheets from the list on the left onto the canvas: metrics at the top, detail views below. The dropdown at the edge of a worksheet offers Use as Filter; a selection there filters the remaining views. Filter → Apply to Worksheets → Selected Worksheets narrows the scope.</span></span>
+<figure class="abbildung">
+      <img src="assets/img/tableau-dashboard.png" alt="Tableau-Dashboard „Superstore Dashboard“ mit vier Arbeitsblättern: Umsatzverlauf als Linie, Umsatz je Kategorie, Umsatz je Region und Umsatz je Unterkategorie als Balken" data-alt-en="Tableau dashboard “Superstore Dashboard” with four worksheets: revenue trend as a line, revenue per category, per region and per sub-category as bars" width="1800" height="1163" loading="lazy" />
+      <figcaption><span lang="de">Tableau-Dashboard mit Größe Automatisch: Umsatzverlauf oben, darunter Umsatz je Kategorie, je Region und je Unterkategorie; „Als Filter verwenden“ ist auf dem Kategorie-Blatt aktiv.</span><span lang="en">Tableau dashboard with automatic size: revenue trend on top, below revenue per category, per region and per sub-category; “Use as filter” is active on the category sheet.</span></figcaption>
+    </figure>
     </li>
     <li>
       <strong><span lang="de">Arbeitsmappe als .twbx weitergeben</span><span lang="en">Share the workbook as .twbx</span></strong>

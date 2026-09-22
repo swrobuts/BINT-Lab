@@ -378,7 +378,10 @@ docker compose logs -f metabase
 # Access: http://localhost:3000
 # First start: the setup wizard opens</pre>
     </div>
-    <!-- SCREENSHOT: metabase-setup-wizard · http://localhost:3000 nach dem ersten Start · Einrichtungsassistent von Metabase -->
+    <figure class="abbildung">
+      <img src="assets/img/metabase-setup-wizard.png" alt="Einrichtungsassistent von Metabase im Browser mit der Begrüßung und der Sprachauswahl" data-alt-en="Metabase setup wizard in the browser with the welcome screen and the language selection" width="1920" height="1200" loading="lazy" />
+      <figcaption><span lang="de">http://localhost:3000 nach dem ersten Start: Der Einrichtungsassistent von Metabase fragt Sprache, Admin-Konto und Datenquelle ab.</span><span lang="en">http://localhost:3000 after the first start: the Metabase setup wizard asks for language, admin account and data source.</span></figcaption>
+    </figure>
 
     <h3><span lang="de">Kursdatensatz in PostgreSQL importieren</span><span lang="en">Import the course dataset into PostgreSQL</span></h3>
     <p><span lang="de">Metabase braucht Daten, an die es sich anschließen kann. Der Stack bringt dafür einen zweiten PostgreSQL-Dienst mit: warehouse. Die Trennung ist Absicht – postgres hält Metabases eigene Metadaten (Fragen, Dashboards, Nutzer), warehouse hält die Analysedaten. Analysedaten gehören nicht in die Metadatenbank des Werkzeugs.</span><span lang="en">Metabase needs data to connect to. The stack ships a second PostgreSQL service for that: warehouse. The split is deliberate - postgres holds Metabase’s own metadata (questions, dashboards, users), warehouse holds the analytical data. Analytical data does not belong in the tool’s metadata database.</span></p>
@@ -579,7 +582,10 @@ docker compose down -v    # volumes too - the import then runs again</pre>
     <div class="tip-box">
       <p><strong><span lang="de">Datenbank in Metabase eintragen</span><span lang="en">Register the database in Metabase</span>:</strong> <span lang="de">Einstellungen → Datenbanken → Datenbank hinzufügen: Typ PostgreSQL, Host warehouse, Port 5432, Datenbank superstore, Benutzer superstore, Passwort aus der .env. Host ist warehouse, nicht localhost: Metabase läuft in einem eigenen Container, dort wäre localhost Metabase selbst. Im Compose-Netzwerk erreichen sich die Dienste über ihren Dienstnamen und den Container-Port 5432 – nicht über den nach außen veröffentlichten Port 5433. Vom eigenen Rechner aus gilt umgekehrt localhost:5433.</span><span lang="en">Settings → Databases → Add database: type PostgreSQL, host warehouse, port 5432, database superstore, user superstore, password from .env. The host is warehouse, not localhost: Metabase runs in its own container, where localhost would be Metabase itself. Inside the compose network the services reach each other by service name and container port 5432 - not via the published port 5433. From your own machine it is the other way round: localhost:5433.</span></p>
     </div>
-    <!-- SCREENSHOT: metabase-add-database · Einstellungen → Datenbanken → Datenbank hinzufügen · Typ PostgreSQL, Host warehouse, Port 5432, Datenbank superstore -->
+    <figure class="abbildung">
+      <img src="assets/img/metabase-add-database.png" alt="Formular „Datenbank hinzufügen“ in Metabase mit Datenbanktyp PostgreSQL, Anzeigename Superstore, Host warehouse, Port 5432, Datenbankname superstore und Benutzername superstore" data-alt-en="The “Add database” form in Metabase with database type PostgreSQL, display name Superstore, host warehouse, port 5432, database name superstore and user name superstore" width="1920" height="1350" loading="lazy" />
+      <figcaption><span lang="de">Einstellungen → Datenbanken → Datenbank hinzufügen: Typ PostgreSQL, Host warehouse, Port 5432, Datenbank superstore, Benutzer superstore.</span><span lang="en">Settings → Databases → Add database: type PostgreSQL, host warehouse, port 5432, database superstore, user superstore.</span></figcaption>
+    </figure>
     <p><span lang="de">Zeitbedarf: 10-20 Minuten, bis der Stack steht (davon der größte Teil Image-Download), danach 45-90 Minuten für Onboarding und Dashboards.</span><span lang="en">Time needed: 10-20 minutes until the stack is up (mostly image download), then 45-90 minutes for onboarding and dashboards.</span></p>
     <div class="challenge-box">
       <h4><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h4>
@@ -697,7 +703,10 @@ docker compose down -v    # volumes too - the import then runs again</pre>
         <li><span lang="de">Ergebnis: Screenshot + kurze Reflexion zu Vor-/Nachteilen vs. Power BI</span><span lang="en">Deliverable: Screenshot + brief reflection on pros/cons vs. Power BI</span></li>
       </ol>
     </div>
-    <!-- SCREENSHOT: metabase-dashboard-superstore · Fertiges Metabase-Dashboard mit Umsatzentwicklung, Kategorien und Regionen -->
+    <figure class="abbildung">
+      <img src="assets/img/metabase-dashboard-superstore.png" alt="Metabase-Dashboard „Superstore – Self-Hosted BI“ mit den Kennzahlen 2.3M Gesamtumsatz und 4.922 Bestellungen, Balken je Region, Linie je Monat und Balken je Sub-Kategorie" data-alt-en="Metabase dashboard “Superstore – Self-Hosted BI” with the numbers 2.3M total revenue and 4,922 orders, bars per region, a line per month and bars per sub-category" width="1920" height="1290" loading="lazy" />
+      <figcaption><span lang="de">Ein Metabase-Dashboard aus dem warehouse-Container: Gesamtumsatz und Bestellungen als Kennzahlen, Umsatz je Region, Umsatzentwicklung je Monat und Umsatz je Sub-Kategorie.</span><span lang="en">A Metabase dashboard from the warehouse container: total revenue and orders as numbers, revenue per region, monthly revenue trend and revenue per sub-category.</span></figcaption>
+    </figure>
   </section>
 
   <section class="section-block" id="youtube">

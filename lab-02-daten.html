@@ -86,8 +86,14 @@
     <div class="info-box">
       <p><span lang="de">In Power BI öffnet der Dialog „Daten abrufen“ (Start → Daten abrufen) eine Quellen-Auswahl mit über 100 Konnektoren. Nach der Verbindung öffnet sich der Power Query Editor zur Vorschau und Transformation.</span><span lang="en">In Power BI, the "Get Data" dialog (Home → Get Data) opens a source selection with over 100 connectors. After connecting, the Power Query Editor opens for preview and transformation.</span></p>
     </div>
-    <!-- SCREENSHOT: powerbi-get-data · Start → Daten abrufen → Quellenauswahl (Text/CSV, Excel, Web) -->
-    <!-- SCREENSHOT: powerbi-power-query-preview · Power Query Editor nach dem Verbinden: Vorschau der geladenen Tabelle -->
+    <figure class="abbildung">
+      <img src="assets/img/powerbi-get-data.png" alt="Dialog „Neue Quelle“ in Power BI Desktop mit Kacheln für Excel-Arbeitsmappe, Text/CSV, XML, JSON, SQL Server und weitere Konnektoren" data-alt-en="The “New source” dialog in Power BI Desktop with tiles for Excel workbook, Text/CSV, XML, JSON, SQL Server and further connectors" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Power BI Desktop: Start → Daten abrufen → Weitere … öffnet die Quellenauswahl mit den Konnektoren.</span><span lang="en">Power BI Desktop: Home → Get Data → More … opens the source selection with the connectors.</span></figcaption>
+    </figure>
+    <figure class="abbildung">
+      <img src="assets/img/powerbi-power-query-preview.png" alt="Vorschau der Dateidaten von train.csv in Power BI mit den Feldern Dateiursprung, Trennzeichen und Datentyperkennung sowie den Schaltflächen Laden und Daten transformieren" data-alt-en="File data preview of train.csv in Power BI with the fields file origin, delimiter and data type detection and the buttons Load and Transform data" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Vorschau nach dem Verbinden von train.csv: Dateiursprung, Trennzeichen und Datentyperkennung lassen sich hier noch ändern; „Daten transformieren“ öffnet den Power Query Editor.</span><span lang="en">Preview after connecting train.csv: file origin, delimiter and type detection can still be changed here; “Transform data” opens the Power Query Editor.</span></figcaption>
+    </figure>
 
     <h3><span lang="de">Daten laden in Python</span><span lang="en">Loading Data in Python</span></h3>
     <p><span lang="de">Mit pandas und der requests-Bibliothek können alle gängigen Datenquellen eingelesen werden:</span><span lang="en">With pandas and the requests library, all common data sources can be read:</span></p>
@@ -345,15 +351,26 @@ print('Rows after cleaning:', len(df))  # 9800</pre>
 
     <h3><span lang="de">Datenqualität in Power BI</span><span lang="en">Data Quality in Power BI</span></h3>
     <div class="concept-box">
-      <p><span lang="de">Im Power Query Editor (Home → Daten transformieren) stehen folgende Werkzeuge zur Verfügung:</span><span lang="en">In the Power Query Editor (Home → Transform Data) the following tools are available:</span></p>
-      <!-- SCREENSHOT: powerbi-power-query-editor · Start → Daten transformieren → Power Query Editor mit Menüband „Transformieren“ und Datentyp-Auswahl einer Spalte -->
+      <p><span lang="de">Im Power Query Editor (Start → Daten transformieren) stehen folgende Werkzeuge zur Verfügung:</span><span lang="en">In the Power Query Editor (Home → Transform Data) the following tools are available:</span></p>
+    <div class="warn-box">
+      <p><strong><span lang="de">Gebietsschema beachten.</span><span lang="en">Mind the locale.</span></strong>
+        <span lang="de">Eine deutsche Power-BI-Installation liest Dezimalpunkte als Tausendertrennzeichen: Aus 957.5775 in train.csv wird die Ganzzahl 9575775, und Summen sind um den Faktor 1.000 zu groß. Deshalb solche Spalten über Typ ändern → Mit Gebietsschema als Dezimalzahl mit Gebietsschema Englisch (USA) typisieren, statt der automatischen Typerkennung zu vertrauen.</span>
+        <span lang="en">A German Power BI installation reads decimal points as thousands separators: 957.5775 in train.csv becomes the whole number 9575775, and sums are too large by a factor of 1,000. Therefore set such columns via Change Type → Using Locale to Decimal Number with locale English (United States) instead of trusting automatic type detection.</span></p>
+    </div>
+    <figure class="abbildung">
+      <img src="assets/img/powerbi-power-query-editor.png" alt="Power Query Editor mit der Tabelle Orders, markierter Spalte Order Date und geöffnetem Datentyp-Dropdown mit Dezimalzahl, Ganze Zahl, Datum und weiteren Typen" data-alt-en="Power Query Editor with the Orders table, the selected Order Date column and the open data type dropdown listing decimal number, whole number, date and further types" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Power Query Editor, Registerkarte Transformieren: Für die markierte Spalte Order Date ist der Datentyp Datum gewählt; das Dropdown zeigt die verfügbaren Typen.</span><span lang="en">Power Query Editor, Transform tab: the selected column Order Date has the data type Date; the dropdown shows the available types.</span></figcaption>
+    </figure>
       <ol class="schritte">
         <li><span><span lang="de">Spalte markieren → Transformieren → Datentyp ändern</span><span lang="en">Select column → Transform → Change Data Type</span></span></li>
         <li><span><span lang="de">Start → Zeilen entfernen → Leere Zeilen entfernen</span><span lang="en">Home → Remove Rows → Remove Blank Rows</span></span></li>
         <li><span><span lang="de">Rechtsklick auf Spalte → Werte ersetzen</span><span lang="en">Right-click column → Replace Values</span></span></li>
         <li><span><span lang="de">Start → Zeilen entfernen → Duplikate entfernen</span><span lang="en">Home → Remove Rows → Remove Duplicates</span></span></li>
       </ol>
-      <!-- SCREENSHOT: powerbi-remove-rows · Power Query Editor → Start → Zeilen entfernen (Leere Zeilen, Duplikate) -->
+    <figure class="abbildung">
+      <img src="assets/img/powerbi-remove-rows.png" alt="Power Query Editor mit geöffnetem Menü „Zeilen entfernen“: Erste Zeilen, Untere Zeilen, Alternative Zeilen, Duplikate, Leere Zeilen und Fehler entfernen" data-alt-en="Power Query Editor with the open “Remove rows” menu: remove top rows, bottom rows, alternate rows, duplicates, blank rows and errors" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Start → Zeilen entfernen: leere Zeilen, Duplikate und Fehler lassen sich hier in einem Schritt bereinigen.</span><span lang="en">Home → Remove rows: blank rows, duplicates and errors can be cleaned up here in a single step.</span></figcaption>
+    </figure>
     </div>
   </section>
 

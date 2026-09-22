@@ -93,7 +93,10 @@
     </div>
 
     <h3>DAX Code</h3>
-    <!-- SCREENSHOT: powerbi-new-measure · Power BI Desktop · Modellierung → Neues Measure · Formelleiste mit Gesamtumsatz = SUM(...) -->
+    <figure class="abbildung">
+      <img src="assets/img/powerbi-new-measure.png" alt="Power BI Desktop mit Measuretools und der Formelleiste Umsatz = SUM(Orders[Sales]); rechts der Feldbereich mit den Measures Bestellungen, Ø Bestellwert, Positionen und Umsatz" data-alt-en="Power BI Desktop with measure tools and the formula bar Umsatz = SUM(Orders[Sales]); on the right the field pane with the measures Bestellungen, Ø Bestellwert, Positionen and Umsatz" width="1800" height="1047" loading="lazy" />
+      <figcaption><span lang="de">Neues Measure: Die Formelleiste zeigt Umsatz = SUM(Orders[Sales]); das Measure erscheint danach im Feldbereich der Tabelle Orders.</span><span lang="en">New measure: the formula bar shows Umsatz = SUM(Orders[Sales]); the measure then appears in the field pane of the Orders table.</span></figcaption>
+    </figure>
     <div class="codeblock" data-kind="concept" data-name="s1CodeDax">
 <pre class="code-block" lang="de">-- Einfache Aggregation
 Gesamtumsatz = SUM(Umsatz[Betrag])
@@ -427,7 +430,10 @@ ProfitMargin =
     </div>
 
     <h3><span lang="de">Berechnete Felder für train.csv</span><span lang="en">Calculated fields for train.csv</span></h3>
-    <!-- SCREENSHOT: tableau-calculated-field · Tableau Desktop · Analyse → Berechnetes Feld erstellen · Dialog mit SUM([Sales]) -->
+    <figure class="abbildung">
+      <img src="assets/img/tableau-calculated-field.png" alt="Dialog „Berechnetes Feld“ in Tableau mit dem Namen Anteil am Gesamtumsatz und der Formel SUM([Sales]) / MIN({ FIXED : SUM([Sales]) }); Statuszeile „Die Berechnung ist gültig“" data-alt-en="The calculated field dialog in Tableau with the name Anteil am Gesamtumsatz and the formula SUM([Sales]) / MIN({ FIXED : SUM([Sales]) }); status line “The calculation is valid”" width="1600" height="1008" loading="lazy" />
+      <figcaption><span lang="de">Analyse → Berechnetes Feld erstellen: Name und Formel, hier der LOD-Ausdruck für den Anteil am Gesamtumsatz. Tableau meldet unten, ob die Berechnung gültig ist.</span><span lang="en">Analysis → Create Calculated Field: name and formula, here the LOD expression for the share of total revenue. Tableau reports at the bottom whether the calculation is valid.</span></figcaption>
+    </figure>
     <div class="codeblock" data-kind="run" data-name="tabCode">
 <pre class="code-block">// Gesamtumsatz
 SUM([Sales])

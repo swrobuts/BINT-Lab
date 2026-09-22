@@ -250,7 +250,10 @@ fig.show()</pre>
         <span lang="en">Prerequisites: pip install plotly pandas, train.csv in the same directory. The block opens a figure in the browser – if none appears, fig.show() is usually missing in a non-interactive environment.</span>
       </p>
     </div>
-    <!-- SCREENSHOT: plotly-bar-kategorie · Ausgabe von fig.show(): Balkendiagramm „Umsatz nach Kategorie“ im Browser -->
+    <figure class="abbildung">
+      <img src="assets/img/plotly-bar-kategorie.png" alt="Plotly-Balkendiagramm „Umsatz nach Kategorie“ mit den Balken Furniture, Office Supplies und Technology" data-alt-en="Plotly bar chart “Umsatz nach Kategorie” with the bars Furniture, Office Supplies and Technology" width="1920" height="1140" loading="lazy" />
+      <figcaption><span lang="de">So sieht die Ausgabe von fig.show() im Browser aus: ein Balkendiagramm mit drei Kategorien, interaktiv mit Zoom und Tooltip.</span><span lang="en">This is what the output of fig.show() looks like in the browser: a bar chart with three categories, interactive with zoom and tooltip.</span></figcaption>
+    </figure>
 
     <h3><span lang="de">Liniendiagramm: Umsatz-Trend über Zeit</span><span lang="en">Line Chart: Revenue Trend over Time</span></h3>
     <div class="codeblock" data-kind="run" data-name="CODE_PX_LINE">
@@ -531,7 +534,10 @@ if __name__ == '__main__':
         <span lang="en">Prerequisites: pip install dash plotly pandas, train.csv in the same directory. Save as app.py and run python app.py. Expected state: the console reports Running on http://127.0.0.1:8050 and the page shows a category dropdown and two charts that react to every selection in the dropdown.</span>
       </p>
     </div>
-    <!-- SCREENSHOT: dash-app-laeuft · python app.py → http://127.0.0.1:8050: Kategorie-Dropdown und zwei Diagramme -->
+    <figure class="abbildung">
+      <img src="assets/img/dash-app-laeuft.png" alt="Dash-App „Sales Dashboard“ im Browser mit dem Dropdown Kategorie auswählen (Furniture) und einem Balkendiagramm Umsatz nach Sub-Kategorie" data-alt-en="The Dash app “Sales Dashboard” in the browser with the dropdown for choosing a category (Furniture) and a bar chart of revenue by sub-category" width="1920" height="1140" loading="lazy" />
+      <figcaption><span lang="de">Die laufende Dash-App unter http://127.0.0.1:8050: Kategorie-Dropdown oben, darunter das Balkendiagramm je Sub-Kategorie und das Streudiagramm; unten rechts die Debug-Leiste von Dash.</span><span lang="en">The running Dash app at http://127.0.0.1:8050: category dropdown on top, below the bar chart per sub-category and the scatter plot; bottom right the Dash debug toolbar.</span></figcaption>
+    </figure>
 
     <div class="challenge-box">
       <h4><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h4>
