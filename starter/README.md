@@ -8,7 +8,7 @@ automatisch synchron mit dem, was im Lab steht.
 | Ordner | Inhalt | Lab |
 |---|---|---|
 | `lab-04-dash/` | `charts.py`, `app.py`, `requirements.txt`, `Dockerfile` | Lab 04 |
-| `lab-05-fallstudie/` | `explore.py`, `app.py`, `measures.dax`, `requirements.txt` | Lab 05 |
+| `lab-05-fallstudie/` | `explore.py`, `app.py`, `measures.dax`, `bint-klar.json`, `requirements.txt` | Lab 05 |
 | `lab-06-stack/` | `docker-compose.yml`, `init/`, `verify.sql`, `.env.example` | Lab 06 |
 
 Der Datensatz `train.csv` liegt bewusst nicht in den Paketen, sondern einmal

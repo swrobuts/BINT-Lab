@@ -7,7 +7,7 @@ Starterpaket. Handgepflegte Kopien waeren nach dem zweiten Semester
 auseinandergelaufen.
 
 Handgeschrieben und damit NICHT ueberschrieben werden: die READMEs,
-verify.sql, .env.example und requirements.txt aus Lab 05.
+verify.sql, .env.example, bint-klar.json und requirements.txt aus Lab 05.
 
 Aufruf:  python3 tools/build_starters.py
 """
@@ -46,7 +46,7 @@ PACKAGES = ["lab-04-dash", "lab-05-fallstudie", "lab-06-stack"]
 # Only ship the exercise files, never a local .env, dataset or Python cache.
 PACKAGE_FILES = {
     "lab-04-dash": ["README.md", "app.py", "charts.py", "requirements.txt", "Dockerfile"],
-    "lab-05-fallstudie": ["README.md", "app.py", "explore.py", "measures.dax", "requirements.txt"],
+    "lab-05-fallstudie": ["README.md", "app.py", "explore.py", "measures.dax", "requirements.txt", "bint-klar.json"],
     "lab-06-stack": ["README.md", "docker-compose.yml", ".env.example",
                      "init/01_schema.sql", "init/02_import.sql", "verify.sql"],
 }

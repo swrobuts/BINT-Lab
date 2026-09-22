@@ -31,3 +31,7 @@ es würde Umsatz vernichten, der tatsächlich stattgefunden hat.
 `measures.dax` enthält die DAX-Measures inklusive Kalendertabelle für
 Power BI. Sollwerte: Umsatz 2.261.536,78 · Bestellungen 4.922 ·
 Ø Bestellwert 459,48 · YoY-Wachstum 2018 gegenüber 2017 rund 20,3 %.
+
+## bint-klar.json
+
+Designdatei für Power BI Desktop: Ansicht → Designs → Nach Designs suchen → diese Datei wählen. Sie setzt eine gedeckte Farbe für alle Visuals, schaltet Gitternetz, Achsentitel und Legenden aus und aktiviert Datenbeschriftungen. Das Dashboard aus Schritt 3 lässt sich damit in einem Schritt reduzieren.
