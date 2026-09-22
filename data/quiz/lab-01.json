@@ -1,0 +1,212 @@
+[
+  {
+    "id": "B01-01",
+    "frage": {
+      "de": "Was ist das Hauptziel von Business Intelligence?",
+      "en": "What is the primary goal of Business Intelligence?"
+    },
+    "optionen": [
+      {
+        "de": "Daten dauerhaft löschen",
+        "en": "Permanently delete data"
+      },
+      {
+        "de": "Software entwickeln",
+        "en": "Develop software"
+      },
+      {
+        "de": "Entscheidungsunterstützung durch Datenanalyse",
+        "en": "Decision support through data analysis"
+      },
+      {
+        "de": "Netzwerke aufbauen",
+        "en": "Build networks"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "BI dient primär der Entscheidungsunterstützung durch Sammlung, Analyse und Visualisierung von Geschäftsdaten.",
+      "en": "BI primarily serves decision support through the collection, analysis and visualisation of business data."
+    }
+  },
+  {
+    "id": "B01-02",
+    "frage": {
+      "de": "Was ist ein Lead Indicator?",
+      "en": "What is a Lead Indicator?"
+    },
+    "optionen": [
+      {
+        "de": "Ein Finanzbericht für das Vorjahr",
+        "en": "A financial report for the previous year"
+      },
+      {
+        "de": "Ein vorausschauender KPI, der zukünftige Entwicklungen anzeigt",
+        "en": "A forward-looking KPI signalling future developments"
+      },
+      {
+        "de": "Ein rückblickender KPI, der vergangene Ergebnisse zeigt",
+        "en": "A backward-looking KPI showing past results"
+      },
+      {
+        "de": "Eine Datenbankabfrage",
+        "en": "A database query"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "Lead Indicators sind vorausschauend – sie signalisieren künftige Trends (z. B. Neukundenanfragen). Lag Indicators messen vergangene Ergebnisse.",
+      "en": "Lead Indicators are forward-looking – they signal future trends (e.g. new customer enquiries). Lag Indicators measure past results."
+    }
+  },
+  {
+    "id": "B01-03",
+    "frage": {
+      "de": "Welches BI-Tool ist vollständig Open-Source und selbst hostbar?",
+      "en": "Which BI tool is fully open-source and self-hostable?"
+    },
+    "optionen": [
+      {
+        "de": "Tableau",
+        "en": "Tableau"
+      },
+      {
+        "de": "Apache Superset",
+        "en": "Apache Superset"
+      },
+      {
+        "de": "Google Analytics",
+        "en": "Google Analytics"
+      },
+      {
+        "de": "Power BI",
+        "en": "Power BI"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "Apache Superset ist ein vollständig quelloffenes BI-Tool (Apache-2.0) und kann selbst gehostet werden. Lizenzgebühren fallen nicht an – Infrastruktur, Betrieb und Administration verursachen aber weiterhin Kosten.",
+      "en": "Apache Superset is a fully open-source BI tool (Apache-2.0) and can be self-hosted. There are no licence fees – but infrastructure, operations and administration still cost money."
+    }
+  },
+  {
+    "id": "B01-04",
+    "frage": {
+      "de": "Wer prägte 1958 den Begriff „Business Intelligence“?",
+      "en": "Who coined the term \"Business Intelligence\" in 1958?"
+    },
+    "optionen": [
+      {
+        "de": "Hans Peter Luhn (IBM)",
+        "en": "Hans Peter Luhn (IBM)"
+      },
+      {
+        "de": "Ralph Kimball",
+        "en": "Ralph Kimball"
+      },
+      {
+        "de": "Howard Dresner (Gartner)",
+        "en": "Howard Dresner (Gartner)"
+      },
+      {
+        "de": "Bill Inmon",
+        "en": "Bill Inmon"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "Hans Peter Luhn (IBM) veröffentlichte 1958 den Artikel „A Business Intelligence System“ und prägte damit den Begriff.",
+      "en": "Hans Peter Luhn (IBM) published the paper \"A Business Intelligence System\" in 1958, coining the term."
+    }
+  },
+  {
+    "id": "B01-05",
+    "frage": {
+      "de": "Wofür steht das „M“ im SMART-Prinzip für KPIs?",
+      "en": "What does the \"M\" stand for in the SMART principle for KPIs?"
+    },
+    "optionen": [
+      {
+        "de": "Measurable",
+        "en": "Measurable"
+      },
+      {
+        "de": "Modular",
+        "en": "Modular"
+      },
+      {
+        "de": "Manageable",
+        "en": "Manageable"
+      },
+      {
+        "de": "Motivating",
+        "en": "Motivating"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "SMART steht für Specific, Measurable, Achievable, Relevant, Time-bound. Das „M“ bedeutet „Measurable“ – numerisch messbar.",
+      "en": "SMART stands for Specific, Measurable, Achievable, Relevant, Time-bound. The \"M\" means \"Measurable\" – numerically quantifiable."
+    }
+  },
+  {
+    "id": "B01-06",
+    "frage": {
+      "de": "Welche Schicht der BI-Architektur ist für die Datenbereinigung zuständig?",
+      "en": "Which layer of the BI architecture is responsible for data cleansing?"
+    },
+    "optionen": [
+      {
+        "de": "ETL/ELT",
+        "en": "ETL/ELT"
+      },
+      {
+        "de": "BI-Tool",
+        "en": "BI Tool"
+      },
+      {
+        "de": "Dashboard",
+        "en": "Dashboard"
+      },
+      {
+        "de": "Data Warehouse",
+        "en": "Data Warehouse"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "ETL/ELT (Extract, Transform, Load) ist für das Bereinigen, Harmonisieren und Laden der Rohdaten zuständig. Tools wie dbt, Airbyte oder Fivetran automatisieren diesen Prozess.",
+      "en": "ETL/ELT (Extract, Transform, Load) is responsible for cleansing, harmonising, and loading raw data. Tools like dbt, Airbyte, or Fivetran automate this process."
+    }
+  },
+  {
+    "id": "B01-07",
+    "frage": {
+      "de": "Ab welcher Fabric-Kapazität dürfen Nutzer mit kostenloser Lizenz Berichte ansehen?",
+      "en": "From which Fabric capacity size may users with a free licence view reports?"
+    },
+    "optionen": [
+      {
+        "de": "Bei jeder Größe – Fabric braucht keine Nutzerlizenzen",
+        "en": "At any size – Fabric needs no user licences"
+      },
+      {
+        "de": "F2",
+        "en": "F2"
+      },
+      {
+        "de": "F64",
+        "en": "F64"
+      },
+      {
+        "de": "F16",
+        "en": "F16"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "F64 ist die entscheidende Schwelle – aber die Bedingung geht weiter: Nutzer mit kostenloser Lizenz können Power-BI-Inhalte nur ansehen, wenn Bericht und semantisches Modell auf einer Kapazität ab F64 liegen, die Nutzer Zugriff haben und im Arbeitsbereich die Rolle Viewer besitzen. Unterhalb von F64 braucht jeder Betrachter Pro oder PPU. An dieser Grenze entscheidet sich in der Praxis, ob eine Kapazität oder Einzellizenzen günstiger sind. Preise und Bedingungen bei Microsoft Learn prüfen.",
+      "en": "F64 is the decisive threshold – but the condition goes further: users with a free licence can only view Power BI content if the report and its semantic model sit on a capacity of F64 or larger, they have access, and they hold the Viewer role in the workspace. Below F64 every viewer needs Pro or PPU. In practice this boundary decides whether a capacity or per-user licensing is cheaper. Check prices and conditions on Microsoft Learn."
+    }
+  }
+]

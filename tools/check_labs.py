@@ -9,6 +9,9 @@ Prueft, was beim Selbststudium tatsaechlich weh tut, wenn es kaputt ist:
   3. Compose    - docker compose config besteht; das Image-Tag ist gepinnt
   4. Sprache    - die englische Fassung enthaelt keine deutschen UI-Texte
   5. Kennzeichen- jeder kopierbare Block ist als run / concept / diagram markiert
+                  und traegt einen stabilen Namen (data-name) fuer die Starterpakete
+  5b. Quiz      - jede Fragendatei ist zweisprachig, hat gueltige Indizes und
+                  genau so viele Fragen, wie assets/bint.js verspricht
   6. Daten     - jede Datei, die ein lauffaehiger Block oeffnet, liegt im Repo
                  und wird auf derselben Seite zum Download angeboten
 
@@ -201,10 +204,52 @@ def check_language():
 def check_tagging():
     for lab in LABS:
         text = lab.read_text(encoding="utf-8")
-        total = len(re.findall(r"<CodeBlock\s", text))
-        tagged = len(re.findall(r'<CodeBlock\s[^>]*kind="(?:run|concept|diagram)"', text))
-        record(total == tagged, "Kennzeichnung",
-               f"{lab.name}: {tagged}/{total} Bloecke gekennzeichnet")
+        total = len(re.findall(r'<div\s+class="codeblock', text))
+        tagged = len(re.findall(r'<div\s+class="codeblock[^"]*"[^>]*data-kind="(?:run|concept|diagram)"', text))
+        named = len(re.findall(r'<div\s+class="codeblock[^"]*"[^>]*data-name="', text))
+        record(total == tagged == named, "Kennzeichnung",
+               f"{lab.name}: {tagged}/{total} Bloecke gekennzeichnet, {named}/{total} benannt")
+
+
+# ── 5b. Quiz ─────────────────────────────────────────────────────────────────
+# Jede Lab-Seite hat genau einen Quiz-Platzhalter; die Fragendatei liegt vor,
+# hat gueltige Indizes und genau so viele Fragen, wie assets/bint.js verspricht.
+def check_quiz():
+    js = (ROOT / "assets" / "bint.js").read_text(encoding="utf-8")
+    versprochen = dict(re.findall(r"id: '(lab-\d\d)', nr: '\d\d', datei: '[^']+', anzahl: (\d+)", js))
+    for lab in LABS:
+        lab_id = lab.name[:6]
+        text = lab.read_text(encoding="utf-8")
+        record(text.count("data-quiz") == 1, "Quiz", f"{lab.name}: genau ein Quiz-Platzhalter")
+        datei = ROOT / "data" / "quiz" / f"{lab_id}.json"
+        if not datei.exists():
+            record(False, "Quiz", f"{datei.relative_to(ROOT)} fehlt")
+            continue
+        fragen = json.loads(datei.read_text(encoding="utf-8"))
+        ids = [f.get("id") for f in fragen]
+        probleme = []
+        if len(set(ids)) != len(ids):
+            probleme.append("doppelte ids")
+        for f in fragen:
+            if not re.fullmatch(rf"B{lab_id[-2:]}-\d\d", f.get("id", "")):
+                probleme.append(f"id {f.get('id')!r} passt nicht zum Lab")
+            if not (isinstance(f.get("richtig"), int) and 0 <= f["richtig"] < len(f.get("optionen", []))):
+                probleme.append(f"{f.get('id')}: correctIndex ungueltig")
+            for feld in ("frage", "erklaerung"):
+                if not (isinstance(f.get(feld), dict) and f[feld].get("de") and f[feld].get("en")):
+                    probleme.append(f"{f.get('id')}: {feld} nicht zweisprachig")
+            for o in f.get("optionen", []):
+                if not (isinstance(o, dict) and o.get("de") and o.get("en")):
+                    probleme.append(f"{f.get('id')}: Option nicht zweisprachig")
+        soll = int(versprochen.get(lab_id, -1))
+        if len(fragen) != soll:
+            probleme.append(f"{len(fragen)} Fragen, bint.js verspricht {soll}")
+        record(not probleme, "Quiz",
+               f"{lab_id}: {len(fragen)} Fragen gueltig" if not probleme else f"{lab_id}: {'; '.join(probleme)}")
+        # Antwortpositionen: die richtige Antwort darf nicht immer an derselben Stelle stehen
+        positionen = {f["richtig"] for f in fragen if isinstance(f.get("richtig"), int)}
+        record(len(positionen) > 1, "Quiz",
+               f"{lab_id}: richtige Antworten auf {len(positionen)} Positionen verteilt")
 
 
 # ── 6. Datenverfuegbarkeit ───────────────────────────────────────────────────
@@ -292,6 +337,7 @@ def main():
 
     check_schema()
     check_tagging()
+    check_quiz()
     check_language()
     check_compose()
     check_data_availability()

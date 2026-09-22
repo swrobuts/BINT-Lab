@@ -1,1137 +1,860 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 05 &#8211; Fallstudie: Retail Analytics &middot; THWS BINT-Lab</title>
+  <title>Lab 05 · Fallstudie: Retail Analytics · BINT-Lab</title>
+  <meta name="bint:titel-en" content="Lab 05 · Case Study: Retail Analytics · BINT-Lab" />
+  <meta name="description" content="Kompletten BI-Workflow von Rohdaten bis Dashboard durchlaufen – parallel in Power BI, Tableau und Python/Dash." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
-       die dieses build-freie Setup (Transpilierung per text/babel im Browser) voraussetzt. -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-          integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-          integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-  <!-- Babel bewusst auf 7.x gepinnt: Babel 8 stellt auf den automatic JSX runtime um
-       und bricht damit text/babel ohne Bundler. 7.29.8 = letzter 7.x-Stand. -->
-  <script src="https://unpkg.com/@babel/standalone@7.29.8/babel.min.js"
-          integrity="sha384-Ux6uBqExf/7ahsSNrA9VI7vuaw6sKjDoVdjdUxmIoL2qdlzFVZ157sTi6JK3Z9Q8" crossorigin="anonymous"></script>
-  <style>
-
-    :root {
-      --col-primary: #1E3A8A;
-      --col-accent: #2563EB;
-      --col-primary-light: rgba(30,58,138,0.08);
-    }
-    [data-lang="en"] {
-      --col-primary: #0D9488;
-      --col-accent: #0D9488;
-      --col-primary-light: rgba(13,148,136,0.08);
-    }
-    :root { --primary: #1E3A8A; --accent: #2563EB; --dark: #1A1A1A; --light-bg: #FAFAFA; }
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background: #FAFAFA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; color: #1A1A1A; }
-    h2 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-top: 0; }
-    h3 { color: #1E3A8A; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; margin: 0.5rem 0; }
-    p { line-height: 1.7; }
-    .bauhaus-accent-line { width: 48px; height: 4px; background: #2563EB; margin: 0.5rem 0 1rem 0; }
-    .bauhaus-badge { background: #2563EB; color: white; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; display: inline-block; }
-    .code-block { background: #F3F4F6; color: #1A1A1A; border-left: 4px solid #D1D5DB; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.82rem; padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; white-space: pre; overflow-x: auto; position: relative; margin: 1rem 0; }
-    .tip-box { border-left: 4px solid #2563EB; background: #EFF6FF; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .info-box { border-left: 4px solid #3b82f6; background: #eff6ff; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .concept-box { border-left: 4px solid #1E3A8A; background: rgba(30,58,138,0.08); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .challenge-box { border-left: 4px solid #22c55e; background: #f0fdf4; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .youtube-box { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; }
-    .youtube-box h3 { color: #EA580C; margin-top: 0; }
-    .youtube-box h4 { color: #EA580C; margin-top: 0; }
-    .youtube-link { color: #EA580C; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
-    .youtube-link:hover { text-decoration: underline; }
-    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #1E3A8A; color: white; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1rem; flex-shrink: 0; margin-right: 0.75rem; }
-    .step-block { display: flex; align-items: flex-start; margin-bottom: 1.5rem; }
-    .step-content { flex: 1; }
-
-    .header { position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 100; background: white; border-bottom: 1px solid #E5E7EB; box-shadow: 0 1px 8px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
-    .header-left { display: flex; align-items: center; gap: 1.5rem; }
-    .header-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: #1E3A8A; text-decoration: none; }
-    .header-back { font-size: 0.85rem; color: #555; text-decoration: none; font-weight: 500; }
-    .header-back:hover { color: #1E3A8A; }
-    .lang-btn { border: 2px solid #1A1A1A; background: white; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; border-radius: 4px; letter-spacing: 0.05em; font-family: 'Space Grotesk', sans-serif; }
-    .lang-btn.active { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .lang-btn:hover:not(.active) { background: #f5f5f5; }
-
-    .sidebar { position: fixed; top: 56px; left: 0; width: 260px; height: calc(100vh - 56px); overflow-y: auto; border-right: 1px solid #E5E7EB; background: white; padding: 1.5rem 0; }
-    .sidebar-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #888; padding: 0 1.25rem; margin-bottom: 0.75rem; }
-    .sidebar-link { display: block; padding: 0.55rem 1.25rem; font-size: 0.88rem; color: #444; text-decoration: none; border-left: 3px solid transparent; transition: background 0.12s, color 0.12s, border-color 0.12s; font-weight: 500; }
-    .sidebar-link:hover { color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .sidebar-link.active { color: #1E3A8A; border-left-color: #1E3A8A; background: rgba(30,58,138,0.06); font-weight: 700; }
-
-    .main-content { margin-left: 260px; padding-top: 72px; padding-bottom: 4rem; padding-left: 3rem; padding-right: 3rem; max-width: 960px; }
-    .section-block { margin-bottom: 4rem; }
-    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-    /* ── Kennzeichnung kopierbarer Codebloecke ───────────────────────────────
-       Jeder Block sagt, ob er in einer frischen Umgebung so laeuft ("run")
-       oder ob er ein Konzeptsnippet mit Platzhalternamen ist ("concept"). */
-    .code-tag { display: inline-block; font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 5px 5px 0 0; }
-    .code-tag-run { background: #065F46; color: #fff; }
-    .code-tag-concept { background: #92400E; color: #fff; }
-    .code-tag + .code-block { border-radius: 0 8px 8px 0; margin-top: 0; }
-    .code-note { font-size: 0.78rem; color: #4B5563; margin: 0.35rem 0 0; line-height: 1.55; }
-    /* ── Quiz: zweiter Versuch statt Einmal-Sperre ───────────────────────────
-       Eine falsche Antwort sperrt die Frage nicht mehr. Die Loesung wird erst
-       gezeigt, wenn sie getroffen oder ausdruecklich angefordert wurde. */
-    .quiz-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    .quiz-retry-btn { font-family: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1.5px solid var(--col-primary, #1E3A8A); background: white; color: var(--col-primary, #1E3A8A); cursor: pointer; }
-    .quiz-retry-btn:hover { background: rgba(30,58,138,0.06); }
-    .quiz-retry-btn.secondary { border-color: #9CA3AF; color: #4B5563; }
-    .quiz-retry-btn.secondary:hover { background: #F3F4F6; }
-    .quiz-hint { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: #92400E; background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 0.55rem 0.9rem; border-radius: 0 6px 6px 0; }
-    .quiz-attempts { font-size: 0.78rem; color: #6B7280; align-self: center; }
-    /* ── Responsive Guards (Mobilnutzung) ────────────────────────────────────
-       Tabellen und Codebloecke duerfen breiter sein als der Viewport, aber sie
-       scrollen dann in ihrem eigenen Container. Die Seite selbst scrollt nie
-       horizontal. Pruefwert: document.scrollWidth <= window.innerWidth bei
-       320 / 390 / 768 / 1024 / 1440 px. */
-    .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1rem 0; }
-    .table-wrap > table { margin: 0; }
-    /* Flex- und Grid-Kinder duerfen unter ihre Inhaltsbreite schrumpfen,
-       sonst sprengt ein <pre> den Elternteil (min-width:auto ist der Default). */
-    .step-content, .step-block > * { min-width: 0; }
-    .section-block, .content, main { min-width: 0; }
-    .code-block { max-width: 100%; }
-    /* Lange Bezeichner ohne Leerzeichen (Spaltennamen, URLs) umbrechen lassen. */
-    p, li, td, th, h1, h2, h3, h4 { overflow-wrap: break-word; }
-    code { overflow-wrap: anywhere; word-break: break-word; }
-    .tip-box, .info-box, .concept-box, .challenge-box, .youtube-box { max-width: 100%; overflow-wrap: break-word; }
-    th { background: #1E3A8A; color: white; padding: 0.65rem 1rem; text-align: left; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.05em; }
-    td { padding: 0.6rem 1rem; border-bottom: 1px solid #e5e7eb; }
-    tr:nth-child(even) td { background: #f9fafb; }
-    tr:hover td { background: rgba(30,58,138,0.03); }
-    td code { font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.82rem; background: #F3F4F6; padding: 0.1rem 0.35rem; border-radius: 3px; }
-
-    .nav-bottom { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid #E5E7EB; }
-    .nav-btn { border: 2px solid #1A1A1A; background: white; padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; color: #1A1A1A; font-family: 'Space Grotesk', sans-serif; display: inline-block; border-radius: 4px; }
-    .nav-btn:hover { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .nav-btn.primary { background: #1E3A8A; border-color: #1E3A8A; color: white; }
-    .nav-btn.primary:hover { background: #1e40af; border-color: #1e40af; }
-
-    .lab-header { padding: 3rem 3rem 2rem; margin-left: 260px; padding-top: 88px; }
-    .lab-num { font-family: 'Space Grotesk', sans-serif; font-size: 4rem; font-weight: 900; color: #2563EB; line-height: 1; margin-bottom: 0.5rem; }
-    .lab-title-h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: #1A1A1A; margin-bottom: 0.75rem; }
-    .lab-desc-intro { font-size: 1.1rem; color: #4B5563; line-height: 1.6; max-width: 680px; margin-bottom: 1.5rem; }
-    .lernziele-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .lernziel-chip { background: rgba(30,58,138,0.08); color: #1E3A8A; border: 1px solid rgba(30,58,138,0.2); padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600; border-radius: 20px; font-family: 'Space Grotesk', sans-serif; }
-
-    .footer { background: #1A1A1A; color: rgba(255,255,255,0.6); text-align: center; padding: 1.5rem; margin-left: 260px; font-size: 0.85rem; }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-      .lab-header { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-      .footer { margin-left: 0; }
-    }
-
-    /* ── EN mode: Teal #0D9488 ── */
-    [data-lang="en"] h2,
-    [data-lang="en"] h3 { color: #0D9488; }
-    [data-lang="en"] h4 { color: #0D9488; }
-    [data-lang="en"] .bauhaus-accent-line { background: #14B8A6; }
-    [data-lang="en"] .bauhaus-badge { background: #0D9488; }
-    [data-lang="en"] .header-logo { color: #0D9488; }
-    [data-lang="en"] .lang-btn.active { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .sidebar-link:hover { color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .sidebar-link.active { color: #0D9488; border-left-color: #0D9488; background: rgba(13,148,136,0.06); }
-    [data-lang="en"] .lernziel-chip { background: rgba(13,148,136,0.1); color: #0D9488; border-color: rgba(13,148,136,0.25); }
-    [data-lang="en"] th { background: #0D9488; }
-    [data-lang="en"] .lab-num { color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary:hover { background: #0f766e; border-color: #0f766e; }
-    [data-lang="en"] .tip-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .concept-box { border-left-color: #0D9488; background: rgba(13,148,136,0.08); }
-    [data-lang="en"] .info-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .challenge-box { border-left-color: #0D9488; }
-    [data-lang="en"] .step-number { background: #0D9488; }
-    [data-lang="en"] .lernziele-box { border-left-color: #14B8A6; background: #F0FDFA; }
-    [data-lang="en"] .lernziele-heading { color: #0D9488; }
-    .quiz-option:hover:not(:disabled) { border-color: #2563EB; background: rgba(37,99,235,0.04); }
-    [data-lang="en"] .quiz-option:hover:not(:disabled) { border-color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .footer { background: #0D9488; }
-
-    .lernziele-box { background: #EFF6FF; border-left: 4px solid #2563EB; padding: 1.25rem 1.5rem; margin-top: 1.5rem; border-radius: 0 8px 8px 0; }
-    .lernziele-heading { color: #1E3A8A; margin: 0 0 0.75rem; font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
-  
-    /* ── Barrierefreiheit ────────────────────────────────────────────────────
-       sr-only blendet Text visuell aus, laesst ihn aber vorlesbar. Wird fuer
-       die Antwortzustaende im Quiz und den Sprunglink gebraucht. */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .quiz-mark { font-weight: 800; margin-right: 0.4rem; }
-    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--col-primary, #1E3A8A); color: #fff; padding: 0.6rem 1rem; border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 0; }
-    /* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
-    a:focus-visible, button:focus-visible { outline: 3px solid #F59E0B; outline-offset: 2px; }
-  </style>
+  <link rel="stylesheet" href="assets/bint.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231E3A8A'/><text x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' text-anchor='middle' fill='%2338BDF8'>B</text></svg>" />
 </head>
-<body>
-  <div id="root"></div>
+<body class="lab-page" data-lab="lab-05">
 
-  <!-- Ausfallsicherung fuer die CDN-Abhaengigkeiten.
-       React, ReactDOM und Babel kommen von unpkg.com. Faellt der Dienst aus
-       oder sperrt ein Hochschulnetz die Domain, blieb die Seite bisher weiss
-       und der Lernende sah keinen Hinweis, woran es liegt. Dieses Skript
-       laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
-       wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
-       hat (faengt Transpilierungsfehler ab). -->
-  <script src="assets/site.js"></script>
-  <script>
-  (function () {
-    var isEn = BINTLab.getLanguage() === 'en';
-    var T = isEn ? {
-      head: 'This page could not load',
-      miss: 'The following libraries were not delivered:',
-      why: 'The page loads React and Babel from unpkg.com at runtime. If your network blocks that host, or the service is unavailable, nothing can be rendered.',
-      what: 'What you can do:',
-      s1: 'Reload the page - the CDN is often only briefly unavailable.',
-      s2: 'Try a different network (mobile hotspot instead of campus Wi-Fi).',
-      s3: 'Check whether a proxy, VPN or content blocker is blocking unpkg.com.',
-      s4: 'If it persists, report it - the lab content itself is fine, only the delivery failed.',
-      slow: 'The libraries loaded, but the page did not render. That points to a script error rather than the network. Please report it with the browser console output.'
-    } : {
-      head: 'Diese Seite konnte nicht geladen werden',
-      miss: 'Folgende Bibliotheken wurden nicht ausgeliefert:',
-      why: 'Die Seite laedt React und Babel zur Laufzeit von unpkg.com. Sperrt das Netz diesen Host oder ist der Dienst gestoert, kann nichts dargestellt werden.',
-      what: 'Was du tun kannst:',
-      s1: 'Seite neu laden - das CDN ist oft nur kurz nicht erreichbar.',
-      s2: 'Ein anderes Netz probieren (Mobilfunk statt Campus-WLAN).',
-      s3: 'Pruefen, ob ein Proxy, VPN oder Contentblocker unpkg.com blockiert.',
-      s4: 'Bleibt es dabei: melden - die Lab-Inhalte sind in Ordnung, nur die Auslieferung ist gescheitert.',
-      slow: 'Die Bibliotheken sind geladen, die Seite hat aber nicht gerendert. Das deutet auf einen Skriptfehler hin, nicht auf das Netz. Bitte mit der Ausgabe der Browser-Konsole melden.'
-    };
+<a class="skip-link" href="#main"><span lang="de">Zum Inhalt springen</span><span lang="en">Skip to content</span></a>
 
-    function panel(title, body) {
-      var root = document.getElementById('root') || document.body;
-      root.innerHTML =
-        '<div style="max-width:44rem;margin:4rem auto;padding:1.75rem;font-family:' +
-        "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" +
-        ';line-height:1.65;color:#1A1A1A;background:#fff;border:1px solid #E5E7EB;' +
-        'border-left:5px solid #DC2626;border-radius:0 10px 10px 0">' +
-        '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
-        body +
-        '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
-        '</div>';
-    }
+<header class="header">
+  <div class="header-left">
+    <a class="header-logo" href="index.html" data-lab-link><span class="mark">BINT</span>-Lab</a>
+    <a class="header-back" href="index.html" data-lab-link>
+      <span lang="de">← Zur Übersicht</span><span lang="en">← Back to overview</span>
+    </a>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" data-lang-btn="de" aria-pressed="true" aria-label="Deutsch">DE</button>
+    <button class="lang-btn" data-lang-btn="en" aria-pressed="false" aria-label="English">EN</button>
+  </div>
+</header>
 
-    var missing = [];
-    if (typeof window.React === 'undefined') missing.push('React');
-    if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
-    if (typeof window.Babel === 'undefined') missing.push('Babel');
+<nav class="sidebar" aria-label="Lab-Navigation">
+  <div class="sidebar-title"><span lang="de">Inhalt</span><span lang="en">Contents</span></div>
+  <a class="sidebar-link" href="#ueberblick"><span lang="de">Überblick</span><span lang="en">Overview</span></a>
+  <a class="sidebar-link" href="#datenerkundung"><span lang="de">1: Datenerkundung</span><span lang="en">1: Data Exploration</span></a>
+  <a class="sidebar-link" href="#kpi-hierarchie"><span lang="de">2: KPI-Hierarchie</span><span lang="en">2: KPI Hierarchy</span></a>
+  <a class="sidebar-link" href="#powerbi-steps">3: Power BI</a>
+  <a class="sidebar-link" href="#tableau">3b: Tableau</a>
+  <a class="sidebar-link" href="#dash-steps">4: Plotly Dash</a>
+  <a class="sidebar-link" href="#reflexion"><span lang="de">5: Reflexion</span><span lang="en">5: Reflection</span></a>
+  <a class="sidebar-link" href="#ressourcen"><span lang="de">Ressourcen</span><span lang="en">Resources</span></a>
+  <a class="sidebar-link" href="#quiz">Quiz</a>
+  <a class="sidebar-link" href="#zusammenfassung"><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></a>
+</nav>
 
-    if (missing.length) {
-      panel(T.head,
-        '<p><strong>' + T.miss + '</strong> ' + missing.join(', ') + '</p>' +
-        '<p>' + T.why + '</p>' +
-        '<p><strong>' + T.what + '</strong></p>' +
-        '<ol style="padding-left:1.25rem"><li>' + T.s1 + '</li><li>' + T.s2 +
-        '</li><li>' + T.s3 + '</li><li>' + T.s4 + '</li></ol>');
-      return;
-    }
+<div class="lab-header">
+  <div class="lab-num-big">05</div>
+  <h1 class="lab-title"><span lang="de">Fallstudie: Retail Analytics</span><span lang="en">Case Study: Retail Analytics</span></h1>
+  <p class="lab-intro"><span lang="de">Kompletten BI-Workflow von Rohdaten bis Dashboard durchlaufen – parallel in Power BI, Tableau und Python/Dash.</span><span lang="en">Run the complete BI workflow from raw data to dashboard – in parallel using Power BI, Tableau and Python/Dash.</span></p>
+  <div class="lernziele">
+    <span class="sr-only"><span lang="de">Lernziele</span><span lang="en">Learning Objectives</span></span>
+    <span class="lernziel-chip"><span lang="de">Kompletten BI-Workflow durchlaufen</span><span lang="en">Run the complete BI workflow</span></span>
+    <span class="lernziel-chip"><span lang="de">Fallstudie in Power BI, Tableau und Python umsetzen</span><span lang="en">Implement the case study in Power BI, Tableau and Python</span></span>
+    <span class="lernziel-chip"><span lang="de">Vor- und Nachteile beider Ansätze erleben</span><span lang="en">Experience pros and cons of both approaches</span></span>
+    <span class="lernziel-chip"><span lang="de">Professionelle KPI-Hierarchien entwerfen</span><span lang="en">Design professional KPI hierarchies</span></span>
+  </div>
+</div>
 
-    // Bibliotheken da, aber die App mountet nicht -> Skriptfehler.
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        panel(T.head, '<p>' + T.slow + '</p>');
-      }
-    }, 5000);
-  })();
-  </script>
+<main class="main-content" id="main">
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+  <section class="section-block" id="ueberblick">
+    <h2><span lang="de">Überblick</span><span lang="en">Overview</span></h2>
+    <div class="accent-line"></div>
+    <div class="download-box">
+      <h3><span lang="de">Datensatz</span><span lang="en">Dataset</span></h3>
+      <p><span lang="de">Superstore Sales Dataset (Kaggle, öffentlich, GPL 2). 9.800 Bestellpositionen aus den USA (2015–2018) mit 18 Feldern: Row ID, Order ID, Order Date, Ship Date, Ship Mode, Customer ID, Customer Name, Segment, Country, City, State, Postal Code, Region, Product ID, Category, Sub-Category, Product Name, Sales. Einzige Kennzahl ist Sales – die Forecasting-Variante enthält bewusst kein Profit, Quantity oder Discount.</span><span lang="en">Superstore Sales Dataset (Kaggle, public, GPL 2). 9,800 order line items from the USA (2015–2018) with 18 fields: Row ID, Order ID, Order Date, Ship Date, Ship Mode, Customer ID, Customer Name, Segment, Country, City, State, Postal Code, Region, Product ID, Category, Sub-Category, Product Name, Sales. Sales is the only measure – the forecasting variant deliberately omits Profit, Quantity and Discount.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="data/train.csv" download><span lang="de">↓ train.csv herunterladen</span><span lang="en">↓ Download train.csv</span></a>
+        <a class="btn-download sekundaer" href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting" target="_blank" rel="noopener noreferrer"><span lang="de">Quelle auf Kaggle ↗</span><span lang="en">Source on Kaggle ↗</span></a>
+      </div>
+      <p class="lizenz"><span lang="de">Quelle: Superstore Sales Dataset, Rohit Sahoo (Kaggle) · Lizenz: GPL 2</span><span lang="en">Source: Superstore Sales Dataset, Rohit Sahoo (Kaggle) · Licence: GPL 2</span></p>
+    </div>
+    <div class="download-box">
+      <h3><span lang="de">Starterpaket herunterladen</span><span lang="en">Download the starter package</span></h3>
+      <p><span lang="de">Enthält explore.py, app.py, measures.dax mit der Kalendertabelle, requirements.txt und eine README mit allen Sollwerten. train.csv daneben legen und loslegen – der lange Dash-Code muss nicht aus der Seite kopiert werden.</span><span lang="en">Contains explore.py, app.py, measures.dax including the calendar table, requirements.txt and a README with all expected values. Put train.csv next to it and go – no need to copy the long Dash code out of the page.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="starter/lab-05-fallstudie.zip" download>lab-05-fallstudie.zip</a>
+      </div>
+    </div>
+    <div class="concept-box">
+      <h3><span lang="de">Methodischer Rahmen</span><span lang="en">Methodological Framework</span></h3>
+      <p><span lang="de">Diese Fallstudie folgt dem CRISP-DM-Zyklus (Cross-Industry Standard Process for Data Mining, Shearer, 2000): Business Understanding → Data Understanding → Data Preparation → Modeling → Evaluation → Deployment. Die Schritte 1–5 dieses Labs orientieren sich an den ersten vier Phasen. Modeling im engeren Sinn (Prognosemodelle) und ein produktives Deployment bleiben hier bewusst außen vor – CRISP-DM dient als Orientierungsrahmen, nicht als vollständige Abbildung.</span><span lang="en">This case study follows the CRISP-DM cycle (Cross-Industry Standard Process for Data Mining, Shearer, 2000): Business Understanding → Data Understanding → Data Preparation → Modeling → Evaluation → Deployment. Steps 1–5 of this lab follow the first four phases. Modeling in the narrow sense (forecasting models) and a production deployment are deliberately out of scope here – CRISP-DM serves as a frame of orientation, not as a complete mapping.</span></p>
+    </div>
+  </section>
 
-    // ─── CodeBlock Component ──────────────────────────────────────────────────
-    function CodeBlock({ code, lang, kind, note }) {
-      const [copied, setCopied] = React.useState(false);
-    const [copyFailed, setCopyFailed] = React.useState(false);
-      const copy = async () => {
-      const ok = await BINTLab.copyText(code);
-      setCopied(ok);
-      setCopyFailed(!ok);
-      if (ok) setTimeout(() => setCopied(false), 1500);
-    };
-      const labelCopy = lang === 'en' ? 'Copy' : 'Kopieren';
-      const labelDone = lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert';
-      return (
-        <div style={{ position: 'relative', marginBottom: '1rem' }}>
-          {kind && (
-            <div className={'code-tag ' + (kind === 'run' ? 'code-tag-run' : 'code-tag-concept')}>
-              {kind === 'run'
-                ? (lang === 'en' ? 'Runnable as-is' : 'L\u00E4uft unver\u00E4ndert')
-                : kind === 'diagram'
-                  ? (lang === 'en' ? 'Schema \u2013 not code' : 'Schema \u2013 kein Code')
-                  : (lang === 'en' ? 'Concept \u2013 placeholder names' : 'Konzept \u2013 Platzhalternamen')}
-            </div>
-          )}
-          <pre className="code-block">{code}</pre>
-          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
-          {note && <p className="code-note">{note}</p>}
-          <button onClick={copy} style={{
-            position: 'absolute', top: '0.5rem', right: '0.5rem',
-            background: copied ? '#059669' : '#E5E7EB',
-            color: copied ? 'white' : '#374151',
-            border: 'none', borderRadius: '4px',
-            padding: '0.2rem 0.5rem', fontSize: '0.75rem',
-            cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif'
-          }}>
-            {copied ? labelDone : labelCopy}
-          </button>
+  <section class="section-block" id="datenerkundung">
+    <h2><span lang="de">Schritt 1 – Datenerkundung</span><span lang="en">Step 1 – Data Exploration</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Bevor ein Dashboard entsteht, muss der Datensatz verstanden werden. Dieser Schritt klärt Struktur, Datentypen und erste Kennzahlen.</span><span lang="en">Before building a dashboard, the dataset must be understood. This step clarifies structure, data types, and initial key figures.</span></p>
+    <ol class="schritte">
+      <li>
+        <strong><span lang="de">Datensatz laden und Grundstruktur prüfen</span><span lang="en">Load dataset and check basic structure</span></strong>
+<div class="codeblock" data-kind="run" data-name="CODE_EXPLORE" data-title="explore.py">
+<pre class="code-block" lang="de">import pandas as pd
+import numpy as np
+
+# Datensatz laden (Kaggle: Superstore Sales Dataset -&gt; train.csv)
+df = pd.read_csv('train.csv', encoding='latin-1')
+
+# Datum: die Datei nutzt TT/MM/JJJJ -&gt; dayfirst=True ist Pflicht,
+# sonst bricht das Parsen ab, sobald der Tag groesser als 12 ist.
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+
+# Grundlegende Infos
+print(df.shape)          # (9800, 18)
+print(df.dtypes)         # Datentypen pruefen
+print(df.isnull().sum()) # Nullwerte pruefen
+print(df.describe())     # Statistische Uebersicht
+
+# Key Stats
+print(f"Gesamtumsatz:     ${df['Sales'].sum():,.0f}")
+print(f"Bestellungen:      {df['Order ID'].nunique():,}")
+print(f"Positionen:        {len(df):,}")
+print(f"Ø Bestellwert:   ${df.groupby('Order ID')['Sales'].sum().mean():,.2f}")
+print(f"Zeitraum:          {df['Order Date'].min():%d.%m.%Y} bis {df['Order Date'].max():%d.%m.%Y}")</pre>
+<pre class="code-block" lang="en">import pandas as pd
+import numpy as np
+
+# Load the dataset (Kaggle: Superstore Sales Dataset -&gt; train.csv)
+df = pd.read_csv('train.csv', encoding='latin-1')
+
+# Dates: the file uses DD/MM/YYYY -&gt; dayfirst=True is mandatory,
+# otherwise parsing breaks as soon as the day exceeds 12.
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+
+# Basic information
+print(df.shape)          # (9800, 18)
+print(df.dtypes)         # check data types
+print(df.isnull().sum()) # check null values
+print(df.describe())     # statistical overview
+
+# Key stats
+print(f"Total revenue:      ${df['Sales'].sum():,.0f}")
+print(f"Orders:              {df['Order ID'].nunique():,}")
+print(f"Line items:          {len(df):,}")
+print(f"Avg order value:   ${df.groupby('Order ID')['Sales'].sum().mean():,.2f}")
+print(f"Period:              {df['Order Date'].min():%d/%m/%Y} to {df['Order Date'].max():%d/%m/%Y}")</pre>
+<p class="code-note"><span lang="de">Voraussetzung: pip install pandas numpy, train.csv im selben Verzeichnis. Sollausgabe: (9800, 18), Gesamtumsatz $2.261.537, 4.922 Bestellungen, 9.800 Positionen, Ø Bestellwert $459,48, Zeitraum 03.01.2015 bis 30.12.2018, elf fehlende Postal Code.</span><span lang="en">Prerequisites: pip install pandas numpy, train.csv in the same directory. Expected output: (9800, 18), total revenue $2,261,537, 4,922 orders, 9,800 line items, average order value $459.48, period 03/01/2015 to 30/12/2018, eleven missing Postal Code values.</span></p>
+</div>
+        <div class="challenge-box">
+          <h3><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h3>
+          <ul>
+            <li><span lang="de">df.shape liefert (9800, 18) – sonst wurde die falsche Datei geladen.</span><span lang="en">df.shape returns (9800, 18) – otherwise the wrong file was loaded.</span></li>
+            <li><span lang="de">Gesamtumsatz 2.261.537 – weicht er ab, stimmt das Encoding nicht.</span><span lang="en">Total revenue 2,261,537 – if it differs, the encoding is wrong.</span></li>
+            <li><span lang="de">Zeitraum 03.01.2015 bis 30.12.2018 – endet er im Dezember 2012 oder wirft pandas einen Fehler, fehlt dayfirst=True.</span><span lang="en">Period 03/01/2015 to 30/12/2018 – if it ends in December 2012 or pandas throws an error, dayfirst=True is missing.</span></li>
+            <li><span lang="de">Genau elf fehlende Postal Code, sonst keine Nullwerte.</span><span lang="en">Exactly eleven missing Postal Code values, no other nulls.</span></li>
+          </ul>
         </div>
-      );
-    }
-
-    // ─── QuizQuestion Component ──────────────────────────────────────────────
-    function QuizQuestion({ question, index, lang }) {
-      // Mastery statt One-shot: falsche Antwort sperrt die Frage nicht mehr.
-      const [selected, setSelected] = React.useState(null);
-      const [revealed, setRevealed] = React.useState(false);
-      const [attempts, setAttempts] = React.useState(0);
-      const solved = selected === question.correct;
-      const wrongPick = selected !== null && !solved;
-
-      const pick = (oi) => {
-        if (revealed) return;
-        setSelected(oi);
-        setAttempts((n) => n + 1);
-        if (oi === question.correct) setRevealed(true);
-      };
-
-      return (
-        <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: 'white', border: '1px solid #E5E7EB', borderRadius: '10px' }}>
-          <p style={{ fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", margin: '0 0 0.75rem', color: '#1A1A1A' }}>
-            {index + 1}. {question.q}
-          </p>
-          <div style={{ display: 'grid', gap: '0.5rem' }}>
-            {question.options.map((opt, oi) => {
-              let bg = 'white'; let border = '#D1D5DB'; let color = '#374151'; let mark = null;
-              // Zustand nie nur ueber Farbe - das Zeichen steht im DOM.
-              if (revealed && oi === question.correct) { bg = '#D1FAE5'; border = '#059669'; color = '#065F46'; mark = '\u2713'; }
-              else if (oi === selected && oi !== question.correct) { bg = '#FEE2E2'; border = '#DC2626'; color = '#991B1B'; mark = '\u2717'; }
-              return (
-                <button key={oi} disabled={revealed} onClick={() => pick(oi)}
-                  className="quiz-option"
-                  style={{
-                    textAlign: 'left', padding: '0.6rem 1rem', fontSize: '0.88rem',
-                    background: bg, border: '1.5px solid ' + border, borderRadius: '6px',
-                    color, cursor: revealed ? 'default' : 'pointer',
-                    fontFamily: 'inherit', transition: 'border-color 0.15s, background 0.15s'
-                  }}>
-                  {mark && <span className="quiz-mark" aria-hidden="true">{mark}</span>}
-                  {mark && <span className="sr-only">
-                    {mark === '\u2713'
-                      ? (lang === 'en' ? 'Correct answer: ' : 'Richtige Antwort: ')
-                      : (lang === 'en' ? 'Your wrong answer: ' : 'Deine falsche Antwort: ')}
-                  </span>}
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
-
-          {wrongPick && !revealed && (
-            <div className="quiz-hint" role="status" aria-live="polite">
-              {lang === 'en'
-                ? '\u2717 Not quite. Re-read the question and try again \u2013 or reveal the answer.'
-                : '\u2717 Noch nicht richtig. Lies die Frage noch einmal und versuche es erneut \u2013 oder lass dir die L\u00F6sung zeigen.'}
-            </div>
-          )}
-
-          {wrongPick && !revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn" onClick={() => setSelected(null)}>
-                {lang === 'en' ? 'Try again' : 'Nochmal versuchen'}
-              </button>
-              <button type="button" className="quiz-retry-btn secondary" onClick={() => setRevealed(true)}>
-                {lang === 'en' ? 'Show answer' : 'L\u00F6sung anzeigen'}
-              </button>
-              <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-            </div>
-          )}
-
-          {revealed && (
-            <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: solved ? '#059669' : '#B45309' }} role="status" aria-live="polite">
-              {solved
-                ? (lang === 'en' ? '\u2713 Correct!' : '\u2713 Richtig!')
-                : (lang === 'en' ? 'Answer shown' : 'L\u00F6sung eingeblendet')}
-            </p>
-          )}
-          {revealed && question.explanation && (
-            <p style={{ marginTop: '0.35rem', fontSize: '0.85rem', lineHeight: 1.6, color: '#374151' }}>
-              {question.explanation}
-            </p>
-          )}
-          {revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn secondary"
-                onClick={() => { setSelected(null); setRevealed(false); setAttempts(0); }}>
-                {lang === 'en' ? 'Reset question' : 'Frage zur\u00FCcksetzen'}
-              </button>
-              {attempts > 1 && (
-                <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // ─── Translations ─────────────────────────────────────────────────────────
-    const translations = {
-      de: {
-        title: 'Fallstudie: Retail Analytics',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
-        desc: 'Kompletten BI-Workflow von Rohdaten bis Dashboard durchlaufen \u2013 parallel in Power BI und Python/Dash.',
-        lernziele: [
-          'Kompletten BI-Workflow durchlaufen',
-          'Fallstudie in Power BI UND Python umsetzen',
-          'Vor- und Nachteile beider Ans\u00E4tze erleben',
-          'Professionelle KPI-Hierarchien entwerfen',
-        ],
-        navContents: 'Inhalt',
-        nav: [
-          { href: '#ueberblick',       label: '\u00DCberblick' },
-          { href: '#datenerkundung',   label: '1: Datenerkundung' },
-          { href: '#kpi-hierarchie',   label: '2: KPI-Hierarchie' },
-          { href: '#powerbi-steps',    label: '3: Power BI' },
-          { href: '#tableau',          label: '3b: Tableau' },
-          { href: '#dash-steps',       label: '4: Plotly Dash' },
-          { href: '#reflexion',        label: '5: Reflexion' },
-          { href: '#ressourcen',       label: 'Ressourcen' },
-          { href: '#quiz',             label: 'Quiz' },
-          { href: '#zusammenfassung',  label: 'Zusammenfassung' },
-        ],
-        backLabel: '\u2190 \u00DCbersicht',
-
-        s1Title: '\u00DCberblick',
-        s1LernzieleLabel: 'Lernziele',
-        s1InfoTitle: 'Datensatz',
-        s1DownloadDirect: '\u2193 train.csv herunterladen',
-        s1DownloadKaggle: 'Quelle auf Kaggle \u2197',
-        s1InfoText: 'Superstore Sales Dataset (Kaggle, \u00F6ffentlich, GPL\u00A02). 9.800 Bestellpositionen aus den USA (2015\u20132018) mit 18 Feldern: Row ID, Order ID, Order Date, Ship Date, Ship Mode, Customer ID, Customer Name, Segment, Country, City, State, Postal Code, Region, Product ID, Category, Sub-Category, Product Name, Sales. Einzige Kennzahl ist Sales \u2013 die Forecasting-Variante enth\u00E4lt bewusst kein Profit, Quantity oder Discount.',
-        starterTitle: 'Starterpaket herunterladen',
-        starterText: 'Enth\u00E4lt explore.py, app.py, measures.dax mit der Kalendertabelle, requirements.txt und eine README mit allen Sollwerten. train.csv daneben legen und loslegen \u2013 der lange Dash-Code muss nicht aus der Seite kopiert werden.',
-        starterBtn: 'lab-05-fallstudie.zip',
-        runNoteExplore: 'Voraussetzung: pip install pandas numpy, train.csv im selben Verzeichnis. Sollausgabe: (9800, 18), Gesamtumsatz $2.261.537, 4.922 Bestellungen, 9.800 Positionen, \u00D8 Bestellwert $459,48, Zeitraum 03.01.2015 bis 30.12.2018, elf fehlende Postal Code.',
-        runNoteMeasures: 'Voraussetzung: train.csv ist importiert und die Tabelle in Orders umbenannt (Schritt\u00A01). Sollwerte: Umsatz 2.261.536,78 \u00B7 Bestellungen 4.922 \u00B7 Positionen 9.800 \u00B7 \u00D8 Bestellwert 459,48 \u00B7 YoY_Wachstum 2018 gegen\u00FCber 2017 rund 20,3\u00A0%.',
-        runNoteDash: 'Voraussetzung: pip install dash plotly pandas, train.csv im selben Verzeichnis. Als app.py speichern, mit python app.py starten, dann http://127.0.0.1:8050 \u00F6ffnen. Ohne Filterauswahl zeigen die KPI-Karten dieselben Werte wie die Power-BI-Measures.',
-        s1MethodTitle: 'Methodischer Rahmen',
-        s1MethodText: 'Diese Fallstudie folgt dem CRISP-DM-Zyklus (Cross-Industry Standard Process for Data Mining, Shearer, 2000): Business Understanding \u2192 Data Understanding \u2192 Data Preparation \u2192 Modeling \u2192 Evaluation \u2192 Deployment. Die Schritte 1\u20135 dieses Labs orientieren sich an den ersten vier Phasen. Modeling im engeren Sinn (Prognosemodelle) und ein produktives Deployment bleiben hier bewusst aussen vor \u2013 CRISP-DM dient als Orientierungsrahmen, nicht als vollst\u00E4ndige Abbildung.',
-
-        s2Title: 'Schritt 1 \u2013 Datenerkundung',
-        s2Intro: 'Bevor ein Dashboard entsteht, muss der Datensatz verstanden werden. Dieser Schritt kl\u00E4rt Struktur, Datentypen und erste Kennzahlen.',
-        s2QualityTitle: 'Datenqualit\u00E4t: entscheiden statt weiterscrollen',
-        s2QualityIntro: 'df.isnull().sum() meldet elf fehlende Postal Code. Ein gefundener Datenfehler ist erst dann abgearbeitet, wenn eine Entscheidung dokumentiert ist. Die vier Fragen dazu:',
-        s2QualityRows: [
-          ['Ist die Spalte f\u00FCr die Fragestellung relevant?', 'Nein. Umsatz, Kategorie und Region brauchen keine Postleitzahl.'],
-          ['Welche Auswertung w\u00E4re betroffen?', 'Nur eine Karte auf PLZ-Ebene. Die Regionskarte arbeitet mit State und ist vollst\u00E4ndig.'],
-          ['Imputieren oder nicht?', 'Nicht imputieren. Eine erfundene Postleitzahl verortet elf Bestellungen falsch \u2013 das ist schlimmer als eine L\u00FCcke.'],
-          ['Zeilen l\u00F6schen?', 'Nein. Das w\u00FCrde Umsatz vernichten, der tats\u00E4chlich stattgefunden hat. Die elf Zeilen bleiben, die L\u00FCcke wird ausgewiesen.'],
-        ],
-        s2QualityNote: 'So dokumentiert steht die Entscheidung im Bericht \u2013 und ist nachvollziehbar, falls jemand sp\u00E4ter fragt, warum die Summe der PLZ-Auswertung nicht zum Gesamtumsatz passt.',
-        s2SelfCheckTitle: 'Selbstcheck (1 Minute)',
-        s2SelfCheckItems: [
-          'df.shape liefert (9800, 18) \u2013 sonst wurde die falsche Datei geladen.',
-          'Gesamtumsatz 2.261.537 \u2013 weicht er ab, stimmt das Encoding nicht.',
-          'Zeitraum 03.01.2015 bis 30.12.2018 \u2013 endet er im Dezember 2012 oder wirft pandas einen Fehler, fehlt dayfirst=True.',
-          'Genau elf fehlende Postal Code, sonst keine Nullwerte.',
-        ],
-        s2Step1Label: 'Datensatz laden und Grundstruktur pr\u00FCfen',
-
-        s3Title: 'Schritt 2 \u2013 KPI-Hierarchie',
-        s3Intro: 'Gute Dashboards folgen einer KPI-Hierarchie: Strategische Kennzahlen oben, operative Details darunter, Warnsignale separat.',
-        s3Headers: ['Ebene', 'KPIs', 'Beschreibung'],
-        s3Rows: [
-          ['Strategisch', 'Gesamtumsatz, Bestellungen, \u00D8 Bestellwert', 'Wie performt das Unternehmen insgesamt?'],
-          ['Operativ', 'Umsatz nach Region/Kategorie, Top-10-Produkte, YoY', 'Welche Segmente treiben das Ergebnis?'],
-          ['Warnsignale', 'Sub-Kategorien mit r\u00FCckl\u00E4ufigem Umsatz (YoY), Bundesl\u00E4nder mit \u00D8 Bestellwert unter Durchschnitt', 'Wo bricht Umsatz weg \u2013 und wo sind die Bestellungen zu klein?'],
-        ],
-        s3ConceptTitle: 'Prinzip: KPIs von oben nach unten',
-        s3ConceptText: 'Stakeholder wollen zuerst den Gesamtstatus sehen, dann in Problembereiche einzoomen. Strategische KPIs prominent, operative Details auf Anfrage, Warnsignale visuell hervorheben (Shneiderman, 1996: \u201EOverview first, zoom and filter, then details-on-demand\u201C).',
-
-        s4Title: 'Schritt 3 \u2013 Power BI Step by Step',
-        s4Steps: [
-          { label: 'CSV importieren', text: 'Home \u2192 Daten abrufen \u2192 Text/CSV \u2192 train.csv ausw\u00E4hlen \u2192 Laden. Danach die Tabelle im Feldbereich von \u201Etrain\u201C in \u201EOrders\u201C umbenennen \u2013 die DAX-Measures in Schritt\u00A03 referenzieren Orders. Ebenfalls wichtig: Order Date und Ship Date im Power Query Editor als Datum (TT/MM/JJJJ) typisieren.' },
-          { label: 'Power Query \u2013 Datentransformation', text: 'Sicherstellen: Order Date als Datum/Uhrzeit, Spalten pr\u00FCfen auf Nullwerte, Datentypen kontrollieren.' },
-          { label: 'Measures erstellen', text: 'Im Datenmodell unter \u201ENew Measure\u201C die folgenden DAX-Ausdr\u00FCcke anlegen:', hasCode: true },
-          { label: 'Dashboard aufbauen', text: '4 KPI-Cards oben (Umsatz, Bestellungen, \u00D8 Bestellwert, Positionen), Umsatz-Trend-Linie (monatlich), Kategorie-Balkendiagramm, Region-Karte, Streudiagramm Umsatz vs. Bestellpositionen je Sub-Kategorie.' },
-          { label: 'Slicer & Formatierung', text: 'Slicer f\u00FCr: Jahr, Region, Kategorie. Einheitliche Farben, Datenbeschriftungen aktivieren.' },
-        ],
-
-        twbxTitle: 'Fertige Arbeitsmappe herunterladen',
-        twbxText: 'BINT_Tableau_Uebung.twbx enthält train.csv und alle zehn berechneten Felder aus diesem Abschnitt. Die Datei ist gepackt – sie läuft ohne weitere Verbindung in Tableau Desktop und in Tableau Public. Zum Nachbauen erst selbst rechnen, dann vergleichen.',
-        twbxBtn: 'BINT_Tableau_Uebung.twbx',
-        s4bTitle: 'Schritt 3b \u2013 Tableau Step by Step',
-        s4bIntro: 'Dieselbe Fallstudie in Tableau Desktop oder Tableau Public. Die berechneten Felder entsprechen den DAX-Measures aus Schritt\u00A03.',
-        s4bSteps: [
-          { label: 'Verbindung zur CSV herstellen', text: 'Startseite \u2192 Verbinden \u2192 Zu einer Datei \u2192 Textdatei \u2192 train.csv ausw\u00E4hlen. Tableau \u00F6ffnet die Datenquellenseite mit der Tabelle im Canvas. Der Reiter Blatt\u00A01 unten links wechselt zum ersten Arbeitsblatt. Encoding auf UTF-8 belassen; erscheinen in Customer Name verstellte Zeichen, in der Datenquelle auf Windows-1252 umstellen.' },
-          { label: 'Datumsspalte pr\u00FCfen', text: 'In der Datenquellenvorschau das Typsymbol \u00FCber Order Date pr\u00FCfen. Ein Kalendersymbol steht f\u00FCr Datum, Abc f\u00FCr Text. Das Bestelldatum steht als 08/11/2017, also Tag zuerst. Liest Tableau die Spalte als Text, hilft ein berechnetes Feld DATEPARSE("dd/MM/yyyy", [Order Date]); alle zeitbezogenen Ansichten verwenden dann dieses Feld. Kontrolle: der Zeitraum reicht vom 03.01.2015 bis zum 30.12.2018.' },
-          { label: 'Berechnete Felder anlegen', text: 'Analyse \u2192 Berechnetes Feld erstellen. Die folgenden acht Felder anlegen und unter dem Namen aus der jeweiligen Kommentarzeile speichern.', hasCode: true },
-          { label: 'Eine Ansicht je KPI', text: 'Pro Arbeitsblatt eine Kennzahl. Umsatzverlauf: Order Date als Jahr in Spalten, Gesamtumsatz in Zeilen, Markierungstyp Linie. Umsatz je Kategorie: Category in Zeilen, Gesamtumsatz in Spalten, absteigend sortiert. Umsatz je Region: Region in Zeilen, Gesamtumsatz in Spalten, Anteil am Gesamtumsatz auf Beschriftung. Umsatz je Unterkategorie: Sub-Category in Zeilen, Gesamtumsatz in Spalten. Wachstum: Jahr in Spalten, Wachstum gegen\u00FCber dem Vorjahr in Zeilen \u2013 LOOKUP liest den Vorjahreswert aus der Ansicht, das Jahr muss daher in der Ansicht liegen.' },
-          { label: 'Ansichten zu einem Dashboard zusammensetzen', text: 'Dashboard \u2192 Neues Dashboard, Gr\u00F6\u00DFe auf Automatisch. Die Arbeitsbl\u00E4tter aus der linken Liste auf die Fl\u00E4che ziehen: Kennzahlen oben, Detailansichten darunter. Am Rand eines Arbeitsblatts \u00F6ffnet das Dropdown den Eintrag Als Filter verwenden; eine Auswahl dort filtert die \u00FCbrigen Ansichten. Der Wirkungsbereich l\u00E4sst sich \u00FCber Filter \u2192 Anwenden auf \u2192 Ausgew\u00E4hlte Arbeitsbl\u00E4tter einschr\u00E4nken.' },
-          { label: 'Arbeitsmappe als .twbx weitergeben', text: 'Datei \u2192 Speichern unter \u2192 Verpackte Arbeitsmappe (.twbx). Die twbx-Datei enth\u00E4lt Arbeitsmappe und Datenextrakt zusammen, die Empfangenden brauchen train.csv nicht. Eine .twb speichert nur den Verweis auf den lokalen Pfad und bleibt auf fremden Rechnern leer. Tableau Public ver\u00F6ffentlicht jede gespeicherte Arbeitsmappe im Web \u2013 vertrauliche Daten geh\u00F6ren in Tableau Desktop mit lokaler Speicherung.' },
-        ],
-        s4bLodNote: 'Anteil am Gesamtumsatz und Anteil an der Ansicht liefern verschiedene Werte. { FIXED : SUM([Sales]) } ignoriert die Dimensionsfilter der Ansicht und ergibt immer 2.261.536,78; ein Kontextfilter wirkt dagegen auch auf diesen Ausdruck. TOTAL(SUM([Sales])) bezieht sich auf die Zeilen der aktuellen Ansicht und \u00E4ndert sich mit jedem Filter.',
-        runNoteTableau: 'Voraussetzung: train.csv ist als Datenquelle verbunden und Order Date liegt als Datum vor. Sollwerte ohne Filter: Gesamtumsatz 2.261.536,78 \u00B7 Umsatz West 710.219,68 \u00B7 Anteil West 31,4\u00A0% \u00B7 \u00D8 Bestellwert 459,48. Anteil an der Ansicht, Umsatz des Vorjahres und Wachstum sind Tabellenberechnungen und h\u00E4ngen von den Feldern in der Ansicht ab.',
-        s4bCheckTitle: 'Selbstcheck',
-        s4bCheckItems: [
-          'Die Datenquelle meldet 9.800 Zeilen und 18 Spalten. Eine Profit-Spalte enth\u00E4lt diese Datei nicht, Deckungsbeitr\u00E4ge lassen sich daraus nicht berechnen.',
-          'Gesamtumsatz 2.261.536,78. Umsatz West 710.219,68, Anteil am Gesamtumsatz 31,4\u00A0%.',
-          'Jahresums\u00E4tze: 2015 479.856,21 \u00B7 2016 459.436,01 \u00B7 2017 600.192,55 \u00B7 2018 722.052,02. Enden die Jahre 2012 oder fehlen Zeilen, wurde das Datum als MM/dd/yyyy gelesen.',
-          'Wachstum gegen\u00FCber dem Vorjahr: 2016 \u22124,3\u00A0%, 2017 +30,6\u00A0%, 2018 +20,3\u00A0%. Zeigt die Spalte 2015 einen Wert, l\u00E4uft die Tabellenberechnung in die falsche Richtung.',
-          'St\u00E4rkste Unterkategorien: Phones 327.782,45 \u00B7 Chairs 322.822,73 \u00B7 Storage 219.343,39.',
-          '4.922 Bestellungen, 793 Kunden, \u00D8 Bestellwert 459,48. COUNTD([Order ID]) und nicht COUNT, sonst z\u00E4hlt Tableau die 9.800 Positionen.',
-        ],
-
-        s5Title: 'Schritt 4 \u2013 Plotly Dash Step by Step',
-        s5Intro: 'Die folgende Dash-App repliziert das Power-BI-Dashboard in Python. In app.py speichern und mit python app.py starten.',
-
-        s6Title: 'Schritt 5 \u2013 Reflexion & Vergleich',
-        s6BoxTitle: 'Reflexionsfragen',
-        s6Questions: [
-          'Was hat l\u00E4nger gedauert: Power BI oder Dash? Warum?',
-          'Welches Dashboard l\u00E4sst sich leichter an neue Anforderungen anpassen?',
-          'Welches w\u00FCrdest du bei einem Kunden ohne Python-Kenntnisse einsetzen?',
-          'Wie w\u00FCrdest du die Dash-App produktiv deployen?',
-          'Welches Tool eignet sich besser f\u00FCr nicht-technische Stakeholder \u2013 und warum?',
-          'Welche Berechnung geh\u00F6rt in Tableau in ein LOD-Feld, welche in eine Table Calculation?',
-        ],
-        s6CompareTitle: 'Vergleich: Power BI, Tableau und Plotly Dash',
-        s6CompareHeaders: ['Kriterium', 'Power BI', 'Tableau', 'Plotly Dash'],
-        s6CompareRows: [
-          ['Setup', 'GUI, Drag & Drop', 'GUI, Drag & Drop', 'Python-Code'],
-          ['Lernkurve', 'Flach (keine Programmierung)', 'Flach f\u00FCr Ansichten, eigene Syntax f\u00FCr LOD und Table Calculations', 'Steil (Python + Dash)'],
-          ['Formelsprache', 'DAX', 'Tableau-Berechnungen mit LOD-Ausdr\u00FCcken und Table Calculations', 'pandas und Python'],
-          ['Flexibilit\u00E4t', 'Begrenzt auf built-in Visuals', 'Begrenzt auf die Markierungstypen, Erweiterung \u00FCber Dashboard-Erweiterungen', 'Unbegrenzt (jede Python-Lib)'],
-          ['Deployment', 'Power BI Service (Cloud)', 'Tableau Server, Tableau Cloud oder Weitergabe als .twbx', 'Docker / Render / Railway'],
-          ['Kosten', 'Kostenpflichtige Pro-Lizenz je Benutzer/Monat \u2013 aktuellen Preis bei Microsoft pr\u00FCfen', 'Kostenpflichtige Creator-Lizenz je Benutzer/Monat \u2013 aktuellen Preis bei Tableau pr\u00FCfen; Tableau Public ist kostenlos und ver\u00F6ffentlicht die Arbeitsmappe', 'Open Source (Hosting-Kosten)'],
-          ['Zielgruppe', 'Business-Analysten', 'Business-Analysten mit Schwerpunkt auf explorativer Analyse', 'Data Engineers / Scientists'],
-        ],
-        s6DeployTitle: 'Deployment-Optionen f\u00FCr Dash',
-        s6DeployText: 'Gunicorn als WSGI-Server \u2192 Docker-Container \u2192 Hosting auf Render, Railway oder eigenem Server mit Traefik als Reverse Proxy. F\u00FCr Prototypen: Streamlit Cloud (kostenlos, keine Docker-Kenntnisse n\u00F6tig).',
-
-        s7Title: 'Lernressourcen',
-        s7Desc: 'Erg\u00E4nzende YouTube-Kanalempfehlungen f\u00FCr diese Fallstudie:',
-        s7Resources: [
-          { title: 'Guy in a Cube', url: 'https://www.youtube.com/@GuyInACube', desc: 'Power-BI-Tutorials von Adam Saxton & Patrick LeBlanc (Microsoft-nah).' },
-          { title: 'Charming Data', url: 'https://www.youtube.com/@CharmingData', desc: 'Plotly Dash Tutorials von Adam Schroeder mit echten Datens\u00E4tzen.' },
-          { title: 'SQLBI', url: 'https://www.youtube.com/@SQLBI', desc: 'Marco Russo & Alberto Ferrari \u2013 die weltweit f\u00FChrenden DAX-Experten.' },
-          { title: 'Curbal', url: 'https://www.youtube.com/@CurbalEN', desc: 'W\u00F6chentliche DAX-Tipps und Power-BI-Tutorials (DAX Fridays).' },
-        ],
-        s7BookRef: 'Buchempfehlung: \u201EStorytelling with Data\u201C von Cole Nussbaumer Knaflic (Wiley, 2015) \u2013 das Standardwerk f\u00FCr datengetriebenes Storytelling.',
-
-        quizTitle: 'Quiz',
-        quizQuestions: [
-          { q: 'Welche Ebene der KPI-Hierarchie zeigt Gesamtumsatz und \u00D8 Bestellwert?', options: ['Operativ', 'Strategisch', 'Warnsignale', 'Taktisch'], correct: 1, explanation: 'Die strategische Ebene richtet sich an die Gesch\u00E4ftsf\u00FChrung und zeigt hoch aggregierte Kennzahlen wie Gesamtumsatz, Bestellungen und durchschnittlichen Bestellwert. Die taktische Ebene bricht diese auf Region oder Kategorie herunter, die operative Ebene zeigt Einzelvorg\u00E4nge wie einzelne Bestellungen.' },
-          { q: 'Was ist der erste Schritt im CRISP-DM-Zyklus?', options: ['Data Preparation', 'Business Understanding', 'Modeling', 'Evaluation'], correct: 1, explanation: 'CRISP-DM beginnt mit Business Understanding: erst die fachliche Frage kl\u00E4ren, dann Daten anfassen. Die Reihenfolge lautet Business Understanding, Data Understanding, Data Preparation, Modeling, Evaluation, Deployment \u2013 wer mit den Daten startet, baut oft am Problem vorbei.' },
-          { q: 'Wie viele Zeilen enth\u00E4lt die train.csv des Superstore-Datensatzes?', options: ['5.000', '9.800', '9.994', '20.000'], correct: 1, explanation: 'Die train.csv enth\u00E4lt 9.800 Zeilen \u2013 also Bestell*positionen*, nicht Bestellungen: eine Bestellung umfasst oft mehrere Positionen, df[\'Order ID\'].nunique() liefert rund 4.900. Achtung bei der Abgrenzung: die Vollversion des Superstore-Datensatzes hat 9.994 Zeilen, die hier genutzte Forecasting-Variante 9.800. Pr\u00FCfen mit df.shape.' },
-          { q: 'Welches Tool eignet sich besser f\u00FCr nicht-technische Nutzer?', options: ['Plotly Dash', 'Power BI', 'Jupyter Notebook', 'Streamlit'], correct: 1, explanation: 'Power BI bietet Drag-and-drop, fertige Visuals und eine Oberfl\u00E4che, die Excel-Nutzern vertraut ist \u2013 ohne Programmierkenntnisse. Plotly Dash ist m\u00E4chtiger und voll anpassbar, setzt aber Python-Kenntnisse und eigenes Deployment voraus.' },
-          { q: 'Was liefert df.describe() in pandas?', options: ['Nur Datentypen', 'Statistische \u00DCbersicht (count, mean, std, min, max)', 'Nur Nullwerte', 'Spaltenanzahl'], correct: 1, explanation: 'df.describe() liefert eine statistische \u00DCbersicht der numerischen Spalten: count, mean, std, min, die Quartile 25/50/75 % und max. Ideal f\u00FCr den ersten Plausibilit\u00E4tscheck \u2013 auff\u00E4llige Minima oder Maxima decken Datenqualit\u00E4tsprobleme sofort auf.' },
-          { q: 'Wie deployt man eine Dash-App produktiv?', options: ['Power BI Service', 'Gunicorn + Docker', 'Excel Online', 'Google Sheets'], correct: 1, explanation: 'Produktiv l\u00E4uft eine Dash-App hinter Gunicorn als WSGI-Server, verpackt in einen Docker-Container \u2013 reproduzierbar, skalierbar \u00FCber Worker und unabh\u00E4ngig von der lokalen Python-Installation. In der Praxis kommt davor noch ein Reverse Proxy f\u00FCr HTTPS.' },
-        ],
-
-        summaryTitle: 'Zusammenfassung',
-        summaryItems: [
-          'Ein vollst\u00E4ndiger BI-Workflow umfasst Datenerkundung, KPI-Design, Visualisierung und Reflexion.',
-          'KPI-Hierarchien strukturieren Dashboards: strategisch \u2192 operativ \u2192 Warnsignale.',
-          'Power BI eignet sich f\u00FCr Business-Analysten (GUI, kein Code, schneller Einstieg).',
-          'Plotly Dash bietet maximale Flexibilit\u00E4t f\u00FCr Data Scientists (Python, Open Source).',
-          'Tableau deckt denselben Workflow mit eigenen Berechnungen ab: LOD-Ausdr\u00FCcke f\u00FCr ansichtsunabh\u00E4ngige Werte, Table Calculations f\u00FCr Werte relativ zur Ansicht.',
-          'Plotly rendert zu SVG/Canvas \u2013 CSS-Variablen funktionieren dort nicht (Hex-Werte verwenden).',
-          'CRISP-DM (Shearer, 2000) liefert den methodischen Rahmen f\u00FCr BI-Projekte.',
-          'Produktives Deployment: Gunicorn \u2192 Docker \u2192 Cloud-Hosting (Render, Railway).',
-        ],
-
-        navPrev: '\u2190 Lab 04: Dashboards',
-        navNext: 'Lab 06: Souver\u00E4nit\u00E4t \u2192',
-      },
-
-      en: {
-        title: 'Case Study: Retail Analytics',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
-        desc: 'Run the complete BI workflow from raw data to dashboard \u2013 in parallel using Power BI and Python/Dash.',
-        lernziele: [
-          'Run the complete BI workflow',
-          'Implement the case study in Power BI AND Python',
-          'Experience pros and cons of both approaches',
-          'Design professional KPI hierarchies',
-        ],
-        navContents: 'Contents',
-        nav: [
-          { href: '#ueberblick',       label: 'Overview' },
-          { href: '#datenerkundung',   label: '1: Data Exploration' },
-          { href: '#kpi-hierarchie',   label: '2: KPI Hierarchy' },
-          { href: '#powerbi-steps',    label: '3: Power BI' },
-          { href: '#tableau',          label: '3b: Tableau' },
-          { href: '#dash-steps',       label: '4: Plotly Dash' },
-          { href: '#reflexion',        label: '5: Reflection' },
-          { href: '#ressourcen',       label: 'Resources' },
-          { href: '#quiz',             label: 'Quiz' },
-          { href: '#zusammenfassung',  label: 'Summary' },
-        ],
-        backLabel: '\u2190 Overview',
-
-        s1Title: 'Overview',
-        s1LernzieleLabel: 'Learning Objectives',
-        s1InfoTitle: 'Dataset',
-        s1DownloadDirect: '\u2193 Download train.csv',
-        s1DownloadKaggle: 'Source on Kaggle \u2197',
-        s1InfoText: 'Superstore Sales Dataset (Kaggle, public, GPL\u00A02). 9,800 order line items from the USA (2015\u20132018) with 18 fields: Row ID, Order ID, Order Date, Ship Date, Ship Mode, Customer ID, Customer Name, Segment, Country, City, State, Postal Code, Region, Product ID, Category, Sub-Category, Product Name, Sales. Sales is the only measure \u2013 the forecasting variant deliberately omits Profit, Quantity and Discount.',
-        starterTitle: 'Download the starter package',
-        starterText: 'Contains explore.py, app.py, measures.dax including the calendar table, requirements.txt and a README with all expected values. Put train.csv next to it and go \u2013 no need to copy the long Dash code out of the page.',
-        starterBtn: 'lab-05-fallstudie.zip',
-        runNoteExplore: 'Prerequisites: pip install pandas numpy, train.csv in the same directory. Expected output: (9800, 18), total revenue $2,261,537, 4,922 orders, 9,800 line items, average order value $459.48, period 03/01/2015 to 30/12/2018, eleven missing Postal Code values.',
-        runNoteMeasures: 'Prerequisites: train.csv imported and the table renamed to Orders (step\u00A01). Expected values: revenue 2,261,536.78 \u00B7 orders 4,922 \u00B7 line items 9,800 \u00B7 average order value 459.48 \u00B7 YoY growth 2018 over 2017 about 20.3%.',
-        runNoteDash: 'Prerequisites: pip install dash plotly pandas, train.csv in the same directory. Save as app.py, run python app.py, then open http://127.0.0.1:8050. With no filter selection the KPI cards show the same values as the Power BI measures.',
-        s1MethodTitle: 'Methodological Framework',
-        s1MethodText: 'This case study follows the CRISP-DM cycle (Cross-Industry Standard Process for Data Mining, Shearer, 2000): Business Understanding \u2192 Data Understanding \u2192 Data Preparation \u2192 Modeling \u2192 Evaluation \u2192 Deployment. Steps 1\u20135 of this lab follow the first four phases. Modeling in the narrow sense (forecasting models) and a production deployment are deliberately out of scope here \u2013 CRISP-DM serves as a frame of orientation, not as a complete mapping.',
-
-        s2Title: 'Step 1 \u2013 Data Exploration',
-        s2Intro: 'Before building a dashboard, the dataset must be understood. This step clarifies structure, data types, and initial key figures.',
-        s2QualityTitle: 'Data quality: decide, do not scroll past',
-        s2QualityIntro: 'df.isnull().sum() reports eleven missing Postal Code values. A data defect is only dealt with once a decision is documented. The four questions:',
-        s2QualityRows: [
-          ['Is the column relevant to the question?', 'No. Revenue, category and region do not need a postal code.'],
-          ['Which analysis would be affected?', 'Only a map at ZIP level. The region map uses State and is complete.'],
-          ['Impute or not?', 'Do not impute. An invented postal code puts eleven orders in the wrong place \u2013 that is worse than a gap.'],
-          ['Delete the rows?', 'No. That would destroy revenue that actually happened. The eleven rows stay, the gap is disclosed.'],
-        ],
-        s2QualityNote: 'Documented this way the decision belongs in the report \u2013 and stays traceable if someone later asks why the ZIP-level total does not match overall revenue.',
-        s2SelfCheckTitle: 'Self-check (1 minute)',
-        s2SelfCheckItems: [
-          'df.shape returns (9800, 18) \u2013 otherwise the wrong file was loaded.',
-          'Total revenue 2,261,537 \u2013 if it differs, the encoding is wrong.',
-          'Period 03/01/2015 to 30/12/2018 \u2013 if it ends in December 2012 or pandas throws an error, dayfirst=True is missing.',
-          'Exactly eleven missing Postal Code values, no other nulls.',
-        ],
-        s2Step1Label: 'Load dataset and check basic structure',
-
-        s3Title: 'Step 2 \u2013 KPI Hierarchy',
-        s3Intro: 'Good dashboards follow a KPI hierarchy: strategic metrics at the top, operational details below, warning signals separately.',
-        s3Headers: ['Level', 'KPIs', 'Description'],
-        s3Rows: [
-          ['Strategic', 'Total Revenue, Orders, Avg. Order Value', 'How is the business performing overall?'],
-          ['Operational', 'Revenue by Region/Category, Top-10 Products, YoY', 'Which segments drive the result?'],
-          ['Warning Signals', 'Sub-categories with declining revenue (YoY), states with below-average order value', 'Where is revenue eroding \u2013 and where are orders too small?'],
-        ],
-        s3ConceptTitle: 'Principle: KPIs top-down',
-        s3ConceptText: 'Stakeholders want to see the overall status first, then drill into problem areas. Strategic KPIs prominently placed, operational details on demand, warning signals visually highlighted (Shneiderman, 1996: \u201COverview first, zoom and filter, then details-on-demand\u201D).',
-
-        s4Title: 'Step 3 \u2013 Power BI Step by Step',
-        s4Steps: [
-          { label: 'Import CSV', text: 'Home \u2192 Get Data \u2192 Text/CSV \u2192 select train.csv \u2192 Load. Then rename the table in the Fields pane from \u201Ctrain\u201D to \u201COrders\u201D \u2013 the DAX measures in step\u00A03 reference Orders. Also important: set Order Date and Ship Date to Date (DD/MM/YYYY) in the Power Query Editor.' },
-          { label: 'Power Query \u2013 Data Transformation', text: 'Ensure: Order Date is Date/Time type, check columns for null values, verify data types.' },
-          { label: 'Create Measures', text: 'In the data model under \u201CNew Measure\u201D, create the following DAX expressions:', hasCode: true },
-          { label: 'Build Dashboard', text: '4 KPI cards at the top (Revenue, Orders, Avg. Order Value, Line Items), Revenue trend line (monthly), Category bar chart, Region map, scatter of revenue vs. line items per sub-category.' },
-          { label: 'Slicers & Formatting', text: 'Slicers for: Year, Region, Category. Consistent colours, enable data labels.' },
-        ],
-
-        twbxTitle: 'Download the finished workbook',
-        twbxText: 'BINT_Tableau_Uebung.twbx ships train.csv together with all ten calculated fields from this section. It is a packaged workbook – it opens in Tableau Desktop and Tableau Public without any further connection. Build your own version first, then compare.',
-        twbxBtn: 'BINT_Tableau_Uebung.twbx',
-        s4bTitle: 'Step 3b \u2013 Tableau Step by Step',
-        s4bIntro: 'The same case study in Tableau Desktop or Tableau Public. The calculated fields match the DAX measures from step\u00A03.',
-        s4bSteps: [
-          { label: 'Connect to the CSV', text: 'Start page \u2192 Connect \u2192 To a File \u2192 Text file \u2192 select train.csv. Tableau opens the data source page with the table on the canvas. The Sheet\u00A01 tab in the bottom left switches to the first worksheet. Leave the encoding at UTF-8; if Customer Name shows garbled characters, switch the data source to Windows-1252.' },
-          { label: 'Check the date column', text: 'In the data source preview, check the type icon above Order Date. A calendar icon means date, Abc means text. The order date is stored as 08/11/2017, day first. If Tableau reads the column as text, a calculated field DATEPARSE("dd/MM/yyyy", [Order Date]) fixes it; every time-based view then uses that field. Check: the period runs from 03/01/2015 to 30/12/2018.' },
-          { label: 'Create calculated fields', text: 'Analysis \u2192 Create Calculated Field. Create the following eight fields and save each one under the name given in its comment line.', hasCode: true },
-          { label: 'One view per KPI', text: 'One metric per worksheet. Revenue over time: Order Date as year on Columns, Total Revenue on Rows, mark type Line. Revenue by category: Category on Rows, Total Revenue on Columns, sorted descending. Revenue by region: Region on Rows, Total Revenue on Columns, Share of Total Revenue on Label. Revenue by sub-category: Sub-Category on Rows, Total Revenue on Columns. Growth: year on Columns, Growth over the previous year on Rows \u2013 LOOKUP reads the prior value from the view, so the year has to be in the view.' },
-          { label: 'Assemble the views into a dashboard', text: 'Dashboard \u2192 New Dashboard, size set to Automatic. Drag the worksheets from the list on the left onto the canvas: metrics at the top, detail views below. The dropdown at the edge of a worksheet offers Use as Filter; a selection there filters the remaining views. Filter \u2192 Apply to Worksheets \u2192 Selected Worksheets narrows the scope.' },
-          { label: 'Share the workbook as .twbx', text: 'File \u2192 Save As \u2192 Packaged Workbook (.twbx). The twbx file holds workbook and data extract together, so recipients do not need train.csv. A .twb only stores the reference to the local path and stays empty on other machines. Tableau Public publishes every saved workbook on the web \u2013 confidential data belongs in Tableau Desktop with local storage.' },
-        ],
-        s4bLodNote: 'Share of Total Revenue and Share of the View return different numbers. { FIXED : SUM([Sales]) } ignores the dimension filters of the view and always returns 2,261,536.78; a context filter does apply to it. TOTAL(SUM([Sales])) refers to the rows of the current view and changes with every filter.',
-        runNoteTableau: 'Prerequisites: train.csv connected as a data source and Order Date typed as a date. Expected values without filters: total revenue 2,261,536.78 \u00B7 revenue West 710,219.68 \u00B7 share West 31.4% \u00B7 average order value 459.48. Share of the view, previous year revenue and growth are table calculations and depend on the fields in the view.',
-        s4bCheckTitle: 'Self-check',
-        s4bCheckItems: [
-          'The data source reports 9,800 rows and 18 columns. This file has no Profit column, so contribution margins cannot be derived from it.',
-          'Total revenue 2,261,536.78. Revenue West 710,219.68, share of total revenue 31.4%.',
-          'Annual revenue: 2015 479,856.21 \u00B7 2016 459,436.01 \u00B7 2017 600,192.55 \u00B7 2018 722,052.02. If the years end in 2012 or rows go missing, the date was read as MM/dd/yyyy.',
-          'Growth over the previous year: 2016 \u22124.3%, 2017 +30.6%, 2018 +20.3%. If the 2015 column shows a value, the table calculation runs in the wrong direction.',
-          'Strongest sub-categories: Phones 327,782.45 \u00B7 Chairs 322,822.73 \u00B7 Storage 219,343.39.',
-          '4,922 orders, 793 customers, average order value 459.48. Use COUNTD([Order ID]) rather than COUNT, otherwise Tableau counts the 9,800 line items.',
-        ],
-
-        s5Title: 'Step 4 \u2013 Plotly Dash Step by Step',
-        s5Intro: 'The following Dash app replicates the Power BI dashboard in Python. Save as app.py and start with python app.py.',
-
-        s6Title: 'Step 5 \u2013 Reflection & Comparison',
-        s6BoxTitle: 'Reflection Questions',
-        s6Questions: [
-          'Which took longer: Power BI or Dash? Why?',
-          'Which dashboard is easier to adapt to new requirements?',
-          'Which would you use for a client without Python knowledge?',
-          'How would you deploy the Dash app to production?',
-          'Which tool is better suited for non-technical stakeholders \u2013 and why?',
-          'Which calculation belongs in a Tableau LOD field, which one in a table calculation?',
-        ],
-        s6CompareTitle: 'Comparison: Power BI, Tableau and Plotly Dash',
-        s6CompareHeaders: ['Criterion', 'Power BI', 'Tableau', 'Plotly Dash'],
-        s6CompareRows: [
-          ['Setup', 'GUI, Drag & Drop', 'GUI, Drag & Drop', 'Python code'],
-          ['Learning Curve', 'Flat (no programming)', 'Flat for views, own syntax for LOD and table calculations', 'Steep (Python + Dash)'],
-          ['Formula Language', 'DAX', 'Tableau calculations with LOD expressions and table calculations', 'pandas and Python'],
-          ['Flexibility', 'Limited to built-in visuals', 'Limited to the mark types, extendable via dashboard extensions', 'Unlimited (any Python lib)'],
-          ['Deployment', 'Power BI Service (Cloud)', 'Tableau Server, Tableau Cloud or sharing a .twbx file', 'Docker / Render / Railway'],
-          ['Cost', 'Paid Pro licence per user/month \u2013 check the current price with Microsoft', 'Paid Creator licence per user/month \u2013 check the current price with Tableau; Tableau Public is free and publishes the workbook', 'Open Source (hosting costs)'],
-          ['Target Audience', 'Business analysts', 'Business analysts focused on exploratory analysis', 'Data engineers / scientists'],
-        ],
-        s6DeployTitle: 'Deployment Options for Dash',
-        s6DeployText: 'Gunicorn as WSGI server \u2192 Docker container \u2192 hosting on Render, Railway or own server with Traefik as reverse proxy. For prototypes: Streamlit Cloud (free, no Docker knowledge required).',
-
-        s7Title: 'Learning Resources',
-        s7Desc: 'Recommended YouTube channels for this case study:',
-        s7Resources: [
-          { title: 'Guy in a Cube', url: 'https://www.youtube.com/@GuyInACube', desc: 'Power BI tutorials by Adam Saxton & Patrick LeBlanc (Microsoft-adjacent).' },
-          { title: 'Charming Data', url: 'https://www.youtube.com/@CharmingData', desc: 'Plotly Dash tutorials by Adam Schroeder with real datasets.' },
-          { title: 'SQLBI', url: 'https://www.youtube.com/@SQLBI', desc: 'Marco Russo & Alberto Ferrari \u2013 the world\u2019s leading DAX experts.' },
-          { title: 'Curbal', url: 'https://www.youtube.com/@CurbalEN', desc: 'Weekly DAX tips and Power BI tutorials (DAX Fridays).' },
-        ],
-        s7BookRef: 'Book recommendation: \u201CStorytelling with Data\u201D by Cole Nussbaumer Knaflic (Wiley, 2015) \u2013 the standard reference for data-driven storytelling.',
-
-        quizTitle: 'Quiz',
-        quizQuestions: [
-          { q: 'Which KPI hierarchy level shows total revenue and average order value?', options: ['Operational', 'Strategic', 'Warning Signals', 'Tactical'], correct: 1, explanation: 'The strategic level targets executive management and shows highly aggregated metrics such as total revenue, orders and average order value. The tactical level breaks these down by region or category; the operational level shows individual transactions such as single orders.' },
-          { q: 'What is the first step in the CRISP-DM cycle?', options: ['Data Preparation', 'Business Understanding', 'Modeling', 'Evaluation'], correct: 1, explanation: 'CRISP-DM starts with Business Understanding: clarify the business question before touching data. The order is Business Understanding, Data Understanding, Data Preparation, Modeling, Evaluation, Deployment - starting from the data often means solving the wrong problem.' },
-          { q: 'How many rows does train.csv of the Superstore dataset contain?', options: ['5,000', '9,800', '9,994', '20,000'], correct: 1, explanation: 'train.csv contains 9,800 rows \u2013 order *line items*, not orders: one order often spans several lines, and df[\'Order ID\'].nunique() returns roughly 4,900. Mind the distinction: the full Superstore dataset has 9,994 rows, the forecasting variant used here has 9,800. Verify with df.shape.' },
-          { q: 'Which tool is better suited for non-technical users?', options: ['Plotly Dash', 'Power BI', 'Jupyter Notebook', 'Streamlit'], correct: 1, explanation: 'Power BI offers drag-and-drop, ready-made visuals and an interface familiar to Excel users, with no programming required. Plotly Dash is more powerful and fully customisable but assumes Python skills and your own deployment.' },
-          { q: 'What does df.describe() return in pandas?', options: ['Only data types', 'Statistical summary (count, mean, std, min, max)', 'Only null values', 'Column count'], correct: 1, explanation: 'df.describe() returns a statistical summary of the numeric columns: count, mean, std, min, the 25/50/75% quartiles and max. Ideal for a first plausibility check - implausible minima or maxima expose data quality problems immediately.' },
-          { q: 'How do you deploy a Dash app to production?', options: ['Power BI Service', 'Gunicorn + Docker', 'Excel Online', 'Google Sheets'], correct: 1, explanation: 'In production a Dash app runs behind Gunicorn as the WSGI server, packaged in a Docker container - reproducible, scalable via workers and independent of the local Python installation. In practice a reverse proxy for HTTPS sits in front of it.' },
-        ],
-
-        summaryTitle: 'Summary',
-        summaryItems: [
-          'A complete BI workflow covers data exploration, KPI design, visualisation and reflection.',
-          'KPI hierarchies structure dashboards: strategic \u2192 operational \u2192 warning signals.',
-          'Power BI suits business analysts (GUI, no code, quick start).',
-          'Plotly Dash offers maximum flexibility for data scientists (Python, open source).',
-          'Tableau covers the same workflow with its own calculations: LOD expressions for view-independent values, table calculations for values relative to the view.',
-          'Plotly renders to SVG/Canvas \u2013 CSS variables do not work there (use hex values).',
-          'CRISP-DM (Shearer, 2000) provides the methodological framework for BI projects.',
-          'Production deployment: Gunicorn \u2192 Docker \u2192 cloud hosting (Render, Railway).',
-        ],
-
-        navPrev: '\u2190 Lab 04: Dashboards',
-        navNext: 'Lab 06: Sovereignty \u2192',
-      },
-    };
-
-    // ─── Code constants (language-independent) ──────────────────────────────
-    const CODE_EXPLORE = {
-      de: "import pandas as pd\nimport numpy as np\n\n# Datensatz laden (Kaggle: Superstore Sales Dataset -> train.csv)\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# Datum: die Datei nutzt TT/MM/JJJJ -> dayfirst=True ist Pflicht,\n# sonst bricht das Parsen ab, sobald der Tag groesser als 12 ist.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# Grundlegende Infos\nprint(df.shape)          # (9800, 18)\nprint(df.dtypes)         # Datentypen pruefen\nprint(df.isnull().sum()) # Nullwerte pruefen\nprint(df.describe())     # Statistische Uebersicht\n\n# Key Stats\nprint(f\"Gesamtumsatz:     ${df['Sales'].sum():,.0f}\")\nprint(f\"Bestellungen:      {df['Order ID'].nunique():,}\")\nprint(f\"Positionen:        {len(df):,}\")\nprint(f\"\u00D8 Bestellwert:   ${df.groupby('Order ID')['Sales'].sum().mean():,.2f}\")\nprint(f\"Zeitraum:          {df['Order Date'].min():%d.%m.%Y} bis {df['Order Date'].max():%d.%m.%Y}\")",
-      en: "import pandas as pd\nimport numpy as np\n\n# Load the dataset (Kaggle: Superstore Sales Dataset -> train.csv)\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# Dates: the file uses DD/MM/YYYY -> dayfirst=True is mandatory,\n# otherwise parsing breaks as soon as the day exceeds 12.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# Basic information\nprint(df.shape)          # (9800, 18)\nprint(df.dtypes)         # check data types\nprint(df.isnull().sum()) # check null values\nprint(df.describe())     # statistical overview\n\n# Key stats\nprint(f\"Total revenue:      ${df['Sales'].sum():,.0f}\")\nprint(f\"Orders:              {df['Order ID'].nunique():,}\")\nprint(f\"Line items:          {len(df):,}\")\nprint(f\"Avg order value:   ${df.groupby('Order ID')['Sales'].sum().mean():,.2f}\")\nprint(f\"Period:              {df['Order Date'].min():%d/%m/%Y} to {df['Order Date'].max():%d/%m/%Y}\")",
-    };
-
-    const CODE_MEASURES = {
-
-      de: "-- 1. Kalendertabelle anlegen (Modellierung -> Neue Tabelle)\n--    Zeitintelligenz braucht eine lueckenlose, als Datumstabelle\n--    markierte Tabelle. Auto-Datum/Uhrzeit reicht dafuer nicht.\n\nDatum =\nVAR _min = MIN(Orders[Order Date])\nVAR _max = MAX(Orders[Order Date])\nRETURN\nADDCOLUMNS(\n    CALENDAR(DATE(YEAR(_min), 1, 1), DATE(YEAR(_max), 12, 31)),\n    \"Jahr\",        YEAR([Date]),\n    \"Monatsnr\",    MONTH([Date]),\n    \"Monat\",       FORMAT([Date], \"MMM\"),\n    \"Quartal\",     \"Q\" & QUARTER([Date])\n)\n\n-- 2. Danach im Menueband: Tabellentools -> Als Datumstabelle markieren\n--    -> Spalte [Date] waehlen. Anschliessend im Modell eine 1:n-Beziehung\n--    von Datum[Date] zu Orders[Order Date] ziehen.\n\n-- 3. Grundlegende Measures\n\nUmsatz =\nSUM(Orders[Sales])\n\nBestellungen =\nDISTINCTCOUNT(Orders[Order ID])\n\nPositionen =\nCOUNTROWS(Orders)\n\nAvg_Bestellwert =\nDIVIDE([Umsatz], [Bestellungen], 0)\n\n-- Zeitintelligenz laeuft ueber die Datumstabelle, nicht ueber Orders:\nUmsatz_VJ =\nCALCULATE([Umsatz], SAMEPERIODLASTYEAR(Datum[Date]))\n\nYoY_Wachstum =\nDIVIDE([Umsatz] - [Umsatz_VJ], [Umsatz_VJ], 0) * 100\n\n-- Sollwerte zur Kontrolle:\n-- Umsatz 2.261.536,78 | Bestellungen 4.922 | Positionen 9.800\n-- Avg_Bestellwert 459,48\n-- 2017: 600.192,55 | 2018: 722.052,02 | YoY_Wachstum 2018 ~ 20,3 %\n\n-- Hinweis: Der Datensatz enthaelt keine Kosten- oder Gewinnspalte.\n-- Deckungsbeitrags-Measures wie Gewinn oder Marge lassen sich damit\n-- nicht bilden; sie brauchen die Vollversion des Superstore-Datensatzes.",
-
-      en: "-- 1. Create a calendar table (Modeling -> New table)\n--    Time intelligence needs a gap-free table that is marked as a\n--    date table. Auto date/time is not enough for this.\n\nDate_Table =\nVAR _min = MIN(Orders[Order Date])\nVAR _max = MAX(Orders[Order Date])\nRETURN\nADDCOLUMNS(\n    CALENDAR(DATE(YEAR(_min), 1, 1), DATE(YEAR(_max), 12, 31)),\n    \"Year\",        YEAR([Date]),\n    \"MonthNo\",     MONTH([Date]),\n    \"Month\",       FORMAT([Date], \"MMM\"),\n    \"Quarter\",     \"Q\" & QUARTER([Date])\n)\n\n-- 2. Then on the ribbon: Table tools -> Mark as date table\n--    -> pick column [Date]. Afterwards draw a 1:many relationship\n--    from Date_Table[Date] to Orders[Order Date] in the model.\n\n-- 3. Base measures\n\nRevenue =\nSUM(Orders[Sales])\n\nOrders_Count =\nDISTINCTCOUNT(Orders[Order ID])\n\nLineItems =\nCOUNTROWS(Orders)\n\nAvg_Order_Value =\nDIVIDE([Revenue], [Orders_Count], 0)\n\n-- Time intelligence runs through the date table, not through Orders:\nRevenue_PY =\nCALCULATE([Revenue], SAMEPERIODLASTYEAR(Date_Table[Date]))\n\nYoY_Growth =\nDIVIDE([Revenue] - [Revenue_PY], [Revenue_PY], 0) * 100\n\n-- Expected values for checking:\n-- Revenue 2,261,536.78 | Orders 4,922 | Line items 9,800\n-- Avg order value 459.48\n-- 2017: 600,192.55 | 2018: 722,052.02 | YoY growth 2018 ~ 20.3%\n\n-- Note: the dataset has no cost or profit column. Contribution-margin\n-- measures such as profit or margin cannot be built from it; they need\n-- the full version of the Superstore dataset.",
-
-    };
-
-    const CODE_TABLEAU = {
-
-      de: "// Gesamtumsatz\nSUM([Sales])\n\n// Umsatz West - in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Anteil am Gesamtumsatz - LOD, unabhaengig von der Ansicht\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Anteil an der Ansicht - Tabellenberechnung\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Umsatz des Vorjahres - Jahr muss in der Ansicht liegen\nLOOKUP(SUM([Sales]), -1)\n\n// Wachstum gegenueber dem Vorjahr\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Umsatz je Kunde\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Durchschnittlicher Bestellwert\nSUM([Sales]) / COUNTD([Order ID])",
-
-      en: "// Total revenue\nSUM([Sales])\n\n// Revenue West - in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Share of total revenue - LOD, independent of the view\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Share of the view - table calculation\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Previous year revenue - the year must be in the view\nLOOKUP(SUM([Sales]), -1)\n\n// Growth over the previous year\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Revenue per customer\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Average order value\nSUM([Sales]) / COUNTD([Order ID])",
-
-    };
-
-    const CODE_DASH = {
-
-      de: "# app.py – Superstore Retail Analytics Dashboard\nimport dash\nfrom dash import dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = dash.Dash(__name__)\n\n# Ein Dashboard, das auf dem Handy bricht, ist kein fertiges Dashboard.\n# Feste Spaltenzahlen (repeat(4, 1fr)) sprengen jedes schmale Display,\n# deshalb liegt das Raster in CSS mit Media Queries statt in Inline-Styles.\napp.index_string = \"\"\"<!DOCTYPE html>\n<html>\n  <head>\n    {%metas%}<title>{%title%}</title>{%favicon%}{%css%}\n    <style>\n      *, *::before, *::after { box-sizing: border-box; }\n      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,\n             'Segoe UI', sans-serif; }\n      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }\n      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }\n      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }\n      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;\n                    padding: 1rem 2rem; background: #f8fafc; }\n      /* min-width: 0 ist noetig, sonst schrumpfen Flex-Kinder nicht unter\n         ihre Inhaltsbreite - derselbe Fallstrick wie bei den Lab-Seiten. */\n      .filter-row > div { flex: 1 1 240px; min-width: 0; }\n      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }\n      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }\n                                   .chart-grid { grid-template-columns: 1fr 1fr; } }\n      /* Plotly zeichnet in SVG und richtet sich nicht von allein nach dem\n         Container - ohne diese Regel ragen die Diagramme heraus. */\n      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }\n    </style>\n  </head>\n  <body>{%app_entry%}<footer>{%config%}{%scripts%}{%renderer%}</footer></body>\n</html>\"\"\"\n\n# Daten laden und vorbereiten\ndf = pd.read_csv('train.csv', encoding='latin-1')\n# TT/MM/JJJJ -> dayfirst=True zwingend\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()\n\n# Farben als Python-Konstanten (NICHT CSS-Variablen!)\n# Plotly rendert zu SVG/Canvas, nicht ins DOM –\n# var(--col-primary) funktioniert dort nicht.\nCOL_PRIMARY = '#1E3A8A'\nCOL_ACCENT  = '#2563EB'\n\napp.layout = html.Div([\n    # Header\n    html.Div([\n        html.H1('Superstore Analytics Dashboard',\n                style={'margin': '0', 'fontSize': '1.5rem'}),\n    ], style={'background': COL_PRIMARY, 'color': 'white',\n              'padding': '1rem 2rem'}),\n\n    # Filter\n    html.Div([\n        html.Div([\n            html.Label('Segment:'),\n            dcc.Dropdown(\n                id='segment-filter',\n                options=[{'label': s, 'value': s}\n                         for s in df['Segment'].unique()],\n                value=df['Segment'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n        html.Div([\n            html.Label('Region:'),\n            dcc.Dropdown(\n                id='region-filter',\n                options=[{'label': r, 'value': r}\n                         for r in df['Region'].unique()],\n                value=df['Region'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n    ], className='filter-row'),\n\n    # KPI Cards\n    html.Div(id='kpi-cards', className='kpi-grid'),\n\n    # Charts\n    html.Div([\n        dcc.Graph(id='trend-chart', config={'responsive': True}),\n        dcc.Graph(id='category-chart', config={'responsive': True}),\n    ], className='chart-grid'),\n\n    dcc.Graph(id='scatter-chart', config={'responsive': True},\n              style={'padding': '0 2rem 2rem'}),\n])\n\ndef kpi_card(title, value, color=COL_PRIMARY):\n    return html.Div([\n        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',\n                               'color': color}),\n        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',\n                               'textTransform': 'uppercase',\n                               'letterSpacing': '0.08em'}),\n    ], style={'background': 'white', 'padding': '1.25rem',\n              'border': '1px solid #e5e7eb',\n              'borderLeft': f'4px solid {color}'})\n\n@app.callback(\n    Output('kpi-cards', 'children'),\n    Output('trend-chart', 'figure'),\n    Output('category-chart', 'figure'),\n    Output('scatter-chart', 'figure'),\n    Input('segment-filter', 'value'),\n    Input('region-filter', 'value')\n)\ndef update_dashboard(segments, regions):\n    fdf = df[df['Segment'].isin(segments) &\n             df['Region'].isin(regions)]\n\n    # KPI Cards\n    total_sales = fdf['Sales'].sum()\n    orders = fdf['Order ID'].nunique()\n    positions = len(fdf)\n    avg_order = total_sales / orders if orders else 0\n\n    cards = [\n        kpi_card('Umsatz', f'${total_sales:,.0f}'),\n        kpi_card('Bestellungen', f'{orders:,}'),\n        kpi_card('Ø Bestellwert', f'${avg_order:,.0f}', COL_ACCENT),\n        kpi_card('Positionen', f'{positions:,}'),\n    ]\n\n    # Trend\n    trend = fdf.groupby('Month')['Sales'].sum().reset_index()\n    fig1 = px.line(trend, x='Month', y='Sales',\n                   title='Umsatz-Trend (monatlich)',\n                   color_discrete_sequence=[COL_ACCENT])\n    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Kategorie\n    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()\n    fig2 = px.bar(by_cat, x='Category', y='Sales',\n                  title='Umsatz nach Kategorie',\n                  color_discrete_sequence=[COL_PRIMARY])\n    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Scatter\n    by_sub = fdf.groupby('Sub-Category').agg(\n        Sales=('Sales','sum'), Positionen=('Order ID','count')\n    ).reset_index()\n    fig3 = px.scatter(by_sub, x='Positionen', y='Sales',\n                      text='Sub-Category', size='Sales',\n                      title='Umsatz vs. Bestellpositionen nach Sub-Kategorie',\n                      color_discrete_sequence=[COL_ACCENT])\n    fig3.update_traces(textposition='top center')\n    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    return cards, fig1, fig2, fig3\n\nif __name__ == '__main__':\n    app.run(debug=True)",
-
-      en: "# app.py - Superstore Retail Analytics Dashboard\nimport dash\nfrom dash import dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = dash.Dash(__name__)\n\n# A dashboard that breaks on a phone is not a finished dashboard.\n# Fixed column counts (repeat(4, 1fr)) blow up every narrow screen, so the\n# grid lives in CSS with media queries instead of inline styles.\napp.index_string = \"\"\"<!DOCTYPE html>\n<html>\n  <head>\n    {%metas%}<title>{%title%}</title>{%favicon%}{%css%}\n    <style>\n      *, *::before, *::after { box-sizing: border-box; }\n      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,\n             'Segoe UI', sans-serif; }\n      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }\n      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }\n      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }\n      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;\n                    padding: 1rem 2rem; background: #f8fafc; }\n      /* min-width: 0 is required, otherwise flex children will not shrink\n         below their content width - the same trap as on the lab pages. */\n      .filter-row > div { flex: 1 1 240px; min-width: 0; }\n      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }\n      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }\n                                   .chart-grid { grid-template-columns: 1fr 1fr; } }\n      /* Plotly draws to SVG and does not follow its container on its own -\n         without this rule the charts stick out. */\n      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }\n    </style>\n  </head>\n  <body>{%app_entry%}<footer>{%config%}{%scripts%}{%renderer%}</footer></body>\n</html>\"\"\"\n\n# Load and prepare the data\ndf = pd.read_csv('train.csv', encoding='latin-1')\n# DD/MM/YYYY -> dayfirst=True is mandatory\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()\n\n# Colours as Python constants (NOT CSS variables!)\n# Plotly renders to SVG/Canvas, not into the DOM -\n# var(--col-primary) does not work there.\nCOL_PRIMARY = '#1E3A8A'\nCOL_ACCENT  = '#2563EB'\n\napp.layout = html.Div([\n    # Header\n    html.Div([\n        html.H1('Superstore Analytics Dashboard',\n                style={'margin': '0', 'fontSize': '1.5rem'}),\n    ], style={'background': COL_PRIMARY, 'color': 'white',\n              'padding': '1rem 2rem'}),\n\n    # Filter\n    html.Div([\n        html.Div([\n            html.Label('Segment:'),\n            dcc.Dropdown(\n                id='segment-filter',\n                options=[{'label': s, 'value': s}\n                         for s in df['Segment'].unique()],\n                value=df['Segment'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n        html.Div([\n            html.Label('Region:'),\n            dcc.Dropdown(\n                id='region-filter',\n                options=[{'label': r, 'value': r}\n                         for r in df['Region'].unique()],\n                value=df['Region'].unique().tolist(),\n                multi=True, clearable=False\n            ),\n        ]),\n    ], className='filter-row'),\n\n    # KPI Cards\n    html.Div(id='kpi-cards', className='kpi-grid'),\n\n    # Charts\n    html.Div([\n        dcc.Graph(id='trend-chart', config={'responsive': True}),\n        dcc.Graph(id='category-chart', config={'responsive': True}),\n    ], className='chart-grid'),\n\n    dcc.Graph(id='scatter-chart', config={'responsive': True},\n              style={'padding': '0 2rem 2rem'}),\n])\n\ndef kpi_card(title, value, color=COL_PRIMARY):\n    return html.Div([\n        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',\n                               'color': color}),\n        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',\n                               'textTransform': 'uppercase',\n                               'letterSpacing': '0.08em'}),\n    ], style={'background': 'white', 'padding': '1.25rem',\n              'border': '1px solid #e5e7eb',\n              'borderLeft': f'4px solid {color}'})\n\n@app.callback(\n    Output('kpi-cards', 'children'),\n    Output('trend-chart', 'figure'),\n    Output('category-chart', 'figure'),\n    Output('scatter-chart', 'figure'),\n    Input('segment-filter', 'value'),\n    Input('region-filter', 'value')\n)\ndef update_dashboard(segments, regions):\n    fdf = df[df['Segment'].isin(segments) &\n             df['Region'].isin(regions)]\n\n    # KPI Cards\n    total_sales = fdf['Sales'].sum()\n    orders = fdf['Order ID'].nunique()\n    positions = len(fdf)\n    avg_order = total_sales / orders if orders else 0\n\n    cards = [\n        kpi_card('Revenue', f'${total_sales:,.0f}'),\n        kpi_card('Orders', f'{orders:,}'),\n        kpi_card('Avg order value', f'${avg_order:,.0f}', COL_ACCENT),\n        kpi_card('Line items', f'{positions:,}'),\n    ]\n\n    # Trend\n    trend = fdf.groupby('Month')['Sales'].sum().reset_index()\n    fig1 = px.line(trend, x='Month', y='Sales',\n                   title='Revenue trend (monthly)',\n                   color_discrete_sequence=[COL_ACCENT])\n    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Category\n    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()\n    fig2 = px.bar(by_cat, x='Category', y='Sales',\n                  title='Revenue by category',\n                  color_discrete_sequence=[COL_PRIMARY])\n    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    # Scatter\n    by_sub = fdf.groupby('Sub-Category').agg(\n        Sales=('Sales','sum'), LineItems=('Order ID','count')\n    ).reset_index()\n    fig3 = px.scatter(by_sub, x='LineItems', y='Sales',\n                      text='Sub-Category', size='Sales',\n                      title='Revenue vs. line items by sub-category',\n                      color_discrete_sequence=[COL_ACCENT])\n    fig3.update_traces(textposition='top center')\n    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')\n\n    return cards, fig1, fig2, fig3\n\nif __name__ == '__main__':\n    app.run(debug=True)",
-
-    };
-
-    // ─── App Component ────────────────────────────────────────────────────────
-    function App() {
-
-      const [lang, setLang] = useState(BINTLab.getLanguage);
-      const [activeSection, setActiveSection] = useState('ueberblick');
-
-      const setLangAndStore = (l) => {
-        setLang(l);
-        BINTLab.setLanguage(l);
-      };
-
-      useEffect(() => {
-        const sections = ['ueberblick', 'datenerkundung', 'kpi-hierarchie', 'powerbi-steps', 'tableau', 'dash-steps', 'reflexion', 'ressourcen', 'quiz', 'zusammenfassung'];
-        const handler = () => {
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const el = document.getElementById(sections[i]);
-            if (el && el.getBoundingClientRect().top <= 100) {
-              setActiveSection(sections[i]);
-              return;
-            }
-          }
-          setActiveSection('ueberblick');
-        };
-        window.addEventListener('scroll', handler, { passive: true });
-        return () => window.removeEventListener('scroll', handler);
-      }, []);
-
-      const tx = translations[lang];
-
-      // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
-      React.useEffect(() => {
-        document.title = 'Lab 05 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
-        document.documentElement.lang = lang;
-        BINTLab.setLanguage(lang);
-      }, [lang, tx.title]);
-
-      return (
-        <div data-lang={lang}>
-
-          {/* Fixed Header */}
-          {/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */}
-          <a className="skip-link" href="#main">
-            {lang === 'en' ? 'Skip to content' : 'Zum Inhalt springen'}
-          </a>
-          <header className="header">
-            <div className="header-left">
-              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
-              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
-            </div>
-            <div style={{ display: 'flex', gap: '0.35rem' }}>
-              <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
-              <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => setLangAndStore('en')} aria-pressed={lang === 'en'} aria-label="English">{'EN'}</button>
-            </div>
-          </header>
-
-          {/* Sidebar */}
-          <nav className="sidebar">
-            <div className="sidebar-title">{tx.navContents}</div>
-            {tx.nav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={'sidebar-link' + (activeSection === item.href.slice(1) ? ' active' : '')}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Lab Header */}
-          <div className="lab-header">
-            <div className="lab-num">{'05'}</div>
-            <h1 className="lab-title-h1">{tx.title}</h1>
-            <p className="lab-desc-intro">{tx.desc}</p>
-            <div className="lernziele-chips">
-              {tx.lernziele.map((lz, i) => (
-                <span key={i} className="lernziel-chip">{lz}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <main className="main-content" id="main">
-
-            {/* ── Section 1: Überblick ── */}
-            <section id="ueberblick" className="section-block">
-              <h2>{tx.s1Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <div className="lernziele-box">
-                <h4 className="lernziele-heading">{tx.s1LernzieleLabel}</h4>
-                <ol style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: '2' }}>
-                  {tx.lernziele.map((g, i) => (
-                    <li key={i}>{g}</li>
-                  ))}
-                </ol>
-              </div>
-              <div className="info-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s1InfoTitle}</h4>
-                <p style={{ margin: '0 0 0.75rem' }}>{tx.s1InfoText}</p>
-            <div className="tip-box" style={{ marginTop: '1.25rem' }}>
-              <h4 style={{ marginTop: 0 }}>{tx.starterTitle}</h4>
-              <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem' }}>{tx.starterText}</p>
-              <a href="starter/lab-05-fallstudie.zip" download
-                 style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none',
-                          padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                {tx.starterBtn}
-              </a>
-            </div>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <a href="data/train.csv" download
-                     style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none',
-                              padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.s1DownloadDirect}
-                  </a>
-                  <a href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting"
-                     target="_blank" rel="noopener noreferrer"
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)',
-                              textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px',
-                              fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.s1DownloadKaggle}
-                  </a>
-                </div>
-              </div>
-              {/* CRISP-DM Reference */}
-              <div className="concept-box" style={{ marginTop: '1rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s1MethodTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s1MethodText}</p>
-              </div>
-            </section>
-
-            {/* ── Section 2: Datenerkundung ── */}
-            <section id="datenerkundung" className="section-block">
-              <h2>{tx.s2Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s2Intro}</p>
-              <div className="step-block">
-                <span className="step-number">{'1'}</span>
-                <div className="step-content">
-                  <h4 style={{ marginTop: 0 }}>{tx.s2Step1Label}</h4>
-                  <CodeBlock code={CODE_EXPLORE[lang]} lang={lang} kind="run" note={tx.runNoteExplore} />
-
-                  <div className="challenge-box">
-                    <h4 style={{ marginTop: 0 }}>{tx.s2SelfCheckTitle}</h4>
-                    <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
-                      {tx.s2SelfCheckItems.map((item, i) => <li key={i}>{item}</li>)}
-                    </ul>
-                  </div>
-
-                  <h4 style={{ marginTop: '1.75rem' }}>{tx.s2QualityTitle}</h4>
-                  <p style={{ fontSize: '0.9rem' }}>{tx.s2QualityIntro}</p>
-                  <div className="table-wrap">
-                    <table>
-                      <tbody>
-                        {tx.s2QualityRows.map((row, i) => (
-                          <tr key={i}>
-                            <td style={{ fontWeight: 600, width: '38%' }}>{row[0]}</td>
-                            <td>{row[1]}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p style={{ fontSize: '0.82rem', color: '#4B5563' }}>{tx.s2QualityNote}</p>
-                </div>
-              </div>
-            </section>
-
-            {/* ── Section 3: KPI-Hierarchie ── */}
-            <section id="kpi-hierarchie" className="section-block">
-              <h2>{tx.s3Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s3Intro}</p>
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>{tx.s3Headers.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tx.s3Rows.map((row, i) => (
-                    <tr key={i}>
-                      <td style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: 'var(--col-primary)' }}>{row[0]}</td>
-                      <td>{row[1]}</td>
-                      <td>{row[2]}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s3ConceptTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s3ConceptText}</p>
-              </div>
-            </section>
-
-            {/* ── Section 4: Power BI Steps ── */}
-            <section id="powerbi-steps" className="section-block">
-              <h2>{tx.s4Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              {tx.s4Steps.map((step, i) => (
-                <div key={i} className="step-block">
-                  <span className="step-number">{i + 1}</span>
-                  <div className="step-content">
-                    <h4 style={{ marginTop: 0 }}>{step.label}</h4>
-                    <p style={{ margin: '0.25rem 0' }}>{step.text}</p>
-                    {step.hasCode && <CodeBlock code={CODE_MEASURES[lang]} lang={lang} kind="run" note={tx.runNoteMeasures} />}
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            {/* ── Section 4b: Tableau Steps ── */}
-            <section id="tableau" className="section-block">
-              <h2>{tx.s4bTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s4bIntro}</p>
-              <div className="tip-box" style={{ marginTop: '1.25rem' }}>
-                <h4 style={{ marginTop: 0 }}>{tx.twbxTitle}</h4>
-                <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem' }}>{tx.twbxText}</p>
-              <a href="starter/BINT_Tableau_Uebung.twbx" download
-                 style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none',
-                          padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                {tx.twbxBtn}
-              </a>
-              </div>
-              {tx.s4bSteps.map((step, i) => (
-                <div key={i} className="step-block">
-                  <span className="step-number">{i + 1}</span>
-                  <div className="step-content">
-                    <h4 style={{ marginTop: 0 }}>{step.label}</h4>
-                    <p style={{ margin: '0.25rem 0' }}>{step.text}</p>
-                    {step.hasCode && (
-                      <React.Fragment>
-                        <CodeBlock code={CODE_TABLEAU[lang]} lang={lang} kind="run" note={tx.runNoteTableau} />
-                        <p style={{ fontSize: '0.85rem', color: '#4B5563' }}>{tx.s4bLodNote}</p>
-                      </React.Fragment>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <div className="challenge-box">
-                <h4 style={{ marginTop: 0 }}>{tx.s4bCheckTitle}</h4>
-                <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
-                  {tx.s4bCheckItems.map((item, i) => <li key={i}>{item}</li>)}
-                </ul>
-              </div>
-            </section>
-
-            {/* ── Section 5: Plotly Dash ── */}
-            <section id="dash-steps" className="section-block">
-              <h2>{tx.s5Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s5Intro}</p>
-              <div className="tip-box" style={{ marginBottom: '1rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{'Plotly & CSS-Variablen'}</h4>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>
-                  {lang === 'en'
-                    ? 'Important: Plotly renders to SVG/Canvas, not the DOM. CSS variables like var(--col-primary) do NOT work in color_discrete_sequence. Always use hex values (#1E3A8A) for Plotly colours.'
-                    : 'Wichtig: Plotly rendert zu SVG/Canvas, nicht ins DOM. CSS-Variablen wie var(--col-primary) funktionieren NICHT in color_discrete_sequence. Immer Hex-Werte (#1E3A8A) f\u00FCr Plotly-Farben verwenden.'}
-                </p>
-              </div>
-              <CodeBlock code={CODE_DASH[lang]} lang={lang} kind="run" note={tx.runNoteDash} />
-            </section>
-
-            {/* ── Section 6: Reflexion ── */}
-            <section id="reflexion" className="section-block">
-              <h2>{tx.s6Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <div className="challenge-box">
-                <h4 style={{ marginTop: 0, color: '#15803d' }}>{tx.s6BoxTitle}</h4>
-                <ol style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: '2.2' }}>
-                  {tx.s6Questions.map((q, i) => (
-                    <li key={i}>{q}</li>
-                  ))}
-                </ol>
-              </div>
-
-              {/* Comparison Table */}
-              <h3 style={{ marginTop: '2rem' }}>{tx.s6CompareTitle}</h3>
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>{tx.s6CompareHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tx.s6CompareRows.map((row, i) => (
-                    <tr key={i}>
-                      {row.map((cell, j) => (
-                        j === 0
-                          ? <td key={j} style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 }}>{cell}</td>
-                          : <td key={j}>{cell}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-
-              {/* Deployment tip */}
-              <div className="info-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s6DeployTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s6DeployText}</p>
-              </div>
-            </section>
-
-            {/* ── Section 7: Ressourcen ── */}
-            <section id="ressourcen" className="section-block">
-              <h2>{tx.s7Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s7Desc}</p>
-
-              <div className="youtube-box">
-                <h3>{'YouTube'}</h3>
-
-                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#78350F' }}>
-
-                  {tx.ytNote}
-
-                </p>
-                {tx.s7Resources.map((res, i) => (
-                  <div key={i} style={{
-                    marginBottom: i < tx.s7Resources.length - 1 ? '1.25rem' : 0,
-                    paddingBottom: i < tx.s7Resources.length - 1 ? '1.25rem' : 0,
-                    borderBottom: i < tx.s7Resources.length - 1 ? '1px solid #FED7AA' : 'none'
-                  }}>
-                    <a href={res.url} target="_blank" rel="noopener noreferrer" className="youtube-link">{res.title}</a>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#78350F' }}>{res.desc}</p>
-                  </div>
-                ))}
-              </div>
-              {/* Book reference */}
-              <div className="info-box" style={{ marginTop: '1.25rem' }}>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>{tx.s7BookRef}</p>
-              </div>
-            </section>
-
-            {/* ── Section 8: Quiz ── */}
-            <section id="quiz" className="section-block">
-              <h2>{tx.quizTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              {tx.quizQuestions.map((qq, qi) => (
-                <QuizQuestion key={qi} question={qq} index={qi} lang={lang} />
-              ))}
-            </section>
-
-            {/* ── Section 9: Zusammenfassung ── */}
-            <section id="zusammenfassung" className="section-block">
-              <h2>{tx.summaryTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <div className="concept-box">
-                <ol style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                  {tx.summaryItems.map((item, i) => (
-                    <li key={i} style={{ fontSize: '0.9rem', lineHeight: 1.7, color: '#1A1A1A', marginBottom: '0.35rem' }}>{item}</li>
-                  ))}
-                </ol>
-              </div>
-            </section>
-
-            {/* ── Nav Bottom ── */}
-            <div className="nav-bottom">
-              <a href={'lab-04-dashboards.html' + ('?lang=' + lang)} className="nav-btn">
-                {tx.navPrev}
-              </a>
-              <a href={'lab-06-souveraenitaet.html' + ('?lang=' + lang)} className="nav-btn primary">
-                {tx.navNext}
-              </a>
-            </div>
-
-          </main>
-
-          {/* Footer */}
-          <footer className="footer">
-            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
-          </footer>
-
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+      </li>
+    </ol>
+    <h3><span lang="de">Datenqualität: entscheiden statt weiterscrollen</span><span lang="en">Data quality: decide, do not scroll past</span></h3>
+    <p><span lang="de">df.isnull().sum() meldet elf fehlende Postal Code. Ein gefundener Datenfehler ist erst dann abgearbeitet, wenn eine Entscheidung dokumentiert ist. Die vier Fragen dazu:</span><span lang="en">df.isnull().sum() reports eleven missing Postal Code values. A data defect is only dealt with once a decision is documented. The four questions:</span></p>
+  <div class="table-scroll">
+    <table>
+      <tbody>
+        <tr><td><strong><span lang="de">Ist die Spalte für die Fragestellung relevant?</span><span lang="en">Is the column relevant to the question?</span></strong></td><td><span lang="de">Nein. Umsatz, Kategorie und Region brauchen keine Postleitzahl.</span><span lang="en">No. Revenue, category and region do not need a postal code.</span></td></tr>
+        <tr><td><strong><span lang="de">Welche Auswertung wäre betroffen?</span><span lang="en">Which analysis would be affected?</span></strong></td><td><span lang="de">Nur eine Karte auf PLZ-Ebene. Die Regionskarte arbeitet mit State und ist vollständig.</span><span lang="en">Only a map at ZIP level. The region map uses State and is complete.</span></td></tr>
+        <tr><td><strong><span lang="de">Imputieren oder nicht?</span><span lang="en">Impute or not?</span></strong></td><td><span lang="de">Nicht imputieren. Eine erfundene Postleitzahl verortet elf Bestellungen falsch – das ist schlimmer als eine Lücke.</span><span lang="en">Do not impute. An invented postal code puts eleven orders in the wrong place – that is worse than a gap.</span></td></tr>
+        <tr><td><strong><span lang="de">Zeilen löschen?</span><span lang="en">Delete the rows?</span></strong></td><td><span lang="de">Nein. Das würde Umsatz vernichten, der tatsächlich stattgefunden hat. Die elf Zeilen bleiben, die Lücke wird ausgewiesen.</span><span lang="en">No. That would destroy revenue that actually happened. The eleven rows stay, the gap is disclosed.</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+    <p><span lang="de">So dokumentiert steht die Entscheidung im Bericht – und ist nachvollziehbar, falls jemand später fragt, warum die Summe der PLZ-Auswertung nicht zum Gesamtumsatz passt.</span><span lang="en">Documented this way the decision belongs in the report – and stays traceable if someone later asks why the ZIP-level total does not match overall revenue.</span></p>
+  </section>
+
+  <section class="section-block" id="kpi-hierarchie">
+    <h2><span lang="de">Schritt 2 – KPI-Hierarchie</span><span lang="en">Step 2 – KPI Hierarchy</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Gute Dashboards folgen einer KPI-Hierarchie: Strategische Kennzahlen oben, operative Details darunter, Warnsignale separat.</span><span lang="en">Good dashboards follow a KPI hierarchy: strategic metrics at the top, operational details below, warning signals separately.</span></p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th><span lang="de">Ebene</span><span lang="en">Level</span></th><th>KPIs</th><th><span lang="de">Beschreibung</span><span lang="en">Description</span></th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="kopf"><span lang="de">Strategisch</span><span lang="en">Strategic</span></td><td><span lang="de">Gesamtumsatz, Bestellungen, Ø Bestellwert</span><span lang="en">Total Revenue, Orders, Avg. Order Value</span></td><td><span lang="de">Wie performt das Unternehmen insgesamt?</span><span lang="en">How is the business performing overall?</span></td></tr>
+        <tr><td class="kopf"><span lang="de">Operativ</span><span lang="en">Operational</span></td><td><span lang="de">Umsatz nach Region/Kategorie, Top-10-Produkte, YoY</span><span lang="en">Revenue by Region/Category, Top-10 Products, YoY</span></td><td><span lang="de">Welche Segmente treiben das Ergebnis?</span><span lang="en">Which segments drive the result?</span></td></tr>
+        <tr><td class="kopf"><span lang="de">Warnsignale</span><span lang="en">Warning Signals</span></td><td><span lang="de">Sub-Kategorien mit rückläufigem Umsatz (YoY), Bundesländer mit Ø Bestellwert unter Durchschnitt</span><span lang="en">Sub-categories with declining revenue (YoY), states with below-average order value</span></td><td><span lang="de">Wo bricht Umsatz weg – und wo sind die Bestellungen zu klein?</span><span lang="en">Where is revenue eroding – and where are orders too small?</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+    <div class="concept-box">
+      <h3><span lang="de">Prinzip: KPIs von oben nach unten</span><span lang="en">Principle: KPIs top-down</span></h3>
+      <p><span lang="de">Stakeholder wollen zuerst den Gesamtstatus sehen, dann in Problembereiche einzoomen. Strategische KPIs prominent, operative Details auf Anfrage, Warnsignale visuell hervorheben (Shneiderman, 1996: „Overview first, zoom and filter, then details-on-demand“).</span><span lang="en">Stakeholders want to see the overall status first, then drill into problem areas. Strategic KPIs prominently placed, operational details on demand, warning signals visually highlighted (Shneiderman, 1996: “Overview first, zoom and filter, then details-on-demand”).</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="powerbi-steps">
+    <h2><span lang="de">Schritt 3 – Power BI Step by Step</span><span lang="en">Step 3 – Power BI Step by Step</span></h2>
+    <div class="accent-line"></div>
+  <ol class="schritte">
+    <li>
+      <!-- SCREENSHOT: powerbi-get-data · Start → Daten abrufen → Text/CSV → train.csv -->
+      <strong><span lang="de">CSV importieren</span><span lang="en">Import CSV</span></strong>
+      <span><span lang="de">Start → Daten abrufen → Text/CSV → train.csv auswählen → Laden. Danach die Tabelle im Feldbereich von „train“ in „Orders“ umbenennen – die DAX-Measures in Schritt 3 referenzieren Orders. Ebenfalls wichtig: Order Date und Ship Date im Power Query Editor als Datum (TT/MM/JJJJ) typisieren.</span><span lang="en">Home → Get Data → Text/CSV → select train.csv → Load. Then rename the table in the Fields pane from “train” to “Orders” – the DAX measures in step 3 reference Orders. Also important: set Order Date and Ship Date to Date (DD/MM/YYYY) in the Power Query Editor.</span></span>
+    </li>
+    <li>
+      <!-- SCREENSHOT: powerbi-power-query-editor · Power Query Editor, Order Date und Ship Date als Datum (TT/MM/JJJJ) -->
+      <strong><span lang="de">Power Query – Datentransformation</span><span lang="en">Power Query – Data Transformation</span></strong>
+      <span><span lang="de">Sicherstellen: Order Date als Datum/Uhrzeit, Spalten prüfen auf Nullwerte, Datentypen kontrollieren.</span><span lang="en">Ensure: Order Date is Date/Time type, check columns for null values, verify data types.</span></span>
+    </li>
+    <li>
+      <!-- SCREENSHOT: powerbi-new-measure · Modellierung → Neues Measure, Formelleiste mit Umsatz = SUM(Orders[Sales]) -->
+      <strong><span lang="de">Measures erstellen</span><span lang="en">Create Measures</span></strong>
+      <span><span lang="de">Im Datenmodell unter „New Measure“ die folgenden DAX-Ausdrücke anlegen:</span><span lang="en">In the data model under “New Measure”, create the following DAX expressions:</span></span>
+<div class="codeblock" data-kind="run" data-name="CODE_MEASURES" data-title="measures.dax">
+<pre class="code-block" lang="de">-- 1. Kalendertabelle anlegen (Modellierung -&gt; Neue Tabelle)
+--    Zeitintelligenz braucht eine lueckenlose, als Datumstabelle
+--    markierte Tabelle. Auto-Datum/Uhrzeit reicht dafuer nicht.
+
+Datum =
+VAR _min = MIN(Orders[Order Date])
+VAR _max = MAX(Orders[Order Date])
+RETURN
+ADDCOLUMNS(
+    CALENDAR(DATE(YEAR(_min), 1, 1), DATE(YEAR(_max), 12, 31)),
+    "Jahr",        YEAR([Date]),
+    "Monatsnr",    MONTH([Date]),
+    "Monat",       FORMAT([Date], "MMM"),
+    "Quartal",     "Q" &amp; QUARTER([Date])
+)
+
+-- 2. Danach im Menueband: Tabellentools -&gt; Als Datumstabelle markieren
+--    -&gt; Spalte [Date] waehlen. Anschliessend im Modell eine 1:n-Beziehung
+--    von Datum[Date] zu Orders[Order Date] ziehen.
+
+-- 3. Grundlegende Measures
+
+Umsatz =
+SUM(Orders[Sales])
+
+Bestellungen =
+DISTINCTCOUNT(Orders[Order ID])
+
+Positionen =
+COUNTROWS(Orders)
+
+Avg_Bestellwert =
+DIVIDE([Umsatz], [Bestellungen], 0)
+
+-- Zeitintelligenz laeuft ueber die Datumstabelle, nicht ueber Orders:
+Umsatz_VJ =
+CALCULATE([Umsatz], SAMEPERIODLASTYEAR(Datum[Date]))
+
+YoY_Wachstum =
+DIVIDE([Umsatz] - [Umsatz_VJ], [Umsatz_VJ], 0) * 100
+
+-- Sollwerte zur Kontrolle:
+-- Umsatz 2.261.536,78 | Bestellungen 4.922 | Positionen 9.800
+-- Avg_Bestellwert 459,48
+-- 2017: 600.192,55 | 2018: 722.052,02 | YoY_Wachstum 2018 ~ 20,3 %
+
+-- Hinweis: Der Datensatz enthaelt keine Kosten- oder Gewinnspalte.
+-- Deckungsbeitrags-Measures wie Gewinn oder Marge lassen sich damit
+-- nicht bilden; sie brauchen die Vollversion des Superstore-Datensatzes.</pre>
+<pre class="code-block" lang="en">-- 1. Create a calendar table (Modeling -&gt; New table)
+--    Time intelligence needs a gap-free table that is marked as a
+--    date table. Auto date/time is not enough for this.
+
+Date_Table =
+VAR _min = MIN(Orders[Order Date])
+VAR _max = MAX(Orders[Order Date])
+RETURN
+ADDCOLUMNS(
+    CALENDAR(DATE(YEAR(_min), 1, 1), DATE(YEAR(_max), 12, 31)),
+    "Year",        YEAR([Date]),
+    "MonthNo",     MONTH([Date]),
+    "Month",       FORMAT([Date], "MMM"),
+    "Quarter",     "Q" &amp; QUARTER([Date])
+)
+
+-- 2. Then on the ribbon: Table tools -&gt; Mark as date table
+--    -&gt; pick column [Date]. Afterwards draw a 1:many relationship
+--    from Date_Table[Date] to Orders[Order Date] in the model.
+
+-- 3. Base measures
+
+Revenue =
+SUM(Orders[Sales])
+
+Orders_Count =
+DISTINCTCOUNT(Orders[Order ID])
+
+LineItems =
+COUNTROWS(Orders)
+
+Avg_Order_Value =
+DIVIDE([Revenue], [Orders_Count], 0)
+
+-- Time intelligence runs through the date table, not through Orders:
+Revenue_PY =
+CALCULATE([Revenue], SAMEPERIODLASTYEAR(Date_Table[Date]))
+
+YoY_Growth =
+DIVIDE([Revenue] - [Revenue_PY], [Revenue_PY], 0) * 100
+
+-- Expected values for checking:
+-- Revenue 2,261,536.78 | Orders 4,922 | Line items 9,800
+-- Avg order value 459.48
+-- 2017: 600,192.55 | 2018: 722,052.02 | YoY growth 2018 ~ 20.3%
+
+-- Note: the dataset has no cost or profit column. Contribution-margin
+-- measures such as profit or margin cannot be built from it; they need
+-- the full version of the Superstore dataset.</pre>
+<p class="code-note"><span lang="de">Voraussetzung: train.csv ist importiert und die Tabelle in Orders umbenannt (Schritt 1). Sollwerte: Umsatz 2.261.536,78 · Bestellungen 4.922 · Positionen 9.800 · Ø Bestellwert 459,48 · YoY_Wachstum 2018 gegenüber 2017 rund 20,3 %.</span><span lang="en">Prerequisites: train.csv imported and the table renamed to Orders (step 1). Expected values: revenue 2,261,536.78 · orders 4,922 · line items 9,800 · average order value 459.48 · YoY growth 2018 over 2017 about 20.3%.</span></p>
+</div>
+    </li>
+    <li>
+      <!-- SCREENSHOT: powerbi-dashboard · Fertiges Dashboard: vier KPI-Karten, Trendlinie, Kategorie-Balken, Regionskarte, Streudiagramm -->
+      <strong><span lang="de">Dashboard aufbauen</span><span lang="en">Build Dashboard</span></strong>
+      <span><span lang="de">4 KPI-Cards oben (Umsatz, Bestellungen, Ø Bestellwert, Positionen), Umsatz-Trend-Linie (monatlich), Kategorie-Balkendiagramm, Region-Karte, Streudiagramm Umsatz vs. Bestellpositionen je Sub-Kategorie.</span><span lang="en">4 KPI cards at the top (Revenue, Orders, Avg. Order Value, Line Items), Revenue trend line (monthly), Category bar chart, Region map, scatter of revenue vs. line items per sub-category.</span></span>
+    </li>
+    <li>
+      <strong><span lang="de">Slicer &amp; Formatierung</span><span lang="en">Slicers &amp; Formatting</span></strong>
+      <span><span lang="de">Slicer für: Jahr, Region, Kategorie. Einheitliche Farben, Datenbeschriftungen aktivieren.</span><span lang="en">Slicers for: Year, Region, Category. Consistent colours, enable data labels.</span></span>
+    </li>
+  </ol>
+  </section>
+
+  <section class="section-block" id="tableau">
+    <h2><span lang="de">Schritt 3b – Tableau Step by Step</span><span lang="en">Step 3b – Tableau Step by Step</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Dieselbe Fallstudie in Tableau Desktop oder Tableau Public. Die berechneten Felder entsprechen den DAX-Measures aus Schritt 3.</span><span lang="en">The same case study in Tableau Desktop or Tableau Public. The calculated fields match the DAX measures from step 3.</span></p>
+    <div class="download-box">
+      <h3><span lang="de">Fertige Arbeitsmappe herunterladen</span><span lang="en">Download the finished workbook</span></h3>
+      <p><span lang="de">BINT_Tableau_Uebung.twbx enthält train.csv und alle berechneten Felder aus diesem Abschnitt. Die Datei ist gepackt – sie läuft ohne weitere Verbindung in Tableau Desktop und in Tableau Public. Zum Nachbauen erst selbst rechnen, dann vergleichen.</span><span lang="en">BINT_Tableau_Uebung.twbx ships train.csv together with all calculated fields from this section. It is a packaged workbook – it opens in Tableau Desktop and Tableau Public without any further connection. Build your own version first, then compare.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="starter/BINT_Tableau_Uebung.twbx" download>BINT_Tableau_Uebung.twbx</a>
+      </div>
+    </div>
+  <ol class="schritte">
+    <li>
+      <!-- SCREENSHOT: tableau-data-source · Datenquellenseite nach dem Verbinden von train.csv, Tabelle im Canvas, Vorschau darunter -->
+      <strong><span lang="de">Verbindung zur CSV herstellen</span><span lang="en">Connect to the CSV</span></strong>
+      <span><span lang="de">Startseite → Verbinden → Zu einer Datei → Textdatei → train.csv auswählen. Tableau öffnet die Datenquellenseite mit der Tabelle im Canvas. Der Reiter Blatt 1 unten links wechselt zum ersten Arbeitsblatt. Encoding auf UTF-8 belassen; erscheinen in Customer Name verstellte Zeichen, in der Datenquelle auf Windows-1252 umstellen.</span><span lang="en">Start page → Connect → To a File → Text file → select train.csv. Tableau opens the data source page with the table on the canvas. The Sheet 1 tab in the bottom left switches to the first worksheet. Leave the encoding at UTF-8; if Customer Name shows garbled characters, switch the data source to Windows-1252.</span></span>
+    </li>
+    <li>
+      <strong><span lang="de">Datumsspalte prüfen</span><span lang="en">Check the date column</span></strong>
+      <span><span lang="de">In der Datenquellenvorschau das Typsymbol über Order Date prüfen. Ein Kalendersymbol steht für Datum, Abc für Text. Das Bestelldatum steht als 08/11/2017, also Tag zuerst. Liest Tableau die Spalte als Text, hilft ein berechnetes Feld DATEPARSE("dd/MM/yyyy", [Order Date]); alle zeitbezogenen Ansichten verwenden dann dieses Feld. Kontrolle: der Zeitraum reicht vom 03.01.2015 bis zum 30.12.2018.</span><span lang="en">In the data source preview, check the type icon above Order Date. A calendar icon means date, Abc means text. The order date is stored as 08/11/2017, day first. If Tableau reads the column as text, a calculated field DATEPARSE("dd/MM/yyyy", [Order Date]) fixes it; every time-based view then uses that field. Check: the period runs from 03/01/2015 to 30/12/2018.</span></span>
+    </li>
+    <li>
+      <!-- SCREENSHOT: tableau-calculated-field · Analyse → Berechnetes Feld erstellen, Dialog mit SUM([Sales]) / MIN({ FIXED : SUM([Sales]) }) -->
+      <strong><span lang="de">Berechnete Felder anlegen</span><span lang="en">Create calculated fields</span></strong>
+      <span><span lang="de">Analyse → Berechnetes Feld erstellen. Die folgenden Felder anlegen und unter dem Namen aus der jeweiligen Kommentarzeile speichern.</span><span lang="en">Analysis → Create Calculated Field. Create the following fields and save each one under the name given in its comment line.</span></span>
+<div class="codeblock" data-kind="run" data-name="CODE_TABLEAU">
+<pre class="code-block" lang="de">// Gesamtumsatz
+SUM([Sales])
+
+// Umsatz West - in DAX: CALCULATE(SUM(...), Region = "West")
+SUM(IF [Region] = "West" THEN [Sales] END)
+
+// Anteil am Gesamtumsatz - LOD, unabhaengig von der Ansicht
+SUM([Sales]) / MIN({ FIXED : SUM([Sales]) })
+
+// Anteil an der Ansicht - Tabellenberechnung
+SUM([Sales]) / TOTAL(SUM([Sales]))
+
+// Umsatz des Vorjahres - Jahr muss in der Ansicht liegen
+LOOKUP(SUM([Sales]), -1)
+
+// Wachstum gegenueber dem Vorjahr
+(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)
+
+// Umsatz je Kunde
+{ FIXED [Customer ID] : SUM([Sales]) }
+
+// Durchschnittlicher Bestellwert
+SUM([Sales]) / COUNTD([Order ID])</pre>
+<pre class="code-block" lang="en">// Total revenue
+SUM([Sales])
+
+// Revenue West - in DAX: CALCULATE(SUM(...), Region = "West")
+SUM(IF [Region] = "West" THEN [Sales] END)
+
+// Share of total revenue - LOD, independent of the view
+SUM([Sales]) / MIN({ FIXED : SUM([Sales]) })
+
+// Share of the view - table calculation
+SUM([Sales]) / TOTAL(SUM([Sales]))
+
+// Previous year revenue - the year must be in the view
+LOOKUP(SUM([Sales]), -1)
+
+// Growth over the previous year
+(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)
+
+// Revenue per customer
+{ FIXED [Customer ID] : SUM([Sales]) }
+
+// Average order value
+SUM([Sales]) / COUNTD([Order ID])</pre>
+<p class="code-note"><span lang="de">Voraussetzung: train.csv ist als Datenquelle verbunden und Order Date liegt als Datum vor. Sollwerte ohne Filter: Gesamtumsatz 2.261.536,78 · Umsatz West 710.219,68 · Anteil West 31,4 % · Ø Bestellwert 459,48. Anteil an der Ansicht, Umsatz des Vorjahres und Wachstum sind Tabellenberechnungen und hängen von den Feldern in der Ansicht ab.</span><span lang="en">Prerequisites: train.csv connected as a data source and Order Date typed as a date. Expected values without filters: total revenue 2,261,536.78 · revenue West 710,219.68 · share West 31.4% · average order value 459.48. Share of the view, previous year revenue and growth are table calculations and depend on the fields in the view.</span></p>
+</div>
+      <div class="info-box">
+        <p><span lang="de">Anteil am Gesamtumsatz und Anteil an der Ansicht liefern verschiedene Werte. { FIXED : SUM([Sales]) } ignoriert die Dimensionsfilter der Ansicht und ergibt immer 2.261.536,78; ein Kontextfilter wirkt dagegen auch auf diesen Ausdruck. TOTAL(SUM([Sales])) bezieht sich auf die Zeilen der aktuellen Ansicht und ändert sich mit jedem Filter.</span><span lang="en">Share of Total Revenue and Share of the View return different numbers. { FIXED : SUM([Sales]) } ignores the dimension filters of the view and always returns 2,261,536.78; a context filter does apply to it. TOTAL(SUM([Sales])) refers to the rows of the current view and changes with every filter.</span></p>
+      </div>
+    </li>
+    <li>
+      <strong><span lang="de">Eine Ansicht je KPI</span><span lang="en">One view per KPI</span></strong>
+      <span><span lang="de">Pro Arbeitsblatt eine Kennzahl. Umsatzverlauf: Order Date als Jahr in Spalten, Gesamtumsatz in Zeilen, Markierungstyp Linie. Umsatz je Kategorie: Category in Zeilen, Gesamtumsatz in Spalten, absteigend sortiert. Umsatz je Region: Region in Zeilen, Gesamtumsatz in Spalten, Anteil am Gesamtumsatz auf Beschriftung. Umsatz je Unterkategorie: Sub-Category in Zeilen, Gesamtumsatz in Spalten. Wachstum: Jahr in Spalten, Wachstum gegenüber dem Vorjahr in Zeilen – LOOKUP liest den Vorjahreswert aus der Ansicht, das Jahr muss daher in der Ansicht liegen.</span><span lang="en">One metric per worksheet. Revenue over time: Order Date as year on Columns, Total Revenue on Rows, mark type Line. Revenue by category: Category on Rows, Total Revenue on Columns, sorted descending. Revenue by region: Region on Rows, Total Revenue on Columns, Share of Total Revenue on Label. Revenue by sub-category: Sub-Category on Rows, Total Revenue on Columns. Growth: year on Columns, Growth over the previous year on Rows – LOOKUP reads the prior value from the view, so the year has to be in the view.</span></span>
+    </li>
+    <li>
+      <!-- SCREENSHOT: tableau-dashboard · Fertiges Tableau-Dashboard: Kennzahlen oben, Detailansichten darunter, „Als Filter verwenden“ aktiv -->
+      <strong><span lang="de">Ansichten zu einem Dashboard zusammensetzen</span><span lang="en">Assemble the views into a dashboard</span></strong>
+      <span><span lang="de">Dashboard → Neues Dashboard, Größe auf Automatisch. Die Arbeitsblätter aus der linken Liste auf die Fläche ziehen: Kennzahlen oben, Detailansichten darunter. Am Rand eines Arbeitsblatts öffnet das Dropdown den Eintrag Als Filter verwenden; eine Auswahl dort filtert die übrigen Ansichten. Der Wirkungsbereich lässt sich über Filter → Anwenden auf → Ausgewählte Arbeitsblätter einschränken.</span><span lang="en">Dashboard → New Dashboard, size set to Automatic. Drag the worksheets from the list on the left onto the canvas: metrics at the top, detail views below. The dropdown at the edge of a worksheet offers Use as Filter; a selection there filters the remaining views. Filter → Apply to Worksheets → Selected Worksheets narrows the scope.</span></span>
+    </li>
+    <li>
+      <strong><span lang="de">Arbeitsmappe als .twbx weitergeben</span><span lang="en">Share the workbook as .twbx</span></strong>
+      <span><span lang="de">Datei → Speichern unter → Verpackte Arbeitsmappe (.twbx). Die twbx-Datei enthält Arbeitsmappe und Datenextrakt zusammen, die Empfangenden brauchen train.csv nicht. Eine .twb speichert nur den Verweis auf den lokalen Pfad und bleibt auf fremden Rechnern leer. Tableau Public veröffentlicht jede gespeicherte Arbeitsmappe im Web – vertrauliche Daten gehören in Tableau Desktop mit lokaler Speicherung.</span><span lang="en">File → Save As → Packaged Workbook (.twbx). The twbx file holds workbook and data extract together, so recipients do not need train.csv. A .twb only stores the reference to the local path and stays empty on other machines. Tableau Public publishes every saved workbook on the web – confidential data belongs in Tableau Desktop with local storage.</span></span>
+    </li>
+  </ol>
+    <div class="challenge-box">
+      <h3><span lang="de">Selbstcheck</span><span lang="en">Self-check</span></h3>
+      <ul>
+        <li><span lang="de">Die Datenquelle meldet 9.800 Zeilen und 18 Spalten. Eine Profit-Spalte enthält diese Datei nicht, Deckungsbeiträge lassen sich daraus nicht berechnen.</span><span lang="en">The data source reports 9,800 rows and 18 columns. This file has no Profit column, so contribution margins cannot be derived from it.</span></li>
+        <li><span lang="de">Gesamtumsatz 2.261.536,78. Umsatz West 710.219,68, Anteil am Gesamtumsatz 31,4 %.</span><span lang="en">Total revenue 2,261,536.78. Revenue West 710,219.68, share of total revenue 31.4%.</span></li>
+        <li><span lang="de">Jahresumsätze: 2015 479.856,21 · 2016 459.436,01 · 2017 600.192,55 · 2018 722.052,02. Enden die Jahre 2012 oder fehlen Zeilen, wurde das Datum als MM/dd/yyyy gelesen.</span><span lang="en">Annual revenue: 2015 479,856.21 · 2016 459,436.01 · 2017 600,192.55 · 2018 722,052.02. If the years end in 2012 or rows go missing, the date was read as MM/dd/yyyy.</span></li>
+        <li><span lang="de">Wachstum gegenüber dem Vorjahr: 2016 −4,3 %, 2017 +30,6 %, 2018 +20,3 %. Zeigt die Spalte 2015 einen Wert, läuft die Tabellenberechnung in die falsche Richtung.</span><span lang="en">Growth over the previous year: 2016 −4.3%, 2017 +30.6%, 2018 +20.3%. If the 2015 column shows a value, the table calculation runs in the wrong direction.</span></li>
+        <li><span lang="de">Stärkste Unterkategorien: Phones 327.782,45 · Chairs 322.822,73 · Storage 219.343,39.</span><span lang="en">Strongest sub-categories: Phones 327,782.45 · Chairs 322,822.73 · Storage 219,343.39.</span></li>
+        <li><span lang="de">4.922 Bestellungen, 793 Kunden, Ø Bestellwert 459,48. COUNTD([Order ID]) und nicht COUNT, sonst zählt Tableau die 9.800 Positionen.</span><span lang="en">4,922 orders, 793 customers, average order value 459.48. Use COUNTD([Order ID]) rather than COUNT, otherwise Tableau counts the 9,800 line items.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-block" id="dash-steps">
+    <h2><span lang="de">Schritt 4 – Plotly Dash Step by Step</span><span lang="en">Step 4 – Plotly Dash Step by Step</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Die folgende Dash-App repliziert das Power-BI-Dashboard in Python. In app.py speichern und mit python app.py starten.</span><span lang="en">The following Dash app replicates the Power BI dashboard in Python. Save as app.py and start with python app.py.</span></p>
+    <div class="tip-box">
+      <h3>Plotly &amp; CSS-Variablen</h3>
+      <p><span lang="de">Wichtig: Plotly rendert zu SVG/Canvas, nicht ins DOM. CSS-Variablen wie var(--col-primary) funktionieren NICHT in color_discrete_sequence. Immer Hex-Werte (#1E3A8A) für Plotly-Farben verwenden.</span><span lang="en">Important: Plotly renders to SVG/Canvas, not the DOM. CSS variables like var(--col-primary) do NOT work in color_discrete_sequence. Always use hex values (#1E3A8A) for Plotly colours.</span></p>
+    </div>
+<div class="codeblock" data-kind="run" data-name="CODE_DASH" data-title="app.py">
+<pre class="code-block" lang="de"># app.py – Superstore Retail Analytics Dashboard
+import dash
+from dash import dcc, html, Input, Output
+import plotly.express as px
+import pandas as pd
+
+app = dash.Dash(__name__)
+
+# Ein Dashboard, das auf dem Handy bricht, ist kein fertiges Dashboard.
+# Feste Spaltenzahlen (repeat(4, 1fr)) sprengen jedes schmale Display,
+# deshalb liegt das Raster in CSS mit Media Queries statt in Inline-Styles.
+app.index_string = """&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    {%metas%}&lt;title&gt;{%title%}&lt;/title&gt;{%favicon%}{%css%}
+    &lt;style&gt;
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,
+             'Segoe UI', sans-serif; }
+      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }
+      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }
+      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }
+      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;
+                    padding: 1rem 2rem; background: #f8fafc; }
+      /* min-width: 0 ist noetig, sonst schrumpfen Flex-Kinder nicht unter
+         ihre Inhaltsbreite - derselbe Fallstrick wie bei den Lab-Seiten. */
+      .filter-row &gt; div { flex: 1 1 240px; min-width: 0; }
+      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }
+                                   .chart-grid { grid-template-columns: 1fr 1fr; } }
+      /* Plotly zeichnet in SVG und richtet sich nicht von allein nach dem
+         Container - ohne diese Regel ragen die Diagramme heraus. */
+      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;{%app_entry%}&lt;footer&gt;{%config%}{%scripts%}{%renderer%}&lt;/footer&gt;&lt;/body&gt;
+&lt;/html&gt;"""
+
+# Daten laden und vorbereiten
+df = pd.read_csv('train.csv', encoding='latin-1')
+# TT/MM/JJJJ -&gt; dayfirst=True zwingend
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+df['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()
+
+# Farben als Python-Konstanten (NICHT CSS-Variablen!)
+# Plotly rendert zu SVG/Canvas, nicht ins DOM –
+# var(--col-primary) funktioniert dort nicht.
+COL_PRIMARY = '#1E3A8A'
+COL_ACCENT  = '#2563EB'
+
+app.layout = html.Div([
+    # Header
+    html.Div([
+        html.H1('Superstore Analytics Dashboard',
+                style={'margin': '0', 'fontSize': '1.5rem'}),
+    ], style={'background': COL_PRIMARY, 'color': 'white',
+              'padding': '1rem 2rem'}),
+
+    # Filter
+    html.Div([
+        html.Div([
+            html.Label('Segment:'),
+            dcc.Dropdown(
+                id='segment-filter',
+                options=[{'label': s, 'value': s}
+                         for s in df['Segment'].unique()],
+                value=df['Segment'].unique().tolist(),
+                multi=True, clearable=False
+            ),
+        ]),
+        html.Div([
+            html.Label('Region:'),
+            dcc.Dropdown(
+                id='region-filter',
+                options=[{'label': r, 'value': r}
+                         for r in df['Region'].unique()],
+                value=df['Region'].unique().tolist(),
+                multi=True, clearable=False
+            ),
+        ]),
+    ], className='filter-row'),
+
+    # KPI Cards
+    html.Div(id='kpi-cards', className='kpi-grid'),
+
+    # Charts
+    html.Div([
+        dcc.Graph(id='trend-chart', config={'responsive': True}),
+        dcc.Graph(id='category-chart', config={'responsive': True}),
+    ], className='chart-grid'),
+
+    dcc.Graph(id='scatter-chart', config={'responsive': True},
+              style={'padding': '0 2rem 2rem'}),
+])
+
+def kpi_card(title, value, color=COL_PRIMARY):
+    return html.Div([
+        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',
+                               'color': color}),
+        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',
+                               'textTransform': 'uppercase',
+                               'letterSpacing': '0.08em'}),
+    ], style={'background': 'white', 'padding': '1.25rem',
+              'border': '1px solid #e5e7eb',
+              'borderLeft': f'4px solid {color}'})
+
+@app.callback(
+    Output('kpi-cards', 'children'),
+    Output('trend-chart', 'figure'),
+    Output('category-chart', 'figure'),
+    Output('scatter-chart', 'figure'),
+    Input('segment-filter', 'value'),
+    Input('region-filter', 'value')
+)
+def update_dashboard(segments, regions):
+    fdf = df[df['Segment'].isin(segments) &amp;
+             df['Region'].isin(regions)]
+
+    # KPI Cards
+    total_sales = fdf['Sales'].sum()
+    orders = fdf['Order ID'].nunique()
+    positions = len(fdf)
+    avg_order = total_sales / orders if orders else 0
+
+    cards = [
+        kpi_card('Umsatz', f'${total_sales:,.0f}'),
+        kpi_card('Bestellungen', f'{orders:,}'),
+        kpi_card('Ø Bestellwert', f'${avg_order:,.0f}', COL_ACCENT),
+        kpi_card('Positionen', f'{positions:,}'),
+    ]
+
+    # Trend
+    trend = fdf.groupby('Month')['Sales'].sum().reset_index()
+    fig1 = px.line(trend, x='Month', y='Sales',
+                   title='Umsatz-Trend (monatlich)',
+                   color_discrete_sequence=[COL_ACCENT])
+    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')
+
+    # Kategorie
+    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()
+    fig2 = px.bar(by_cat, x='Category', y='Sales',
+                  title='Umsatz nach Kategorie',
+                  color_discrete_sequence=[COL_PRIMARY])
+    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')
+
+    # Scatter
+    by_sub = fdf.groupby('Sub-Category').agg(
+        Sales=('Sales','sum'), Positionen=('Order ID','count')
+    ).reset_index()
+    fig3 = px.scatter(by_sub, x='Positionen', y='Sales',
+                      text='Sub-Category', size='Sales',
+                      title='Umsatz vs. Bestellpositionen nach Sub-Kategorie',
+                      color_discrete_sequence=[COL_ACCENT])
+    fig3.update_traces(textposition='top center')
+    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')
+
+    return cards, fig1, fig2, fig3
+
+if __name__ == '__main__':
+    app.run(debug=True)</pre>
+<pre class="code-block" lang="en"># app.py - Superstore Retail Analytics Dashboard
+import dash
+from dash import dcc, html, Input, Output
+import plotly.express as px
+import pandas as pd
+
+app = dash.Dash(__name__)
+
+# A dashboard that breaks on a phone is not a finished dashboard.
+# Fixed column counts (repeat(4, 1fr)) blow up every narrow screen, so the
+# grid lives in CSS with media queries instead of inline styles.
+app.index_string = """&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    {%metas%}&lt;title&gt;{%title%}&lt;/title&gt;{%favicon%}{%css%}
+    &lt;style&gt;
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont,
+             'Segoe UI', sans-serif; }
+      .kpi-grid, .chart-grid { display: grid; gap: 1rem; }
+      .kpi-grid   { padding: 1rem 2rem;   grid-template-columns: 1fr; }
+      .chart-grid { padding: 0 2rem 1rem; grid-template-columns: 1fr; }
+      .filter-row { display: flex; flex-wrap: wrap; gap: 1rem;
+                    padding: 1rem 2rem; background: #f8fafc; }
+      /* min-width: 0 is required, otherwise flex children will not shrink
+         below their content width - the same trap as on the lab pages. */
+      .filter-row &gt; div { flex: 1 1 240px; min-width: 0; }
+      @media (min-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1000px) { .kpi-grid   { grid-template-columns: repeat(4, 1fr); }
+                                   .chart-grid { grid-template-columns: 1fr 1fr; } }
+      /* Plotly draws to SVG and does not follow its container on its own -
+         without this rule the charts stick out. */
+      .js-plotly-plot, .plot-container, .dash-graph { max-width: 100%; }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;{%app_entry%}&lt;footer&gt;{%config%}{%scripts%}{%renderer%}&lt;/footer&gt;&lt;/body&gt;
+&lt;/html&gt;"""
+
+# Load and prepare the data
+df = pd.read_csv('train.csv', encoding='latin-1')
+# DD/MM/YYYY -&gt; dayfirst=True is mandatory
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+df['Month'] = df['Order Date'].dt.to_period('M').dt.to_timestamp()
+
+# Colours as Python constants (NOT CSS variables!)
+# Plotly renders to SVG/Canvas, not into the DOM -
+# var(--col-primary) does not work there.
+COL_PRIMARY = '#1E3A8A'
+COL_ACCENT  = '#2563EB'
+
+app.layout = html.Div([
+    # Header
+    html.Div([
+        html.H1('Superstore Analytics Dashboard',
+                style={'margin': '0', 'fontSize': '1.5rem'}),
+    ], style={'background': COL_PRIMARY, 'color': 'white',
+              'padding': '1rem 2rem'}),
+
+    # Filter
+    html.Div([
+        html.Div([
+            html.Label('Segment:'),
+            dcc.Dropdown(
+                id='segment-filter',
+                options=[{'label': s, 'value': s}
+                         for s in df['Segment'].unique()],
+                value=df['Segment'].unique().tolist(),
+                multi=True, clearable=False
+            ),
+        ]),
+        html.Div([
+            html.Label('Region:'),
+            dcc.Dropdown(
+                id='region-filter',
+                options=[{'label': r, 'value': r}
+                         for r in df['Region'].unique()],
+                value=df['Region'].unique().tolist(),
+                multi=True, clearable=False
+            ),
+        ]),
+    ], className='filter-row'),
+
+    # KPI Cards
+    html.Div(id='kpi-cards', className='kpi-grid'),
+
+    # Charts
+    html.Div([
+        dcc.Graph(id='trend-chart', config={'responsive': True}),
+        dcc.Graph(id='category-chart', config={'responsive': True}),
+    ], className='chart-grid'),
+
+    dcc.Graph(id='scatter-chart', config={'responsive': True},
+              style={'padding': '0 2rem 2rem'}),
+])
+
+def kpi_card(title, value, color=COL_PRIMARY):
+    return html.Div([
+        html.Div(value, style={'fontSize': '1.75rem', 'fontWeight': '800',
+                               'color': color}),
+        html.Div(title, style={'fontSize': '0.75rem', 'color': '#6B7280',
+                               'textTransform': 'uppercase',
+                               'letterSpacing': '0.08em'}),
+    ], style={'background': 'white', 'padding': '1.25rem',
+              'border': '1px solid #e5e7eb',
+              'borderLeft': f'4px solid {color}'})
+
+@app.callback(
+    Output('kpi-cards', 'children'),
+    Output('trend-chart', 'figure'),
+    Output('category-chart', 'figure'),
+    Output('scatter-chart', 'figure'),
+    Input('segment-filter', 'value'),
+    Input('region-filter', 'value')
+)
+def update_dashboard(segments, regions):
+    fdf = df[df['Segment'].isin(segments) &amp;
+             df['Region'].isin(regions)]
+
+    # KPI Cards
+    total_sales = fdf['Sales'].sum()
+    orders = fdf['Order ID'].nunique()
+    positions = len(fdf)
+    avg_order = total_sales / orders if orders else 0
+
+    cards = [
+        kpi_card('Revenue', f'${total_sales:,.0f}'),
+        kpi_card('Orders', f'{orders:,}'),
+        kpi_card('Avg order value', f'${avg_order:,.0f}', COL_ACCENT),
+        kpi_card('Line items', f'{positions:,}'),
+    ]
+
+    # Trend
+    trend = fdf.groupby('Month')['Sales'].sum().reset_index()
+    fig1 = px.line(trend, x='Month', y='Sales',
+                   title='Revenue trend (monthly)',
+                   color_discrete_sequence=[COL_ACCENT])
+    fig1.update_layout(plot_bgcolor='white', paper_bgcolor='white')
+
+    # Category
+    by_cat = fdf.groupby('Category')['Sales'].sum().reset_index()
+    fig2 = px.bar(by_cat, x='Category', y='Sales',
+                  title='Revenue by category',
+                  color_discrete_sequence=[COL_PRIMARY])
+    fig2.update_layout(plot_bgcolor='white', paper_bgcolor='white')
+
+    # Scatter
+    by_sub = fdf.groupby('Sub-Category').agg(
+        Sales=('Sales','sum'), LineItems=('Order ID','count')
+    ).reset_index()
+    fig3 = px.scatter(by_sub, x='LineItems', y='Sales',
+                      text='Sub-Category', size='Sales',
+                      title='Revenue vs. line items by sub-category',
+                      color_discrete_sequence=[COL_ACCENT])
+    fig3.update_traces(textposition='top center')
+    fig3.update_layout(plot_bgcolor='white', paper_bgcolor='white')
+
+    return cards, fig1, fig2, fig3
+
+if __name__ == '__main__':
+    app.run(debug=True)</pre>
+<p class="code-note"><span lang="de">Voraussetzung: pip install dash plotly pandas, train.csv im selben Verzeichnis. Als app.py speichern, mit python app.py starten, dann http://127.0.0.1:8050 öffnen. Ohne Filterauswahl zeigen die KPI-Karten dieselben Werte wie die Power-BI-Measures.</span><span lang="en">Prerequisites: pip install dash plotly pandas, train.csv in the same directory. Save as app.py, run python app.py, then open http://127.0.0.1:8050. With no filter selection the KPI cards show the same values as the Power BI measures.</span></p>
+</div>
+  </section>
+
+  <section class="section-block" id="reflexion">
+    <h2><span lang="de">Schritt 5 – Reflexion &amp; Vergleich</span><span lang="en">Step 5 – Reflection &amp; Comparison</span></h2>
+    <div class="accent-line"></div>
+    <div class="challenge-box">
+      <h3><span lang="de">Reflexionsfragen</span><span lang="en">Reflection Questions</span></h3>
+      <ol>
+        <li><span lang="de">Was hat länger gedauert: Power BI oder Dash? Warum?</span><span lang="en">Which took longer: Power BI or Dash? Why?</span></li>
+        <li><span lang="de">Welches Dashboard lässt sich leichter an neue Anforderungen anpassen?</span><span lang="en">Which dashboard is easier to adapt to new requirements?</span></li>
+        <li><span lang="de">Welches würden Sie bei einem Kunden ohne Python-Kenntnisse einsetzen?</span><span lang="en">Which would you use for a client without Python knowledge?</span></li>
+        <li><span lang="de">Wie würdest du die Dash-App produktiv deployen?</span><span lang="en">How would you deploy the Dash app to production?</span></li>
+        <li><span lang="de">Welches Tool eignet sich besser für nicht-technische Stakeholder – und warum?</span><span lang="en">Which tool is better suited for non-technical stakeholders – and why?</span></li>
+        <li><span lang="de">Welche Berechnung gehört in Tableau in ein LOD-Feld, welche in eine Table Calculation?</span><span lang="en">Which calculation belongs in a Tableau LOD field, which one in a table calculation?</span></li>
+      </ol>
+    </div>
+    <h3><span lang="de">Vergleich: Power BI, Tableau und Plotly Dash</span><span lang="en">Comparison: Power BI, Tableau and Plotly Dash</span></h3>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th><span lang="de">Kriterium</span><span lang="en">Criterion</span></th><th>Power BI</th><th>Tableau</th><th>Plotly Dash</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="kopf">Setup</td><td>GUI, Drag &amp; Drop</td><td>GUI, Drag &amp; Drop</td><td><span lang="de">Python-Code</span><span lang="en">Python code</span></td></tr>
+        <tr><td class="kopf"><span lang="de">Lernkurve</span><span lang="en">Learning Curve</span></td><td><span lang="de">Flach (keine Programmierung)</span><span lang="en">Flat (no programming)</span></td><td><span lang="de">Flach für Ansichten, eigene Syntax für LOD und Table Calculations</span><span lang="en">Flat for views, own syntax for LOD and table calculations</span></td><td><span lang="de">Steil (Python + Dash)</span><span lang="en">Steep (Python + Dash)</span></td></tr>
+        <tr><td class="kopf"><span lang="de">Formelsprache</span><span lang="en">Formula Language</span></td><td>DAX</td><td><span lang="de">Tableau-Berechnungen mit LOD-Ausdrücken und Table Calculations</span><span lang="en">Tableau calculations with LOD expressions and table calculations</span></td><td><span lang="de">pandas und Python</span><span lang="en">pandas and Python</span></td></tr>
+        <tr><td class="kopf"><span lang="de">Flexibilität</span><span lang="en">Flexibility</span></td><td><span lang="de">Begrenzt auf built-in Visuals</span><span lang="en">Limited to built-in visuals</span></td><td><span lang="de">Begrenzt auf die Markierungstypen, Erweiterung über Dashboard-Erweiterungen</span><span lang="en">Limited to the mark types, extendable via dashboard extensions</span></td><td><span lang="de">Unbegrenzt (jede Python-Lib)</span><span lang="en">Unlimited (any Python lib)</span></td></tr>
+        <tr><td class="kopf">Deployment</td><td>Power BI Service (Cloud)</td><td><span lang="de">Tableau Server, Tableau Cloud oder Weitergabe als .twbx</span><span lang="en">Tableau Server, Tableau Cloud or sharing a .twbx file</span></td><td>Docker / Render / Railway</td></tr>
+        <tr><td class="kopf"><span lang="de">Kosten</span><span lang="en">Cost</span></td><td><span lang="de">Kostenpflichtige Pro-Lizenz je Benutzer/Monat – aktuellen Preis bei Microsoft prüfen</span><span lang="en">Paid Pro licence per user/month – check the current price with Microsoft</span></td><td><span lang="de">Kostenpflichtige Creator-Lizenz je Benutzer/Monat – aktuellen Preis bei Tableau prüfen; Tableau Public ist kostenlos und veröffentlicht die Arbeitsmappe</span><span lang="en">Paid Creator licence per user/month – check the current price with Tableau; Tableau Public is free and publishes the workbook</span></td><td><span lang="de">Open Source (Hosting-Kosten)</span><span lang="en">Open Source (hosting costs)</span></td></tr>
+        <tr><td class="kopf"><span lang="de">Zielgruppe</span><span lang="en">Target Audience</span></td><td><span lang="de">Business-Analysten</span><span lang="en">Business analysts</span></td><td><span lang="de">Business-Analysten mit Schwerpunkt auf explorativer Analyse</span><span lang="en">Business analysts focused on exploratory analysis</span></td><td><span lang="de">Data Engineers / Scientists</span><span lang="en">Data engineers / scientists</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+    <div class="info-box">
+      <h3><span lang="de">Deployment-Optionen für Dash</span><span lang="en">Deployment Options for Dash</span></h3>
+      <p><span lang="de">Gunicorn als WSGI-Server → Docker-Container → Hosting auf Render, Railway oder eigenem Server mit Traefik als Reverse Proxy. Für Streamlit-Prototypen: Streamlit Community Cloud (kostenlos, keine Docker-Kenntnisse nötig).</span><span lang="en">Gunicorn as WSGI server → Docker container → hosting on Render, Railway or own server with Traefik as reverse proxy. For Streamlit prototypes: Streamlit Community Cloud (free, no Docker knowledge required).</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="ressourcen">
+    <h2><span lang="de">Lernressourcen</span><span lang="en">Learning Resources</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Ergänzende YouTube-Kanalempfehlungen für diese Fallstudie:</span><span lang="en">Recommended YouTube channels for this case study:</span></p>
+    <div class="youtube-box">
+      <h3>YouTube</h3>
+      <p class="hinweis-klein"><span lang="de">Externe Ziele: Die Links führen auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kanäle bieten eine zentrale Anlaufstelle.</span><span lang="en">External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.</span></p>
+    <div class="ressource">
+      <a class="youtube-link" href="https://www.youtube.com/@GuyInACube" target="_blank" rel="noopener noreferrer">Guy in a Cube</a>
+      <p><span lang="de">Power-BI-Tutorials von Adam Saxton &amp; Patrick LeBlanc (Microsoft-nah).</span><span lang="en">Power BI tutorials by Adam Saxton &amp; Patrick LeBlanc (Microsoft-adjacent).</span></p>
+    </div>
+    <div class="ressource">
+      <a class="youtube-link" href="https://www.youtube.com/@CharmingData" target="_blank" rel="noopener noreferrer">Charming Data</a>
+      <p><span lang="de">Plotly Dash Tutorials von Adam Schroeder mit echten Datensätzen.</span><span lang="en">Plotly Dash tutorials by Adam Schroeder with real datasets.</span></p>
+    </div>
+    <div class="ressource">
+      <a class="youtube-link" href="https://www.youtube.com/@SQLBI" target="_blank" rel="noopener noreferrer">SQLBI</a>
+      <p><span lang="de">Marco Russo &amp; Alberto Ferrari – die weltweit führenden DAX-Experten.</span><span lang="en">Marco Russo &amp; Alberto Ferrari – the world’s leading DAX experts.</span></p>
+    </div>
+    <div class="ressource">
+      <a class="youtube-link" href="https://www.youtube.com/@CurbalEN" target="_blank" rel="noopener noreferrer">Curbal</a>
+      <p><span lang="de">Wöchentliche DAX-Tipps und Power-BI-Tutorials (DAX Fridays).</span><span lang="en">Weekly DAX tips and Power BI tutorials (DAX Fridays).</span></p>
+    </div>
+    </div>
+    <div class="info-box">
+      <p><span lang="de">Buchempfehlung: „Storytelling with Data“ von Cole Nussbaumer Knaflic (Wiley, 2015) – das Standardwerk für datengetriebenes Storytelling.</span><span lang="en">Book recommendation: “Storytelling with Data” by Cole Nussbaumer Knaflic (Wiley, 2015) – the standard reference for data-driven storytelling.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="quiz">
+    <h2>Quiz</h2>
+    <div class="accent-line"></div>
+    <div data-quiz></div>
+  </section>
+
+  <section class="section-block" id="zusammenfassung">
+    <h2><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h2>
+    <div class="accent-line"></div>
+    <div class="concept-box">
+      <ol>
+        <li><span lang="de">Ein vollständiger BI-Workflow umfasst Datenerkundung, KPI-Design, Visualisierung und Reflexion.</span><span lang="en">A complete BI workflow covers data exploration, KPI design, visualisation and reflection.</span></li>
+        <li><span lang="de">KPI-Hierarchien strukturieren Dashboards: strategisch → operativ → Warnsignale.</span><span lang="en">KPI hierarchies structure dashboards: strategic → operational → warning signals.</span></li>
+        <li><span lang="de">Power BI eignet sich für Business-Analysten (GUI, kein Code, schneller Einstieg).</span><span lang="en">Power BI suits business analysts (GUI, no code, quick start).</span></li>
+        <li><span lang="de">Plotly Dash bietet maximale Flexibilität für Data Scientists (Python, Open Source).</span><span lang="en">Plotly Dash offers maximum flexibility for data scientists (Python, open source).</span></li>
+        <li><span lang="de">Tableau deckt denselben Workflow mit eigenen Berechnungen ab: LOD-Ausdrücke für ansichtsunabhängige Werte, Table Calculations für Werte relativ zur Ansicht.</span><span lang="en">Tableau covers the same workflow with its own calculations: LOD expressions for view-independent values, table calculations for values relative to the view.</span></li>
+        <li><span lang="de">Plotly rendert zu SVG/Canvas – CSS-Variablen funktionieren dort nicht (Hex-Werte verwenden).</span><span lang="en">Plotly renders to SVG/Canvas – CSS variables do not work there (use hex values).</span></li>
+        <li><span lang="de">CRISP-DM (Shearer, 2000) liefert den methodischen Rahmen für BI-Projekte.</span><span lang="en">CRISP-DM (Shearer, 2000) provides the methodological framework for BI projects.</span></li>
+        <li><span lang="de">Produktives Deployment: Gunicorn → Docker → Cloud-Hosting (Render, Railway).</span><span lang="en">Production deployment: Gunicorn → Docker → cloud hosting (Render, Railway).</span></li>
+      </ol>
+    </div>
+    <nav class="nav-bottom"></nav>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span lang="de">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+  <span lang="en">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+</footer>
+
+<script type="module">
+  import { starteLab } from './assets/bint.js'
+  starteLab({ lab: 'lab-05', basis: '.' })
+</script>
 </body>
 </html>

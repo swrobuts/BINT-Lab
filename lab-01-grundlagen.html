@@ -1,1177 +1,407 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 01 &#8211; Grundlagen BI &middot; THWS BINT-Lab</title>
+  <title>Lab 01 · Grundlagen Business Intelligence · BINT-Lab</title>
+  <meta name="bint:titel-en" content="Lab 01 · BI Foundations · BINT-Lab" />
+  <meta name="description" content="Was ist Business Intelligence? In diesem Lab lernen Sie die Kernkonzepte, die Architektur von BI-Systemen, KPI-Grundlagen und den Tool-Überblick kennen." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
-       die dieses build-freie Setup (Transpilierung per text/babel im Browser) voraussetzt. -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-          integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-          integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-  <!-- Babel bewusst auf 7.x gepinnt: Babel 8 stellt auf den automatic JSX runtime um
-       und bricht damit text/babel ohne Bundler. 7.29.8 = letzter 7.x-Stand. -->
-  <script src="https://unpkg.com/@babel/standalone@7.29.8/babel.min.js"
-          integrity="sha384-Ux6uBqExf/7ahsSNrA9VI7vuaw6sKjDoVdjdUxmIoL2qdlzFVZ157sTi6JK3Z9Q8" crossorigin="anonymous"></script>
-  <style>
-
-    :root {
-      --col-primary: #1E3A8A;
-      --col-accent: #2563EB;
-      --col-primary-light: rgba(30,58,138,0.08);
-    }
-    [data-lang="en"] {
-      --col-primary: #0D9488;
-      --col-accent: #0D9488;
-      --col-primary-light: rgba(13,148,136,0.08);
-    }
-    :root {
-      --primary: #1E3A8A;
-      --accent: #2563EB;
-      --dark: #1A1A1A;
-      --light-bg: #FAFAFA;
-      --primary-light: rgba(30,58,138,0.08);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background: #FAFAFA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; color: #1A1A1A; }
-    h2 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-top: 0; }
-    h3 { color: #1E3A8A; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; margin: 0.5rem 0; }
-    p { line-height: 1.7; }
-
-    /* Bauhaus */
-    .bauhaus-card { border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.5rem; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .bauhaus-accent-line { width: 48px; height: 4px; background: #2563EB; margin: 0.5rem 0 1rem 0; }
-    .bauhaus-badge { background: #2563EB; color: white; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 0; display: inline-block; }
-
-    /* Code */
-    .code-block { background: #F3F4F6; color: #1A1A1A; padding: 1.25rem; border-left: 4px solid #D1D5DB; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.85rem; overflow-x: auto; position: relative; border-radius: 0 8px 8px 0; white-space: pre; margin: 1rem 0; }
-
-    /* Info boxes */
-    .tip-box { border-left: 4px solid #2563EB; background: #EFF6FF; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .info-box { border-left: 4px solid #3b82f6; background: #eff6ff; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .concept-box { border-left: 4px solid #1E3A8A; background: rgba(30,58,138,0.08); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .challenge-box { border-left: 4px solid #22c55e; background: #f0fdf4; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-
-    /* Quiz */
-    .quiz-option { display: block; width: 100%; text-align: left; padding: 0.75rem 1rem; margin: 0.4rem 0; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.95rem; transition: border-color 0.15s, background 0.15s; }
-    .quiz-option:hover:not(:disabled) { border-color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .quiz-option.correct { border-color: #22c55e; background: #f0fdf4; color: #166534; font-weight: 600; }
-    .quiz-option.wrong { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
-    .quiz-option:disabled { cursor: default; }
-
-    /* Layout */
-    .header {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 100;
-      background: white; border-bottom: 1px solid #E5E7EB; box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.5rem;
-    }
-    .header-left { display: flex; align-items: center; gap: 1.5rem; }
-    .header-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: #1E3A8A; text-decoration: none; }
-    .header-back { font-size: 0.85rem; color: #555; text-decoration: none; font-weight: 500; }
-    .header-back:hover { color: #1E3A8A; }
-    .lang-btn { border: 2px solid #1A1A1A; background: white; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; border-radius: 4px; letter-spacing: 0.05em; }
-    .lang-btn.active { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .lang-btn:hover:not(.active) { background: #f5f5f5; }
-
-    .sidebar {
-      position: fixed; top: 56px; left: 0; width: 260px;
-      height: calc(100vh - 56px); overflow-y: auto;
-      border-right: 1px solid #E5E7EB; background: white;
-      padding: 1.5rem 0;
-    }
-    .sidebar-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #888; padding: 0 1.25rem; margin-bottom: 0.75rem; }
-    .sidebar-link {
-      display: block; padding: 0.55rem 1.25rem; font-size: 0.88rem; color: #444;
-      text-decoration: none; border-left: 3px solid transparent;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      font-weight: 500;
-    }
-    .sidebar-link:hover { color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .sidebar-link.active { color: #1E3A8A; border-left-color: #1E3A8A; background: rgba(30,58,138,0.06); font-weight: 700; }
-
-    .main-content {
-      margin-left: 260px; padding-top: 72px; padding-bottom: 4rem;
-      padding-left: 3rem; padding-right: 3rem; max-width: 960px;
-    }
-    .section-block { margin-bottom: 4rem; }
-
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-    /* ── Kennzeichnung kopierbarer Codebloecke ───────────────────────────────
-       Jeder Block sagt, ob er in einer frischen Umgebung so laeuft ("run")
-       oder ob er ein Konzeptsnippet mit Platzhalternamen ist ("concept"). */
-    .code-tag { display: inline-block; font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 5px 5px 0 0; }
-    .code-tag-run { background: #065F46; color: #fff; }
-    .code-tag-concept { background: #92400E; color: #fff; }
-    .code-tag + .code-block { border-radius: 0 8px 8px 0; margin-top: 0; }
-    .code-note { font-size: 0.78rem; color: #4B5563; margin: 0.35rem 0 0; line-height: 1.55; }
-    /* ── Quiz: zweiter Versuch statt Einmal-Sperre ───────────────────────────
-       Eine falsche Antwort sperrt die Frage nicht mehr. Die Loesung wird erst
-       gezeigt, wenn sie getroffen oder ausdruecklich angefordert wurde. */
-    .quiz-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    .quiz-retry-btn { font-family: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1.5px solid var(--col-primary, #1E3A8A); background: white; color: var(--col-primary, #1E3A8A); cursor: pointer; }
-    .quiz-retry-btn:hover { background: rgba(30,58,138,0.06); }
-    .quiz-retry-btn.secondary { border-color: #9CA3AF; color: #4B5563; }
-    .quiz-retry-btn.secondary:hover { background: #F3F4F6; }
-    .quiz-hint { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: #92400E; background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 0.55rem 0.9rem; border-radius: 0 6px 6px 0; }
-    .quiz-attempts { font-size: 0.78rem; color: #6B7280; align-self: center; }
-    /* ── Responsive Guards (Mobilnutzung) ────────────────────────────────────
-       Tabellen und Codebloecke duerfen breiter sein als der Viewport, aber sie
-       scrollen dann in ihrem eigenen Container. Die Seite selbst scrollt nie
-       horizontal. Pruefwert: document.scrollWidth <= window.innerWidth bei
-       320 / 390 / 768 / 1024 / 1440 px. */
-    .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1rem 0; }
-    .table-wrap > table { margin: 0; }
-    /* Flex- und Grid-Kinder duerfen unter ihre Inhaltsbreite schrumpfen,
-       sonst sprengt ein <pre> den Elternteil (min-width:auto ist der Default). */
-    .step-content, .step-block > * { min-width: 0; }
-    .section-block, .content, main { min-width: 0; }
-    .code-block { max-width: 100%; }
-    /* Lange Bezeichner ohne Leerzeichen (Spaltennamen, URLs) umbrechen lassen. */
-    p, li, td, th, h1, h2, h3, h4 { overflow-wrap: break-word; }
-    code { overflow-wrap: anywhere; word-break: break-word; }
-    .tip-box, .info-box, .concept-box, .challenge-box, .youtube-box { max-width: 100%; overflow-wrap: break-word; }
-    th { background: #1E3A8A; color: white; padding: 0.65rem 1rem; text-align: left; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.05em; }
-    td { padding: 0.6rem 1rem; border-bottom: 1px solid #e5e7eb; }
-    tr:nth-child(even) td { background: #f9fafb; }
-    tr:hover td { background: rgba(30,58,138,0.03); }
-
-    /* Nav bottom */
-    .nav-bottom { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid #E5E7EB; }
-    .nav-btn { border: 2px solid #1A1A1A; background: white; padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; color: #1A1A1A; font-family: 'Space Grotesk', sans-serif; display: inline-block; border-radius: 4px; }
-    .nav-btn:hover { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .nav-btn.primary { background: #1E3A8A; border-color: #1E3A8A; color: white; }
-    .nav-btn.primary:hover { background: #1e40af; border-color: #1e40af; }
-
-    /* Lab header */
-    .lab-header { padding: 3rem 3rem 2rem; margin-left: 260px; padding-top: 88px; }
-    .lab-num { font-family: 'Space Grotesk', sans-serif; font-size: 4rem; font-weight: 900; color: #2563EB; line-height: 1; margin-bottom: 0.5rem; }
-    .lab-title-h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: #1A1A1A; margin-bottom: 0.75rem; }
-    .lab-desc-intro { font-size: 1.1rem; color: #4B5563; line-height: 1.6; max-width: 680px; margin-bottom: 1.5rem; }
-    .lernziele-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .lernziel-chip { background: rgba(30,58,138,0.08); color: #1E3A8A; border: 1px solid rgba(30,58,138,0.2); padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600; border-radius: 20px; font-family: 'Space Grotesk', sans-serif; }
-
-    /* YouTube box */
-    .youtube-box { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 1.5rem; margin: 2rem 0; }
-    .youtube-box h3 { color: #EA580C; margin-top: 0; }
-    .youtube-link { color: #EA580C; text-decoration: none; font-weight: 600; }
-    .youtube-link:hover { text-decoration: underline; }
-
-    /* Quiz question block */
-    .quiz-question-block { margin-bottom: 2rem; padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 10px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .quiz-question-block h4 { margin: 0 0 1rem; font-size: 1rem; line-height: 1.5; color: #1A1A1A; }
-    .quiz-explanation { margin-top: 0.75rem; padding: 0.75rem 1rem; background: #f0fdf4; border-left: 3px solid #22c55e; font-size: 0.88rem; color: #166534; border-radius: 0 6px 6px 0; }
-    .quiz-explanation.wrong-exp { background: #fef2f2; border-left-color: #ef4444; color: #991b1b; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-      .lab-header { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-    }
-
-    /* Footer */
-    .footer { background: #1A1A1A; color: rgba(255,255,255,0.6); text-align: center; padding: 1.5rem; margin-left: 260px; font-size: 0.85rem; }
-    @media (max-width: 768px) { .footer { margin-left: 0; } }
-  
-    /* ── EN mode: Teal #0D9488 (mirrors index.html) ── */
-    [data-lang="en"] h2,
-    [data-lang="en"] h3 { color: #0D9488; }
-    [data-lang="en"] h4 { color: #0D9488; }
-    [data-lang="en"] .bauhaus-accent-line { background: #14B8A6; }
-    [data-lang="en"] .bauhaus-badge { background: #0D9488; }
-    [data-lang="en"] .header-logo { color: #0D9488; }
-    [data-lang="en"] .lang-btn.active { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .sidebar-link:hover { color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .sidebar-link.active { color: #0D9488; border-left-color: #0D9488; background: rgba(13,148,136,0.06); }
-    [data-lang="en"] .lernziel-chip { background: rgba(13,148,136,0.1); color: #0D9488; border-color: rgba(13,148,136,0.25); }
-    [data-lang="en"] .bauhaus-card h4 { color: #0D9488 !important; }
-    [data-lang="en"] th { background: #0D9488; }
-    [data-lang="en"] .lab-num { color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary:hover { background: #0f766e; border-color: #0f766e; }
-    [data-lang="en"] .tip-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .concept-box { border-left-color: #0D9488; background: rgba(13,148,136,0.08); }
-    [data-lang="en"] .info-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .challenge-box { border-left-color: #0D9488; }
-    [data-lang="en"] .quiz-option:hover:not(:disabled) { border-color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .footer { background: #0D9488; }
-  
-    /* ── Barrierefreiheit ────────────────────────────────────────────────────
-       sr-only blendet Text visuell aus, laesst ihn aber vorlesbar. Wird fuer
-       die Antwortzustaende im Quiz und den Sprunglink gebraucht. */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .quiz-mark { font-weight: 800; margin-right: 0.4rem; }
-    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--col-primary, #1E3A8A); color: #fff; padding: 0.6rem 1rem; border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 0; }
-    /* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
-    a:focus-visible, button:focus-visible { outline: 3px solid #F59E0B; outline-offset: 2px; }
-  </style>
+  <link rel="stylesheet" href="assets/bint.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231E3A8A'/><text x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' text-anchor='middle' fill='%2338BDF8'>B</text></svg>" />
 </head>
-<body>
-  <div id="root"></div>
-
-  <!-- Ausfallsicherung fuer die CDN-Abhaengigkeiten.
-       React, ReactDOM und Babel kommen von unpkg.com. Faellt der Dienst aus
-       oder sperrt ein Hochschulnetz die Domain, blieb die Seite bisher weiss
-       und der Lernende sah keinen Hinweis, woran es liegt. Dieses Skript
-       laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
-       wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
-       hat (faengt Transpilierungsfehler ab). -->
-  <script src="assets/site.js"></script>
-  <script>
-  (function () {
-    var isEn = BINTLab.getLanguage() === 'en';
-    var T = isEn ? {
-      head: 'This page could not load',
-      miss: 'The following libraries were not delivered:',
-      why: 'The page loads React and Babel from unpkg.com at runtime. If your network blocks that host, or the service is unavailable, nothing can be rendered.',
-      what: 'What you can do:',
-      s1: 'Reload the page - the CDN is often only briefly unavailable.',
-      s2: 'Try a different network (mobile hotspot instead of campus Wi-Fi).',
-      s3: 'Check whether a proxy, VPN or content blocker is blocking unpkg.com.',
-      s4: 'If it persists, report it - the lab content itself is fine, only the delivery failed.',
-      slow: 'The libraries loaded, but the page did not render. That points to a script error rather than the network. Please report it with the browser console output.'
-    } : {
-      head: 'Diese Seite konnte nicht geladen werden',
-      miss: 'Folgende Bibliotheken wurden nicht ausgeliefert:',
-      why: 'Die Seite laedt React und Babel zur Laufzeit von unpkg.com. Sperrt das Netz diesen Host oder ist der Dienst gestoert, kann nichts dargestellt werden.',
-      what: 'Was du tun kannst:',
-      s1: 'Seite neu laden - das CDN ist oft nur kurz nicht erreichbar.',
-      s2: 'Ein anderes Netz probieren (Mobilfunk statt Campus-WLAN).',
-      s3: 'Pruefen, ob ein Proxy, VPN oder Contentblocker unpkg.com blockiert.',
-      s4: 'Bleibt es dabei: melden - die Lab-Inhalte sind in Ordnung, nur die Auslieferung ist gescheitert.',
-      slow: 'Die Bibliotheken sind geladen, die Seite hat aber nicht gerendert. Das deutet auf einen Skriptfehler hin, nicht auf das Netz. Bitte mit der Ausgabe der Browser-Konsole melden.'
-    };
-
-    function panel(title, body) {
-      var root = document.getElementById('root') || document.body;
-      root.innerHTML =
-        '<div style="max-width:44rem;margin:4rem auto;padding:1.75rem;font-family:' +
-        "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" +
-        ';line-height:1.65;color:#1A1A1A;background:#fff;border:1px solid #E5E7EB;' +
-        'border-left:5px solid #DC2626;border-radius:0 10px 10px 0">' +
-        '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
-        body +
-        '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
-        '</div>';
-    }
-
-    var missing = [];
-    if (typeof window.React === 'undefined') missing.push('React');
-    if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
-    if (typeof window.Babel === 'undefined') missing.push('Babel');
-
-    if (missing.length) {
-      panel(T.head,
-        '<p><strong>' + T.miss + '</strong> ' + missing.join(', ') + '</p>' +
-        '<p>' + T.why + '</p>' +
-        '<p><strong>' + T.what + '</strong></p>' +
-        '<ol style="padding-left:1.25rem"><li>' + T.s1 + '</li><li>' + T.s2 +
-        '</li><li>' + T.s3 + '</li><li>' + T.s4 + '</li></ol>');
-      return;
-    }
-
-    // Bibliotheken da, aber die App mountet nicht -> Skriptfehler.
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        panel(T.head, '<p>' + T.slow + '</p>');
-      }
-    }, 5000);
-  })();
-  </script>
-
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    // ─── CodeBlock Component ──────────────────────────────────────────────────
-    function CodeBlock({ code, language, lang, kind, note }) {
-      const [copied, setCopied] = React.useState(false);
-    const [copyFailed, setCopyFailed] = React.useState(false);
-      const copy = async () => {
-      const ok = await BINTLab.copyText(code);
-      setCopied(ok);
-      setCopyFailed(!ok);
-      if (ok) setTimeout(() => setCopied(false), 1500);
-    };
-      return (
-        <div style={{ position: 'relative', marginBottom: '1rem' }}>
-          {kind && (
-            <div className={'code-tag ' + (kind === 'run' ? 'code-tag-run' : 'code-tag-concept')}>
-              {kind === 'run'
-                ? (lang === 'en' ? 'Runnable as-is' : 'L\u00E4uft unver\u00E4ndert')
-                : kind === 'diagram'
-                  ? (lang === 'en' ? 'Schema \u2013 not code' : 'Schema \u2013 kein Code')
-                  : (lang === 'en' ? 'Concept \u2013 placeholder names' : 'Konzept \u2013 Platzhalternamen')}
-            </div>
-          )}
-          <pre className="code-block">{code}</pre>
-          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
-          {note && <p className="code-note">{note}</p>}
-          <button onClick={copy} style={{
-            position: 'absolute', top: '0.5rem', right: '0.5rem',
-            background: copied ? '#059669' : '#E5E7EB',
-            color: copied ? 'white' : '#374151',
-            border: 'none', borderRadius: '4px',
-            padding: '0.2rem 0.5rem', fontSize: '0.75rem',
-            cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif'
-          }}>
-            {copied ? (lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert') : (lang === 'en' ? 'Copy' : 'Kopieren')}
-          </button>
-        </div>
-      );
-    }
-
-    // ─── QuizQuestion Component ───────────────────────────────────────────────
-    function QuizQuestion({ question, options, correctIndex, explanation, lang }) {
-      // Mastery statt One-shot: eine falsche Antwort sperrt die Frage nicht.
-      // "revealed" entscheidet, ob die Loesung sichtbar ist - getroffen oder angefordert.
-      const [selected, setSelected] = useState(null);
-      const [revealed, setRevealed] = useState(false);
-      const [attempts, setAttempts] = useState(0);
-      const wrongPick = selected !== null && selected !== correctIndex;
-      const solved = selected === correctIndex;
-
-      const pick = (i) => {
-        if (revealed) return;
-        setSelected(i);
-        setAttempts((n) => n + 1);
-        if (i === correctIndex) setRevealed(true);
-      };
-
-      return (
-        <div className="quiz-question-block">
-          <h4>{question}</h4>
-          {options.map((opt, i) => {
-            let cls = 'quiz-option';
-            let mark = null;
-            // Zustand nie nur ueber Farbe: das Zeichen steht im DOM und wird
-            // damit auch vorgelesen und bei Farbsehschwaeche erkannt.
-            if (revealed && i === correctIndex) { cls += ' correct'; mark = '\u2713'; }
-            else if (i === selected && i !== correctIndex) { cls += ' wrong'; mark = '\u2717'; }
-            return (
-              <button
-                key={i}
-                className={cls}
-                disabled={revealed}
-                onClick={() => pick(i)}
-              >
-                {mark && <span className="quiz-mark" aria-hidden="true">{mark}</span>}
-                {mark && <span className="sr-only">
-                  {mark === '\u2713'
-                    ? (lang === 'en' ? 'Correct answer: ' : 'Richtige Antwort: ')
-                    : (lang === 'en' ? 'Your wrong answer: ' : 'Deine falsche Antwort: ')}
-                </span>}
-                {opt}
-              </button>
-            );
-          })}
-
-          {wrongPick && !revealed && (
-            <div className="quiz-hint" role="status" aria-live="polite">
-              {lang === 'en'
-                ? '\u2717 Not quite. Re-read the question and try again \u2013 or reveal the answer.'
-                : '\u2717 Noch nicht richtig. Lies die Frage noch einmal und versuche es erneut \u2013 oder lass dir die L\u00F6sung zeigen.'}
-            </div>
-          )}
-
-          {(wrongPick && !revealed) && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn" onClick={() => setSelected(null)}>
-                {lang === 'en' ? 'Try again' : 'Nochmal versuchen'}
-              </button>
-              <button type="button" className="quiz-retry-btn secondary" onClick={() => setRevealed(true)}>
-                {lang === 'en' ? 'Show answer' : 'L\u00F6sung anzeigen'}
-              </button>
-              <span className="quiz-attempts">
-                {(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}
-              </span>
-            </div>
-          )}
-
-          {revealed && (
-            <div className={'quiz-explanation' + (!solved ? ' wrong-exp' : '')} role="status" aria-live="polite">
-              {solved
-                ? (lang === 'en' ? '\u2713 Correct! ' : '\u2713 Richtig! ')
-                : (lang === 'en' ? 'Answer shown. ' : 'L\u00F6sung eingeblendet. ')}{explanation}
-            </div>
-          )}
-
-          {revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn secondary"
-                onClick={() => { setSelected(null); setRevealed(false); setAttempts(0); }}>
-                {lang === 'en' ? 'Reset question' : 'Frage zur\u00FCcksetzen'}
-              </button>
-              {attempts > 1 && (
-                <span className="quiz-attempts">
-                  {(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // ─── Translations ─────────────────────────────────────────────────────────
-    const translations = {
-      de: {
-        title: 'Grundlagen Business Intelligence',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
-        desc: 'Was ist Business Intelligence? In diesem Lab lernen Sie die Kernkonzepte, die Architektur von BI-Systemen, KPI-Grundlagen und den Tool-\u00DCberblick kennen.',
-        lernziele: [
-          'BI definieren & abgrenzen',
-          'BI-Architektur erkl\u00E4ren',
-          'KPIs formulieren',
-          'Tools einordnen',
-        ],
-        navContents: 'Inhalt',
-        nav: [
-          { href: '#was-ist-bi',  label: 'Was ist BI?' },
-          { href: '#architektur', label: 'BI-Architektur' },
-          { href: '#kpis',        label: 'KPI-Konzepte' },
-          { href: '#tools',       label: 'Tool-\u00DCberblick' },
-          { href: '#youtube',     label: 'Ressourcen' },
-          { href: '#quiz',        label: 'Quiz' },
-          { href: '#zusammenfassung', label: 'Zusammenfassung' },
-        ],
-        backLabel: '\u2190 \u00DCbersicht',
-
-        // Section 1
-        s1Title: 'Was ist Business Intelligence?',
-        s1DefLabel: 'Definition',
-        s1DefText: 'Business Intelligence (BI) bezeichnet Systeme und Prozesse zur Sammlung, Integration, Analyse und Visualisierung von Gesch\u00E4ftsdaten mit dem Ziel, datenbasierte Entscheidungen zu unterst\u00FCtzen.',
-        s1HistTitle: 'Geschichte der BI',
-        s1OriginNote: 'Der Begriff „Business Intelligence" wurde 1958 von Hans Peter Luhn (IBM) geprägt. Er beschrieb damit die Fähigkeit, Zusammenhänge aus Daten zu erkennen und Handlungsempfehlungen abzuleiten.',
-        s1HistItems: [
-          { era: '1958', label: 'Begriffspr\u00E4gung', desc: 'Hans Peter Luhn (IBM) pr\u00E4gt den Begriff „Business Intelligence" in seinem Artikel „A Business Intelligence System"' },
-          { era: '1960er\u201380er', label: 'Mainframe-Reports', desc: 'Statische Berichte aus zentralen Rechenanlagen, Decision Support Systems (DSS)' },
-          { era: '1990er', label: 'Data Warehouses', desc: 'Bill Inmon (1992) und Ralph Kimball (1996) begr\u00FCnden das Data Warehousing, OLAP-W\u00FCrfel, erste BI-Tools' },
-          { era: '2000er', label: 'Fr\u00FChe Self-Service BI', desc: 'Tableau (gegr. 2003), QlikView \u2013 erste visuelle BI-Werkzeuge f\u00FCr Fachanwender' },
-          { era: '2010er', label: 'Self-Service BI', desc: 'Power BI (Release 2015) \u2013 Analysen ohne IT-Abteilung, Cloud-DWH (BigQuery 2010, Snowflake 2014)' },
-          { era: 'Heute', label: 'Plattform-Konsolidierung & KI', desc: 'Microsoft Fabric (2023) b\u00FCndelt Power BI, Data Factory, Warehouse und Lakehouse auf OneLake; Copilot in Power BI, Tableau Pulse, AutoML, Natural Language Querying, Data Lakehouse (Databricks)' },
-        ],
-        s1AbgrTitle: 'Abgrenzung: BI vs. Data Science vs. Analytics',
-        s1AbgrHeaders: ['Disziplin', 'Fokus', 'Typische Frage', 'Werkzeuge'],
-        s1AbgrRows: [
-          ['Business Intelligence', 'Berichterstattung & Dashboards', 'Was ist passiert?', 'Power BI, Tableau, Superset'],
-          ['Diagnostic Analytics', 'Muster & Trends', 'Warum ist es passiert?', 'SQL, Excel, Python'],
-          ['Data Science', 'Vorhersage & ML', 'Was wird passieren?', 'Python, R, TensorFlow'],
-          ['Prescriptive Analytics', 'Handlungsempfehlungen & Optimierung', 'Was sollen wir tun?', 'OR-Modelle, Simulation, Gurobi'],
-        ],
-
-        // Section 2
-        s2Title: 'BI-Architektur',
-        s2Desc: 'Eine typische BI-Architektur besteht aus mehreren Schichten: von den Rohdatenquellen bis zum fertigen Dashboard.',
-        s2DiagramCode: 'Datenquellen    \u2192  ETL/ELT         \u2192  Data Warehouse   \u2192  BI-Tool        \u2192  Dashboard\n(ERP, CRM, CSV)     (Extraktion,        (zentrales          (Power BI,         (Entscheidung)\n                     Transform,          Speichern,          Plotly Dash,\n                     Laden)              historische         Apache Superset)\n                                         Daten)',
-        s2LayersTitle: 'Die Schichten im Detail',
-        s2Layers: [
-          { name: 'Datenquellen', desc: 'ERP-Systeme (SAP), CRM (Salesforce), CSV-Exporte, APIs, IoT-Sensoren' },
-          { name: 'ETL/ELT', desc: 'Extract, Transform, Load \u2013 Daten bereinigen, harmonisieren und laden. Tools: dbt, Airbyte, Fivetran, SSIS' },
-          { name: 'Data Warehouse', desc: 'Zentrales Repository f\u00FCr bereinigte, historische Daten (Snowflake, BigQuery, PostgreSQL). Modernes Konzept: Data Lakehouse (Databricks) vereint DWH + Data Lake' },
-          { name: 'Semantic Layer / BI-Tool', desc: 'Datenmodellierung (DAX, LookML) + Visualisierungsschicht: Abfragen, Dashboards, KPI-Monitore' },
-          { name: 'Dashboard', desc: 'Entscheidungstr\u00E4ger sehen konsolidierte KPIs in Echtzeit oder als Snapshot' },
-        ],
-
-        // Section 3
-        s3Title: 'KPI-Konzepte',
-        s3KpiDefTitle: 'Was ist eine KPI?',
-        s3KpiDefText: 'Ein Key Performance Indicator (KPI) ist eine messbare Kennzahl, die den Fortschritt eines Unternehmens in Bezug auf strategische Ziele quantifiziert.',
-        s3TypesTitle: 'Arten von KPIs',
-        s3Types: [
-          { cat: 'Quantitativ', example: 'Umsatz in \u20AC, Anzahl Bestellungen', desc: 'Numerisch messbar' },
-          { cat: 'Qualitativ', example: 'Kundenzufriedenheit (Score 1\u20135)', desc: 'Einsch\u00E4tzung oder Bewertung' },
-          { cat: 'Absolut', example: 'Gesamtumsatz 1,2 Mio. \u20AC', desc: 'Absolutwert ohne Bezugsgr\u00F6\u00DFe' },
-          { cat: 'Relativ', example: 'Umsatzwachstum +12\u202F%', desc: 'Verh\u00E4ltnis oder Ver\u00E4nderungsrate' },
-        ],
-        s3LeadLagTitle: 'Lead vs. Lag Indicators',
-        s3LeadText: 'Lead Indicators sind vorausschauende KPIs, die k\u00FCnftige Entwicklungen anzeigen (z.\u202FB. Anzahl Neukundenanfragen). Lag Indicators sind r\u00FCckblickende KPIs, die vergangene Ergebnisse messen (z.\u202FB. Quartalsumsatz).',
-        s3SmartTitle: 'SMART-KPIs',
-        s3Smart: [
-          { letter: 'S', word: 'Specific', desc: 'Klar definiert und eindeutig' },
-          { letter: 'M', word: 'Measurable', desc: 'Numerisch messbar' },
-          { letter: 'A', word: 'Achievable', desc: 'Realistisch erreichbar' },
-          { letter: 'R', word: 'Relevant', desc: 'Strategisch relevant' },
-          { letter: 'T', word: 'Time-bound', desc: 'Zeitlich begrenzt' },
-        ],
-        s3ExamplesTitle: 'Retail-KPI-Beispiele',
-        s3ExamplesHeaders: ['KPI', 'Typ', 'Formel / Beschreibung'],
-        s3ExamplesRows: [
-          ['Umsatz', 'Lag, Absolut', 'Summe aller Verk\u00E4ufe im Zeitraum'],
-          ['Conversion Rate', 'Lag, Relativ', 'K\u00E4ufe / Besucher \u00D7 100\u202F%'],
-          ['Customer Lifetime Value (CLV)', 'Lead, Relativ', '\u00D8 Auftragswert \u00D7 Kaufh\u00E4ufigkeit \u00D7 Kundendauer'],
-          ['Churn Rate', 'Lag, Relativ', 'Verlorene Kunden / Anfangskunden \u00D7 100\u202F%'],
-          ['Durchschnittlicher Bestellwert', 'Lag, Absolut', 'Umsatz / Anzahl Bestellungen'],
-        ],
-
-        // Section 4
-        s4Title: 'Tool-\u00DCberblick',
-        s4Desc: 'Der BI-Markt ist zweigeteilt: kommerzielle Closed-Source-L\u00F6sungen und freie Open-Source-Alternativen.',
-        s4Headers: ['Tool', 'Typ', 'Kosten', 'Datenhoheit'],
-        s4Rows: [
-          ['Power BI', 'Closed-Source', 'Freemium / Abo (Pro 14 $, PPU 24 $ pro Nutzer/Monat)', 'Microsoft Cloud (SaaS) / On-Premises m\u00f6glich (Report Server)'],
-          ['Microsoft Fabric', 'Closed-Source', 'Kapazit\u00e4ts-Abo (F-SKU, ab F2)', 'Microsoft Cloud (OneLake)'],
-          ['Tableau', 'Closed-Source', 'Abo', 'Salesforce Cloud'],
-          ['Plotly Dash', 'Open-Source', 'Kostenlos', 'Selbst gehostet'],
-          ['Apache Superset', 'Open-Source', 'Kostenlos', 'Selbst gehostet'],
-          ['Metabase', 'Open-Source', 'Kostenlos / Abo', 'Flexibel'],
-          ['Looker (Google)', 'Closed-Source', 'Abo (Google Cloud)', 'Google Cloud'],
-          ['Qlik Sense', 'Closed-Source', 'Abo', 'Cloud / On-Premises'],
-          ['DeltaMaster (Bissantz)', 'Closed-Source', 'Abo', 'On-Premises / Cloud'],
-        ],
-        s4FabricTitle: 'Einordnung: Power BI und Microsoft Fabric',
-        s4FabricText: 'Power BI ist Teil von Microsoft Fabric \u2013 einer SaaS-Plattform, die Datenintegration (Data Factory), Data Engineering (Spark), Data Warehouse, Real-Time Analytics und Power BI unter einem gemeinsamen Speicher namens OneLake zusammenfasst. F\u00FCr die Lehre wichtig: Power BI Desktop und Power BI Pro funktionieren unver\u00E4ndert weiter \u2013 alles in diesem Kurs bleibt g\u00FCltig. Ge\u00E4ndert hat sich das Kapazit\u00E4tsmodell: Die fr\u00FCheren Premium-Kapazit\u00E4ten (P1\u2013P5) werden zum Ende der jeweiligen Vertragslaufzeit durch Fabric-Kapazit\u00E4ten (F-SKUs) ersetzt (P1\u2192F64, P2\u2192F128 usw.). Die entscheidende Schwelle ist F64: erst ab dieser Gr\u00F6\u00DFe d\u00FCrfen Berichte von Nutzern mit kostenloser Lizenz gelesen werden \u2013 darunter braucht jeder Betrachter eine Pro- oder PPU-Lizenz. Aus Souver\u00E4nit\u00E4tssicht versch\u00E4rft Fabric das Lock-in: OneLake ist der gemeinsame Speicher aller Workloads, und je mehr Pipelines, Modelle und Notebooks dort liegen, desto teurer wird ein Ausstieg.',
-        s4NoteTitle: 'Hinweis zur Datensouver\u00E4nit\u00E4t',
-        s4NoteText: 'Open-Source-Tools wie Apache Superset und Metabase erm\u00F6glichen self-hosted Betrieb. Das kann Drittland\u00FCbermittlungen und einen Auftragsverarbeitungsvertrag mit einem BI-SaaS-Anbieter vermeiden \u2013 allerdings nur, wenn auch Hosting, Backups, Telemetrie, Support und Administration ohne externe Auftragsverarbeiter auskommen. Entscheidend ist die konkrete Betriebsarchitektur, nicht das Etikett self-hosted. DSGVO-Konformit\u00E4t entsteht dadurch ohnehin nicht automatisch: Rechtsgrundlage, Verarbeitungsverzeichnis (Art. 30), TOMs (Art. 32) und Betroffenenrechte sind unabh\u00E4ngig vom Hosting-Modell zu erf\u00FCllen. In Lab 06 vertiefen wir das.',
-
-        // Section 5
-        s5Title: 'Lernressourcen',
-        s5Desc: 'Erg\u00E4nzende YouTube-Kanalempfehlungen f\u00FCr Power BI und BI-Grundlagen:',
-        s5Resources: [
-          { title: 'Power BI for Beginners \u2013 Guy in a Cube', url: 'https://www.youtube.com/@GuyInACube', desc: 'Der bekannteste Power BI YouTube-Kanal mit Tutorials f\u00FCr Einsteiger und Fortgeschrittene.' },
-          { title: 'Microsoft Power BI', url: 'https://www.youtube.com/@MicrosoftPowerBI', desc: 'Offizielle Microsoft Power BI YouTube-Pr\u00E4senz mit Produktupdates und Deep-Dives.' },
-          { title: 'SQLBI \u2013 DAX & Power BI', url: 'https://www.youtube.com/@SQLBI', desc: 'Expertenwissen zu DAX-Formeln, Datenmodellierung und Power BI Best Practices.' },
-        ],
-
-        // Section 6
-        s6Title: 'Quiz',
-        s6Desc: 'Testen Sie Ihr Wissen aus Lab 01.',
-        s6Questions: [
-          {
-            q: 'Was ist das Hauptziel von Business Intelligence?',
-            opts: [
-              'Daten dauerhaft l\u00F6schen',
-              'Entscheidungsunterst\u00FCtzung durch Datenanalyse',
-              'Software entwickeln',
-              'Netzwerke aufbauen',
-            ],
-            correct: 1,
-            exp: 'BI dient prim\u00E4r der Entscheidungsunterst\u00FCtzung durch Sammlung, Analyse und Visualisierung von Gesch\u00E4ftsdaten.',
-          },
-          {
-            q: 'Was ist ein Lead Indicator?',
-            opts: [
-              'Ein r\u00FCckblickender KPI, der vergangene Ergebnisse zeigt',
-              'Ein vorausschauender KPI, der zuk\u00FCnftige Entwicklungen anzeigt',
-              'Ein Finanzbericht f\u00FCr das Vorjahr',
-              'Eine Datenbankabfrage',
-            ],
-            correct: 1,
-            exp: 'Lead Indicators sind vorausschauend \u2013 sie signalisieren k\u00FCnftige Trends (z.\u202FB. Neukundenanfragen). Lag Indicators messen vergangene Ergebnisse.',
-          },
-          {
-            q: 'Welches BI-Tool ist vollst\u00E4ndig Open-Source und selbst hostbar?',
-            opts: [
-              'Power BI',
-              'Tableau',
-              'Apache Superset',
-              'Google Analytics',
-            ],
-            correct: 2,
-            exp: 'Apache Superset ist ein vollst\u00E4ndig quelloffenes BI-Tool (Apache-2.0) und kann selbst gehostet werden. Lizenzgeb\u00FChren fallen nicht an \u2013 Infrastruktur, Betrieb und Administration verursachen aber weiterhin Kosten.',
-          },
-          {
-            q: 'Wer prägte 1958 den Begriff „Business Intelligence"?',
-            opts: [
-              'Bill Inmon',
-              'Ralph Kimball',
-              'Hans Peter Luhn (IBM)',
-              'Howard Dresner (Gartner)',
-            ],
-            correct: 2,
-            exp: 'Hans Peter Luhn (IBM) veröffentlichte 1958 den Artikel „A Business Intelligence System" und prägte damit den Begriff.',
-          },
-          {
-            q: 'Wofür steht das „M" im SMART-Prinzip für KPIs?',
-            opts: [
-              'Manageable',
-              'Measurable',
-              'Motivating',
-              'Modular',
-            ],
-            correct: 1,
-            exp: 'SMART steht für Specific, Measurable, Achievable, Relevant, Time-bound. Das „M" bedeutet „Measurable" – numerisch messbar.',
-          },
-          {
-            q: 'Welche Schicht der BI-Architektur ist für die Datenbereinigung zuständig?',
-            opts: [
-              'Dashboard',
-              'Data Warehouse',
-              'ETL/ELT',
-              'BI-Tool',
-            ],
-            correct: 2,
-            exp: 'ETL/ELT (Extract, Transform, Load) ist für das Bereinigen, Harmonisieren und Laden der Rohdaten zuständig. Tools wie dbt, Airbyte oder Fivetran automatisieren diesen Prozess.',
-          },
-          {
-            q: 'Ab welcher Fabric-Kapazität dürfen Nutzer mit kostenloser Lizenz Berichte ansehen?',
-            opts: [
-              'F2',
-              'F16',
-              'F64',
-              'Bei jeder Größe – Fabric braucht keine Nutzerlizenzen',
-            ],
-            correct: 2,
-            exp: 'F64 ist die entscheidende Schwelle \u2013 aber die Bedingung geht weiter: Nutzer mit kostenloser Lizenz k\u00F6nnen Power-BI-Inhalte nur ansehen, wenn Bericht und semantisches Modell auf einer Kapazit\u00E4t ab F64 liegen, die Nutzer Zugriff haben und im Arbeitsbereich die Rolle Viewer besitzen. Unterhalb von F64 braucht jeder Betrachter Pro oder PPU. An dieser Grenze entscheidet sich in der Praxis, ob eine Kapazit\u00E4t oder Einzellizenzen g\u00FCnstiger sind. Preise und Bedingungen bei Microsoft Learn pr\u00FCfen.',
-          },
-        ],
-        // Zusammenfassung
-        summaryTitle: 'Zusammenfassung',
-        summaryItems: [
-          'Business Intelligence (BI) wurde 1958 von Hans Peter Luhn (IBM) geprägt und bezeichnet die systematische Sammlung, Integration, Analyse und Visualisierung von Geschäftsdaten zur Entscheidungsunterstützung.',
-          'BI grenzt sich von Diagnostic Analytics (Warum?), Data Science (Was wird passieren?) und Prescriptive Analytics (Was sollen wir tun?) ab – jede Disziplin hat eigene Werkzeuge und Fragestellungen.',
-          'Die BI-Architektur besteht aus fünf Schichten: Datenquellen → ETL/ELT (z.\u00A0B. dbt, Airbyte) → Data Warehouse (Snowflake, BigQuery) → Semantic Layer / BI-Tool → Dashboard.',
-          'Moderne Konzepte wie Data Lakehouse (Databricks) vereinen die Vorteile von Data Warehouse und Data Lake in einer Plattform.',
-          'KPIs werden nach Typ (quantitativ/qualitativ, absolut/relativ) und Zeitrichtung (Lead = vorausschauend, Lag = rückblickend) klassifiziert. Gute KPIs folgen dem SMART-Prinzip.',
-          'Der BI-Markt teilt sich in kommerzielle Lösungen (Power BI seit 2015, Tableau, Looker, Qlik) und Open-Source-Alternativen (Apache Superset, Metabase, Plotly Dash) mit voller Datenhoheit.',
-          'Power BI ist Teil von Microsoft Fabric: Die fr\u00FCheren Premium-Kapazit\u00E4ten (P1\u2013P5) weichen Fabric-F-SKUs, gemeinsamer Speicher ist OneLake. Ab F64 d\u00FCrfen Nutzer mit kostenloser Lizenz Berichte lesen, sofern Inhalt und Modell auf dieser Kapazit\u00E4t liegen und sie im Arbeitsbereich die Viewer-Rolle haben \u2013 unterhalb braucht jeder Betrachter Pro oder PPU.',
-          'Bill Inmon (1992) und Ralph Kimball (1996) begründeten das Data Warehousing – die Grundlage moderner BI-Architektur.',
-        ],
-        navNext: 'Lab 02: Daten \u2192',
-      },
-
-      en: {
-        title: 'BI Foundations',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
-        desc: 'What is Business Intelligence? In this lab you will learn the core concepts, the architecture of BI systems, KPI fundamentals, and a tool overview.',
-        lernziele: [
-          'Define & distinguish BI',
-          'Explain BI architecture',
-          'Formulate KPIs',
-          'Classify tools',
-        ],
-        navContents: 'Contents',
-        nav: [
-          { href: '#was-ist-bi',  label: 'What is BI?' },
-          { href: '#architektur', label: 'BI Architecture' },
-          { href: '#kpis',        label: 'KPI Concepts' },
-          { href: '#tools',       label: 'Tool Overview' },
-          { href: '#youtube',     label: 'Resources' },
-          { href: '#quiz',        label: 'Quiz' },
-          { href: '#zusammenfassung', label: 'Summary' },
-        ],
-        backLabel: '\u2190 Overview',
-
-        // Section 1
-        s1Title: 'What is Business Intelligence?',
-        s1DefLabel: 'Definition',
-        s1DefText: 'Business Intelligence (BI) refers to systems and processes for collecting, integrating, analysing, and visualising business data with the goal of supporting data-driven decisions.',
-        s1HistTitle: 'History of BI',
-        s1OriginNote: 'The term "Business Intelligence" was coined in 1958 by Hans Peter Luhn (IBM). He described the ability to recognise relationships in data and derive actionable recommendations.',
-        s1HistItems: [
-          { era: '1958', label: 'Term Coined', desc: 'Hans Peter Luhn (IBM) coins "Business Intelligence" in his paper "A Business Intelligence System"' },
-          { era: '1960s\u201380s', label: 'Mainframe Reports', desc: 'Static reports from centralised computing systems, Decision Support Systems (DSS)' },
-          { era: '1990s', label: 'Data Warehouses', desc: 'Bill Inmon (1992) and Ralph Kimball (1996) establish data warehousing, OLAP cubes, first BI tools' },
-          { era: '2000s', label: 'Early Self-Service BI', desc: 'Tableau (founded 2003), QlikView \u2013 first visual BI tools for business users' },
-          { era: '2010s', label: 'Self-Service BI', desc: 'Power BI (released 2015) \u2013 analysis without IT, Cloud DWH (BigQuery 2010, Snowflake 2014)' },
-          { era: 'Today', label: 'Platform Consolidation & AI', desc: 'Microsoft Fabric (2023) bundles Power BI, Data Factory, Warehouse and Lakehouse on OneLake; Copilot in Power BI, Tableau Pulse, AutoML, Natural Language Querying, Data Lakehouse (Databricks)' },
-        ],
-        s1AbgrTitle: 'Distinguishing: BI vs. Data Science vs. Analytics',
-        s1AbgrHeaders: ['Discipline', 'Focus', 'Typical Question', 'Tools'],
-        s1AbgrRows: [
-          ['Business Intelligence', 'Reporting & Dashboards', 'What happened?', 'Power BI, Tableau, Superset'],
-          ['Diagnostic Analytics', 'Patterns & Trends', 'Why did it happen?', 'SQL, Excel, Python'],
-          ['Data Science', 'Prediction & ML', 'What will happen?', 'Python, R, TensorFlow'],
-          ['Prescriptive Analytics', 'Recommendations & Optimisation', 'What should we do?', 'OR models, Simulation, Gurobi'],
-        ],
-
-        // Section 2
-        s2Title: 'BI Architecture',
-        s2Desc: 'A typical BI architecture consists of several layers: from raw data sources to the finished dashboard.',
-        s2DiagramCode: 'Data Sources     \u2192  ETL/ELT         \u2192  Data Warehouse   \u2192  BI Tool        \u2192  Dashboard\n(ERP, CRM, CSV)     (Extract,           (Central                (Power BI,         (Decision)\n                     Transform,          storage,                Plotly Dash,\n                     Load)               historical              Apache Superset)\n                                         data)',
-        s2LayersTitle: 'The Layers in Detail',
-        s2Layers: [
-          { name: 'Data Sources', desc: 'ERP systems (SAP), CRM (Salesforce), CSV exports, APIs, IoT sensors' },
-          { name: 'ETL/ELT', desc: 'Extract, Transform, Load \u2013 clean, harmonise, and load data. Tools: dbt, Airbyte, Fivetran, SSIS' },
-          { name: 'Data Warehouse', desc: 'Central repository for cleaned, historical data (Snowflake, BigQuery, PostgreSQL). Modern concept: Data Lakehouse (Databricks) unifies DWH + Data Lake' },
-          { name: 'Semantic Layer / BI Tool', desc: 'Data modelling (DAX, LookML) + visualisation layer: queries, dashboards, KPI monitors' },
-          { name: 'Dashboard', desc: 'Decision makers see consolidated KPIs in real time or as a snapshot' },
-        ],
-
-        // Section 3
-        s3Title: 'KPI Concepts',
-        s3KpiDefTitle: 'What is a KPI?',
-        s3KpiDefText: 'A Key Performance Indicator (KPI) is a measurable metric that quantifies the progress of a company towards strategic goals.',
-        s3TypesTitle: 'Types of KPIs',
-        s3Types: [
-          { cat: 'Quantitative', example: 'Revenue in \u20AC, number of orders', desc: 'Numerically measurable' },
-          { cat: 'Qualitative', example: 'Customer satisfaction (score 1\u20135)', desc: 'Assessment or rating' },
-          { cat: 'Absolute', example: 'Total revenue \u20AC1.2M', desc: 'Absolute value without reference' },
-          { cat: 'Relative', example: 'Revenue growth +12%', desc: 'Ratio or rate of change' },
-        ],
-        s3LeadLagTitle: 'Lead vs. Lag Indicators',
-        s3LeadText: 'Lead Indicators are forward-looking KPIs that signal future developments (e.g. number of new customer enquiries). Lag Indicators are backward-looking KPIs that measure past results (e.g. quarterly revenue).',
-        s3SmartTitle: 'SMART KPIs',
-        s3Smart: [
-          { letter: 'S', word: 'Specific', desc: 'Clearly defined and unambiguous' },
-          { letter: 'M', word: 'Measurable', desc: 'Numerically measurable' },
-          { letter: 'A', word: 'Achievable', desc: 'Realistically achievable' },
-          { letter: 'R', word: 'Relevant', desc: 'Strategically relevant' },
-          { letter: 'T', word: 'Time-bound', desc: 'Time-limited' },
-        ],
-        s3ExamplesTitle: 'Retail KPI Examples',
-        s3ExamplesHeaders: ['KPI', 'Type', 'Formula / Description'],
-        s3ExamplesRows: [
-          ['Revenue', 'Lag, Absolute', 'Sum of all sales in the period'],
-          ['Conversion Rate', 'Lag, Relative', 'Purchases / Visitors \u00D7 100%'],
-          ['Customer Lifetime Value (CLV)', 'Lead, Relative', 'Avg. order value \u00D7 purchase frequency \u00D7 customer duration'],
-          ['Churn Rate', 'Lag, Relative', 'Lost customers / Starting customers \u00D7 100%'],
-          ['Average Order Value', 'Lag, Absolute', 'Revenue / Number of orders'],
-        ],
-
-        // Section 4
-        s4Title: 'Tool Overview',
-        s4Desc: 'The BI market is split: commercial closed-source solutions and free open-source alternatives.',
-        s4Headers: ['Tool', 'Type', 'Cost', 'Data Sovereignty'],
-        s4Rows: [
-          ['Power BI', 'Closed-Source', 'Freemium / subscription (Pro $14, PPU $24 per user/month)', 'Microsoft Cloud (SaaS) / On-Premises possible (Report Server)'],
-          ['Microsoft Fabric', 'Closed-Source', 'Capacity subscription (F-SKU, from F2)', 'Microsoft Cloud (OneLake)'],
-          ['Tableau', 'Closed-Source', 'Subscription', 'Salesforce Cloud'],
-          ['Plotly Dash', 'Open-Source', 'Free', 'Self-hosted'],
-          ['Apache Superset', 'Open-Source', 'Free', 'Self-hosted'],
-          ['Metabase', 'Open-Source', 'Free / Subscription', 'Flexible'],
-          ['Looker (Google)', 'Closed-Source', 'Subscription (Google Cloud)', 'Google Cloud'],
-          ['Qlik Sense', 'Closed-Source', 'Subscription', 'Cloud / On-Premises'],
-          ['DeltaMaster (Bissantz)', 'Closed-Source', 'Subscription', 'On-Premises / Cloud'],
-        ],
-        s4FabricTitle: 'Context: Power BI and Microsoft Fabric',
-        s4FabricText: 'Since 2023 Power BI has been part of Microsoft Fabric, a SaaS platform that combines data integration (Data Factory), data engineering (Spark), data warehousing, real-time analytics and Power BI on top of a shared storage layer called OneLake. Important for this course: Power BI Desktop and Power BI Pro continue to work unchanged, so everything taught here remains valid. What changed is the capacity model: the former Premium capacities (P1-P5) are being replaced by Fabric capacities (F-SKUs) at the end of each contract term (P1 to F64, P2 to F128, and so on). The decisive threshold is F64: only from that size may reports be consumed by users holding a free licence; below it every viewer needs a Pro or PPU licence. From a sovereignty perspective Fabric deepens lock-in: OneLake is the shared store for all workloads, and the more pipelines, models and notebooks live there, the more expensive an exit becomes.',
-        s4NoteTitle: 'Note on Data Sovereignty',
-        s4NoteText: 'Open-source tools like Apache Superset and Metabase allow self-hosted operation. That can avoid third-country transfers and a data processing agreement with a BI SaaS vendor \u2013 but only if hosting, backups, telemetry, support and administration also work without external processors. What matters is the actual operating architecture, not the label self-hosted. It does not by itself make you GDPR-compliant: a legal basis, records of processing (Art. 30), TOMs (Art. 32) and data subject rights apply regardless of the hosting model. Lab 06 explores this in depth.',
-
-        // Section 5
-        s5Title: 'Learning Resources',
-        s5Desc: 'Recommended YouTube channels for Power BI and BI fundamentals:',
-        s5Resources: [
-          { title: 'Power BI for Beginners \u2013 Guy in a Cube', url: 'https://www.youtube.com/@GuyInACube', desc: 'The most popular Power BI YouTube channel with tutorials for beginners and advanced users.' },
-          { title: 'Microsoft Power BI', url: 'https://www.youtube.com/@MicrosoftPowerBI', desc: 'Official Microsoft Power BI YouTube presence with product updates and deep dives.' },
-          { title: 'SQLBI \u2013 DAX & Power BI', url: 'https://www.youtube.com/@SQLBI', desc: 'Expert knowledge on DAX formulas, data modelling, and Power BI best practices.' },
-        ],
-
-        // Section 6
-        s6Title: 'Quiz',
-        s6Desc: 'Test your knowledge from Lab 01.',
-        s6Questions: [
-          {
-            q: 'What is the primary goal of Business Intelligence?',
-            opts: [
-              'Permanently delete data',
-              'Decision support through data analysis',
-              'Develop software',
-              'Build networks',
-            ],
-            correct: 1,
-            exp: 'BI primarily serves decision support through the collection, analysis and visualisation of business data.',
-          },
-          {
-            q: 'What is a Lead Indicator?',
-            opts: [
-              'A backward-looking KPI showing past results',
-              'A forward-looking KPI signalling future developments',
-              'A financial report for the previous year',
-              'A database query',
-            ],
-            correct: 1,
-            exp: 'Lead Indicators are forward-looking \u2013 they signal future trends (e.g. new customer enquiries). Lag Indicators measure past results.',
-          },
-          {
-            q: 'Which BI tool is fully open-source and self-hostable?',
-            opts: [
-              'Power BI',
-              'Tableau',
-              'Apache Superset',
-              'Google Analytics',
-            ],
-            correct: 2,
-            exp: 'Apache Superset is a fully open-source BI tool (Apache-2.0) and can be self-hosted. There are no licence fees \u2013 but infrastructure, operations and administration still cost money.',
-          },
-          {
-            q: 'Who coined the term "Business Intelligence" in 1958?',
-            opts: [
-              'Bill Inmon',
-              'Ralph Kimball',
-              'Hans Peter Luhn (IBM)',
-              'Howard Dresner (Gartner)',
-            ],
-            correct: 2,
-            exp: 'Hans Peter Luhn (IBM) published the paper "A Business Intelligence System" in 1958, coining the term.',
-          },
-          {
-            q: 'What does the "M" stand for in the SMART principle for KPIs?',
-            opts: [
-              'Manageable',
-              'Measurable',
-              'Motivating',
-              'Modular',
-            ],
-            correct: 1,
-            exp: 'SMART stands for Specific, Measurable, Achievable, Relevant, Time-bound. The "M" means "Measurable" – numerically quantifiable.',
-          },
-          {
-            q: 'Which layer of the BI architecture is responsible for data cleansing?',
-            opts: [
-              'Dashboard',
-              'Data Warehouse',
-              'ETL/ELT',
-              'BI Tool',
-            ],
-            correct: 2,
-            exp: 'ETL/ELT (Extract, Transform, Load) is responsible for cleansing, harmonising, and loading raw data. Tools like dbt, Airbyte, or Fivetran automate this process.',
-          },
-          {
-            q: 'From which Fabric capacity size may users with a free licence view reports?',
-            opts: [
-              'F2',
-              'F16',
-              'F64',
-              'At any size – Fabric needs no user licences',
-            ],
-            correct: 2,
-            exp: 'F64 is the decisive threshold \u2013 but the condition goes further: users with a free licence can only view Power BI content if the report and its semantic model sit on a capacity of F64 or larger, they have access, and they hold the Viewer role in the workspace. Below F64 every viewer needs Pro or PPU. In practice this boundary decides whether a capacity or per-user licensing is cheaper. Check prices and conditions on Microsoft Learn.',
-          },
-        ],
-        // Summary
-        summaryTitle: 'Summary',
-        summaryItems: [
-          'Business Intelligence (BI) was coined in 1958 by Hans Peter Luhn (IBM) and refers to the systematic collection, integration, analysis, and visualisation of business data for decision support.',
-          'BI is distinct from Diagnostic Analytics (Why?), Data Science (What will happen?) and Prescriptive Analytics (What should we do?) – each discipline has its own tools and questions.',
-          'The BI architecture consists of five layers: Data Sources → ETL/ELT (e.g. dbt, Airbyte) → Data Warehouse (Snowflake, BigQuery) → Semantic Layer / BI Tool → Dashboard.',
-          'Modern concepts like Data Lakehouse (Databricks) combine the advantages of Data Warehouse and Data Lake into a single platform.',
-          'KPIs are classified by type (quantitative/qualitative, absolute/relative) and time direction (Lead = forward-looking, Lag = backward-looking). Good KPIs follow the SMART principle.',
-          'The BI market is split between commercial solutions (Power BI since 2015, Tableau, Looker, Qlik) and open-source alternatives (Apache Superset, Metabase, Plotly Dash) with full data sovereignty.',
-          'Power BI is part of Microsoft Fabric: the former Premium capacities (P1-P5) give way to Fabric F-SKUs, with OneLake as the shared store. From F64 upwards users with a free licence may read reports, provided the content and its model sit on that capacity and they hold the Viewer role in the workspace; below that every viewer needs Pro or PPU.',
-          'Bill Inmon (1992) and Ralph Kimball (1996) established data warehousing – the foundation of modern BI architecture.',
-        ],
-        navNext: 'Lab 02: Data \u2192',
-      },
-    };
-
-    // ─── App Component ────────────────────────────────────────────────────────
-    function App() {
-
-      const [lang, setLang] = useState(BINTLab.getLanguage);
-      const [activeSection, setActiveSection] = useState('was-ist-bi');
-
-      const setLangAndStore = (l) => {
-        setLang(l);
-        BINTLab.setLanguage(l);
-      };
-
-      useEffect(() => {
-        const sections = ['was-ist-bi', 'architektur', 'kpis', 'tools', 'youtube', 'quiz', 'zusammenfassung'];
-        const handler = () => {
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const el = document.getElementById(sections[i]);
-            if (el && el.getBoundingClientRect().top <= 100) {
-              setActiveSection(sections[i]);
-              return;
-            }
-          }
-          setActiveSection('was-ist-bi');
-        };
-        window.addEventListener('scroll', handler, { passive: true });
-        return () => window.removeEventListener('scroll', handler);
-      }, []);
-
-      const tx = translations[lang];
-
-      // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
-      React.useEffect(() => {
-        document.title = 'Lab 01 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
-        document.documentElement.lang = lang;
-        BINTLab.setLanguage(lang);
-      }, [lang, tx.title]);
-
-      return (
-        <div data-lang={lang}>
-
-          {/* Fixed Header */}
-          {/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */}
-          <a className="skip-link" href="#main">
-            {lang === 'en' ? 'Skip to content' : 'Zum Inhalt springen'}
-          </a>
-          <header className="header">
-            <div className="header-left">
-              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
-              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
-            </div>
-            <div style={{ display: 'flex', gap: '0.35rem' }}>
-              <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
-              <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => setLangAndStore('en')} aria-pressed={lang === 'en'} aria-label="English">{'EN'}</button>
-            </div>
-          </header>
-
-          {/* Sidebar */}
-          <nav className="sidebar">
-            <div className="sidebar-title">{tx.navContents}</div>
-            {tx.nav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={'sidebar-link' + (activeSection === item.href.slice(1) ? ' active' : '')}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Lab Header */}
-          <div className="lab-header">
-            <div className="lab-num">{'01'}</div>
-            <h1 className="lab-title-h1">{tx.title}</h1>
-            <p className="lab-desc-intro">{tx.desc}</p>
-            <div className="lernziele-chips">
-              {tx.lernziele.map((lz, i) => (
-                <span key={i} className="lernziel-chip">{lz}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <main className="main-content" id="main">
-
-            {/* ── Section 1: Was ist BI? ── */}
-            <section id="was-ist-bi" className="section-block">
-              <h2>{tx.s1Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-
-              <div className="concept-box">
-                <span className="bauhaus-badge">{tx.s1DefLabel}</span>
-                <p style={{ margin: '0.75rem 0 0' }}>{tx.s1DefText}</p>
-              </div>
-
-              <div className="info-box" style={{ marginTop: '1rem' }}>
-                {tx.s1OriginNote}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s1HistTitle}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
-                {tx.s1HistItems.map((item, i) => (
-                  <div key={i} className="bauhaus-card">
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6B7280', marginBottom: '0.25rem' }}>{item.era}</div>
-                    <h4 style={{ color: 'var(--col-primary)', margin: '0 0 0.4rem' }}>{item.label}</h4>
-                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#4B5563', lineHeight: 1.5 }}>{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s1AbgrTitle}</h3>
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>{tx.s1AbgrHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tx.s1AbgrRows.map((row, i) => (
-                    <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* ── Section 2: BI-Architektur ── */}
-            <section id="architektur" className="section-block">
-              <h2>{tx.s2Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s2Desc}</p>
-
-              <CodeBlock code={tx.s2DiagramCode} lang={lang} kind="diagram" />
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s2LayersTitle}</h3>
-              {tx.s2Layers.map((layer, i) => (
-                <div key={i} style={{ display: 'flex', gap: '1rem', padding: '0.75rem 0', borderBottom: '1px solid #E5E7EB', alignItems: 'flex-start' }}>
-                  <div style={{
-                    flexShrink: 0, width: '28px', height: '28px',
-                    background: 'var(--col-primary)', color: 'white',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: '0.8rem',
-                    borderRadius: '4px'
-                  }}>{i + 1}</div>
-                  <div>
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--col-primary)', marginBottom: '0.2rem' }}>{layer.name}</div>
-                    <div style={{ fontSize: '0.875rem', color: '#4B5563', lineHeight: 1.5 }}>{layer.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            {/* ── Section 3: KPI-Konzepte ── */}
-            <section id="kpis" className="section-block">
-              <h2>{tx.s3Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-
-              <h3>{tx.s3KpiDefTitle}</h3>
-              <div className="concept-box">
-                <p style={{ margin: 0 }}>{tx.s3KpiDefText}</p>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s3TypesTitle}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
-                {tx.s3Types.map((type, i) => (
-                  <div key={i} className="bauhaus-card">
-                    <h4 style={{ color: 'var(--col-primary)', margin: '0 0 0.3rem' }}>{type.cat}</h4>
-                    <div style={{ fontSize: '0.8rem', color: '#6B7280', marginBottom: '0.4rem' }}>{type.desc}</div>
-                    <div style={{ fontSize: '0.82rem', color: '#374151', fontStyle: 'italic' }}>{type.example}</div>
-                  </div>
-                ))}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s3LeadLagTitle}</h3>
-              <div className="tip-box">
-                <p style={{ margin: 0 }}>{tx.s3LeadText}</p>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s3SmartTitle}</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', margin: '1rem 0' }}>
-                {tx.s3Smart.map((s, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div style={{
-                      flexShrink: 0, width: '36px', height: '36px',
-                      background: 'var(--col-accent)', color: 'white',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1rem',
-                      borderRadius: '6px'
-                    }}>{s.letter}</div>
-                    <div>
-                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: 'var(--col-primary)' }}>{s.word}</span>
-                      <span style={{ color: '#4B5563', marginLeft: '0.5rem', fontSize: '0.9rem' }}>{'\u2013 '}{s.desc}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s3ExamplesTitle}</h3>
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>{tx.s3ExamplesHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tx.s3ExamplesRows.map((row, i) => (
-                    <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* ── Section 4: Tool-Überblick ── */}
-            <section id="tools" className="section-block">
-              <h2>{tx.s4Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s4Desc}</p>
-
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>{tx.s4Headers.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tx.s4Rows.map((row, i) => (
-                    <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-
-              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ margin: '0 0 0.5rem', color: 'var(--col-primary)' }}>{tx.s4FabricTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s4FabricText}</p>
-              </div>
-
-              <div className="info-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ margin: '0 0 0.5rem', color: 'var(--col-primary)' }}>{tx.s4NoteTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s4NoteText}</p>
-              </div>
-            </section>
-
-            {/* ── Section 5: YouTube-Ressourcen ── */}
-            <section id="youtube" className="section-block">
-              <h2>{tx.s5Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s5Desc}</p>
-
-              <div className="youtube-box">
-                <h3>{'YouTube'}</h3>
-
-                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#78350F' }}>
-
-                  {tx.ytNote}
-
-                </p>
-                {tx.s5Resources.map((res, i) => (
-                  <div key={i} style={{
-                    marginBottom: i < tx.s5Resources.length - 1 ? '1.25rem' : 0,
-                    paddingBottom: i < tx.s5Resources.length - 1 ? '1.25rem' : 0,
-                    borderBottom: i < tx.s5Resources.length - 1 ? '1px solid #FED7AA' : 'none'
-                  }}>
-                    <a href={res.url} target="_blank" rel="noopener noreferrer" className="youtube-link">{res.title}</a>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#78350F' }}>{res.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ── Section 6: Quiz ── */}
-            <section id="quiz" className="section-block">
-              <h2>{tx.s6Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s6Desc}</p>
-
-              {tx.s6Questions.map((q, i) => (
-                <QuizQuestion
-                  key={lang + '-' + i}
-                  question={(i + 1) + '. ' + q.q}
-                  options={q.opts}
-                  correctIndex={q.correct}
-                  explanation={q.exp}
-                  lang={lang}
-                />
-              ))}
-            </section>
-
-            {/* ── Section 7: Zusammenfassung ── */}
-            <section id="zusammenfassung" className="section-block">
-              <span className="bauhaus-badge">{lang === 'de' ? 'ZUSAMMENFASSUNG' : 'SUMMARY'}</span>
-              <div className="bauhaus-accent-line" />
-              <h2>{tx.summaryTitle}</h2>
-              <div className="concept-box">
-                <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.85 }}>
-                  {tx.summaryItems.map((item, i) => <li key={i} style={{ fontSize: '0.92rem', marginBottom: '0.3rem' }}>{item}</li>)}
-                </ul>
-              </div>
-            </section>
-
-            {/* ── Nav Bottom ── */}
-            <div className="nav-bottom">
-              <span style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{'Lab 01'}</span>
-              <a href={'lab-02-daten.html' + ('?lang=' + lang)} className="nav-btn primary">
-                {tx.navNext}
-              </a>
-            </div>
-
-          </main>
-
-          {/* Footer */}
-          <footer className="footer">
-            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
-          </footer>
-
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+<body class="lab-page" data-lab="lab-01">
+
+<a class="skip-link" href="#main"><span lang="de">Zum Inhalt springen</span><span lang="en">Skip to content</span></a>
+
+<header class="header">
+  <div class="header-left">
+    <a class="header-logo" href="index.html" data-lab-link><span class="mark">BINT</span>-Lab</a>
+    <a class="header-back" href="index.html" data-lab-link>
+      <span lang="de">← Zur Übersicht</span><span lang="en">← Back to overview</span>
+    </a>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" data-lang-btn="de" aria-pressed="true" aria-label="Deutsch">DE</button>
+    <button class="lang-btn" data-lang-btn="en" aria-pressed="false" aria-label="English">EN</button>
+  </div>
+</header>
+
+<nav class="sidebar" aria-label="Lab-Navigation">
+  <div class="sidebar-title"><span lang="de">Abschnitte</span><span lang="en">Sections</span></div>
+  <a class="sidebar-link" href="#was-ist-bi"><span lang="de">Was ist BI?</span><span lang="en">What is BI?</span></a>
+  <a class="sidebar-link" href="#architektur"><span lang="de">BI-Architektur</span><span lang="en">BI Architecture</span></a>
+  <a class="sidebar-link" href="#kpis"><span lang="de">KPI-Konzepte</span><span lang="en">KPI Concepts</span></a>
+  <a class="sidebar-link" href="#tools"><span lang="de">Tool-Überblick</span><span lang="en">Tool Overview</span></a>
+  <a class="sidebar-link" href="#youtube"><span lang="de">Ressourcen</span><span lang="en">Resources</span></a>
+  <a class="sidebar-link" href="#quiz"><span lang="de">Quiz</span><span lang="en">Quiz</span></a>
+  <a class="sidebar-link" href="#zusammenfassung"><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></a>
+</nav>
+
+<div class="lab-header">
+  <div class="lab-num-big">01</div>
+  <h1 class="lab-title"><span lang="de">Grundlagen Business Intelligence</span><span lang="en">BI Foundations</span></h1>
+  <p class="lab-intro"><span lang="de">Was ist Business Intelligence? In diesem Lab lernen Sie die Kernkonzepte, die Architektur von BI-Systemen, KPI-Grundlagen und den Tool-Überblick kennen.</span><span lang="en">What is Business Intelligence? In this lab you will learn the core concepts, the architecture of BI systems, KPI fundamentals, and a tool overview.</span></p>
+  <div class="lernziele">
+    <span class="lernziel-chip"><span lang="de">BI definieren &amp; abgrenzen</span><span lang="en">Define &amp; distinguish BI</span></span>
+    <span class="lernziel-chip"><span lang="de">BI-Architektur erklären</span><span lang="en">Explain BI architecture</span></span>
+    <span class="lernziel-chip"><span lang="de">KPIs formulieren</span><span lang="en">Formulate KPIs</span></span>
+    <span class="lernziel-chip"><span lang="de">Tools einordnen</span><span lang="en">Classify tools</span></span>
+  </div>
+</div>
+
+<main class="main-content" id="main">
+
+  <section class="section-block" id="was-ist-bi">
+    <h2><span lang="de">Was ist Business Intelligence?</span><span lang="en">What is Business Intelligence?</span></h2>
+    <div class="accent-line"></div>
+
+    <div class="concept-box">
+      <span class="badge">Definition</span>
+      <p><span lang="de">Business Intelligence (BI) bezeichnet Systeme und Prozesse zur Sammlung, Integration, Analyse und Visualisierung von Geschäftsdaten mit dem Ziel, datenbasierte Entscheidungen zu unterstützen.</span><span lang="en">Business Intelligence (BI) refers to systems and processes for collecting, integrating, analysing, and visualising business data with the goal of supporting data-driven decisions.</span></p>
+    </div>
+
+    <div class="info-box">
+      <p><span lang="de">Der Begriff „Business Intelligence“ wurde 1958 von Hans Peter Luhn (IBM) geprägt. Er beschrieb damit die Fähigkeit, Zusammenhänge aus Daten zu erkennen und Handlungsempfehlungen abzuleiten.</span><span lang="en">The term "Business Intelligence" was coined in 1958 by Hans Peter Luhn (IBM). He described the ability to recognise relationships in data and derive actionable recommendations.</span></p>
+    </div>
+
+    <h3><span lang="de">Geschichte der BI</span><span lang="en">History of BI</span></h3>
+    <div class="karten">
+      <div class="karte">
+        <div class="kopfzeile">1958</div>
+        <h4><span lang="de">Begriffsprägung</span><span lang="en">Term Coined</span></h4>
+        <p><span lang="de">Hans Peter Luhn (IBM) prägt den Begriff „Business Intelligence“ in seinem Artikel „A Business Intelligence System“</span><span lang="en">Hans Peter Luhn (IBM) coins "Business Intelligence" in his paper "A Business Intelligence System"</span></p>
+      </div>
+      <div class="karte">
+        <div class="kopfzeile"><span lang="de">1960er–80er</span><span lang="en">1960s–80s</span></div>
+        <h4><span lang="de">Mainframe-Reports</span><span lang="en">Mainframe Reports</span></h4>
+        <p><span lang="de">Statische Berichte aus zentralen Rechenanlagen, Decision Support Systems (DSS)</span><span lang="en">Static reports from centralised computing systems, Decision Support Systems (DSS)</span></p>
+      </div>
+      <div class="karte">
+        <div class="kopfzeile"><span lang="de">1990er</span><span lang="en">1990s</span></div>
+        <h4>Data Warehouses</h4>
+        <p><span lang="de">Bill Inmon (1992) und Ralph Kimball (1996) begründen das Data Warehousing, OLAP-Würfel, erste BI-Tools</span><span lang="en">Bill Inmon (1992) and Ralph Kimball (1996) establish data warehousing, OLAP cubes, first BI tools</span></p>
+      </div>
+      <div class="karte">
+        <div class="kopfzeile"><span lang="de">2000er</span><span lang="en">2000s</span></div>
+        <h4><span lang="de">Frühe Self-Service BI</span><span lang="en">Early Self-Service BI</span></h4>
+        <p><span lang="de">Tableau (gegr. 2003), QlikView – erste visuelle BI-Werkzeuge für Fachanwender</span><span lang="en">Tableau (founded 2003), QlikView – first visual BI tools for business users</span></p>
+      </div>
+      <div class="karte">
+        <div class="kopfzeile"><span lang="de">2010er</span><span lang="en">2010s</span></div>
+        <h4>Self-Service BI</h4>
+        <p><span lang="de">Power BI (Release 2015) – Analysen ohne IT-Abteilung, Cloud-DWH (BigQuery 2010, Snowflake 2014)</span><span lang="en">Power BI (released 2015) – analysis without IT, Cloud DWH (BigQuery 2010, Snowflake 2014)</span></p>
+      </div>
+      <div class="karte">
+        <div class="kopfzeile"><span lang="de">Heute</span><span lang="en">Today</span></div>
+        <h4><span lang="de">Plattform-Konsolidierung &amp; KI</span><span lang="en">Platform Consolidation &amp; AI</span></h4>
+        <p><span lang="de">Microsoft Fabric (2023) bündelt Power BI, Data Factory, Warehouse und Lakehouse auf OneLake; Copilot in Power BI, Tableau Pulse, AutoML, Natural Language Querying, Data Lakehouse (Databricks)</span><span lang="en">Microsoft Fabric (2023) bundles Power BI, Data Factory, Warehouse and Lakehouse on OneLake; Copilot in Power BI, Tableau Pulse, AutoML, Natural Language Querying, Data Lakehouse (Databricks)</span></p>
+      </div>
+    </div>
+
+    <h3><span lang="de">Abgrenzung: BI vs. Data Science vs. Analytics</span><span lang="en">Distinguishing: BI vs. Data Science vs. Analytics</span></h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th><span lang="de">Disziplin</span><span lang="en">Discipline</span></th>
+            <th><span lang="de">Fokus</span><span lang="en">Focus</span></th>
+            <th><span lang="de">Typische Frage</span><span lang="en">Typical Question</span></th>
+            <th><span lang="de">Werkzeuge</span><span lang="en">Tools</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Business Intelligence</td>
+            <td><span lang="de">Berichterstattung &amp; Dashboards</span><span lang="en">Reporting &amp; Dashboards</span></td>
+            <td><span lang="de">Was ist passiert?</span><span lang="en">What happened?</span></td>
+            <td>Power BI, Tableau, Superset</td>
+          </tr>
+          <tr>
+            <td>Diagnostic Analytics</td>
+            <td><span lang="de">Muster &amp; Trends</span><span lang="en">Patterns &amp; Trends</span></td>
+            <td><span lang="de">Warum ist es passiert?</span><span lang="en">Why did it happen?</span></td>
+            <td>SQL, Excel, Python</td>
+          </tr>
+          <tr>
+            <td>Data Science</td>
+            <td><span lang="de">Vorhersage &amp; ML</span><span lang="en">Prediction &amp; ML</span></td>
+            <td><span lang="de">Was wird passieren?</span><span lang="en">What will happen?</span></td>
+            <td>Python, R, TensorFlow</td>
+          </tr>
+          <tr>
+            <td>Prescriptive Analytics</td>
+            <td><span lang="de">Handlungsempfehlungen &amp; Optimierung</span><span lang="en">Recommendations &amp; Optimisation</span></td>
+            <td><span lang="de">Was sollen wir tun?</span><span lang="en">What should we do?</span></td>
+            <td><span lang="de">OR-Modelle, Simulation, Gurobi</span><span lang="en">OR models, Simulation, Gurobi</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section-block" id="architektur">
+    <h2><span lang="de">BI-Architektur</span><span lang="en">BI Architecture</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Eine typische BI-Architektur besteht aus mehreren Schichten: von den Rohdatenquellen bis zum fertigen Dashboard.</span><span lang="en">A typical BI architecture consists of several layers: from raw data sources to the finished dashboard.</span></p>
+
+    <div class="codeblock diagram" data-kind="diagram" data-name="s2DiagramCode">
+<pre class="code-block" lang="de">Datenquellen    →  ETL/ELT         →  Data Warehouse   →  BI-Tool        →  Dashboard
+(ERP, CRM, CSV)     (Extraktion,        (zentrales          (Power BI,         (Entscheidung)
+                     Transform,          Speichern,          Plotly Dash,
+                     Laden)              historische         Apache Superset)
+                                         Daten)</pre>
+<pre class="code-block" lang="en">Data Sources     →  ETL/ELT         →  Data Warehouse   →  BI Tool        →  Dashboard
+(ERP, CRM, CSV)     (Extract,           (Central                (Power BI,         (Decision)
+                     Transform,          storage,                Plotly Dash,
+                     Load)               historical              Apache Superset)
+                                         data)</pre>
+    </div>
+
+    <h3><span lang="de">Die Schichten im Detail</span><span lang="en">The Layers in Detail</span></h3>
+    <ol class="ebenen">
+      <li><span class="nr">1</span><div><div class="name"><span lang="de">Datenquellen</span><span lang="en">Data Sources</span></div><div class="text"><span lang="de">ERP-Systeme (SAP), CRM (Salesforce), CSV-Exporte, APIs, IoT-Sensoren</span><span lang="en">ERP systems (SAP), CRM (Salesforce), CSV exports, APIs, IoT sensors</span></div></div></li>
+      <li><span class="nr">2</span><div><div class="name">ETL/ELT</div><div class="text"><span lang="de">Extract, Transform, Load – Daten bereinigen, harmonisieren und laden. Tools: dbt, Airbyte, Fivetran, SSIS</span><span lang="en">Extract, Transform, Load – clean, harmonise, and load data. Tools: dbt, Airbyte, Fivetran, SSIS</span></div></div></li>
+      <li><span class="nr">3</span><div><div class="name">Data Warehouse</div><div class="text"><span lang="de">Zentrales Repository für bereinigte, historische Daten (Snowflake, BigQuery, PostgreSQL). Modernes Konzept: Data Lakehouse (Databricks) vereint DWH + Data Lake</span><span lang="en">Central repository for cleaned, historical data (Snowflake, BigQuery, PostgreSQL). Modern concept: Data Lakehouse (Databricks) unifies DWH + Data Lake</span></div></div></li>
+      <li><span class="nr">4</span><div><div class="name"><span lang="de">Semantic Layer / BI-Tool</span><span lang="en">Semantic Layer / BI Tool</span></div><div class="text"><span lang="de">Datenmodellierung (DAX, LookML) + Visualisierungsschicht: Abfragen, Dashboards, KPI-Monitore</span><span lang="en">Data modelling (DAX, LookML) + visualisation layer: queries, dashboards, KPI monitors</span></div></div></li>
+      <li><span class="nr">5</span><div><div class="name">Dashboard</div><div class="text"><span lang="de">Entscheidungsträger sehen konsolidierte KPIs in Echtzeit oder als Snapshot</span><span lang="en">Decision makers see consolidated KPIs in real time or as a snapshot</span></div></div></li>
+    </ol>
+  </section>
+
+  <section class="section-block" id="kpis">
+    <h2><span lang="de">KPI-Konzepte</span><span lang="en">KPI Concepts</span></h2>
+    <div class="accent-line"></div>
+
+    <h3><span lang="de">Was ist eine KPI?</span><span lang="en">What is a KPI?</span></h3>
+    <div class="concept-box">
+      <p><span lang="de">Ein Key Performance Indicator (KPI) ist eine messbare Kennzahl, die den Fortschritt eines Unternehmens in Bezug auf strategische Ziele quantifiziert.</span><span lang="en">A Key Performance Indicator (KPI) is a measurable metric that quantifies the progress of a company towards strategic goals.</span></p>
+    </div>
+
+    <h3><span lang="de">Arten von KPIs</span><span lang="en">Types of KPIs</span></h3>
+    <div class="karten schmal">
+      <div class="karte">
+        <h4><span lang="de">Quantitativ</span><span lang="en">Quantitative</span></h4>
+        <p><span lang="de">Numerisch messbar</span><span lang="en">Numerically measurable</span></p>
+        <p class="beispiel"><span lang="de">Umsatz in €, Anzahl Bestellungen</span><span lang="en">Revenue in €, number of orders</span></p>
+      </div>
+      <div class="karte">
+        <h4><span lang="de">Qualitativ</span><span lang="en">Qualitative</span></h4>
+        <p><span lang="de">Einschätzung oder Bewertung</span><span lang="en">Assessment or rating</span></p>
+        <p class="beispiel"><span lang="de">Kundenzufriedenheit (Score 1–5)</span><span lang="en">Customer satisfaction (score 1–5)</span></p>
+      </div>
+      <div class="karte">
+        <h4><span lang="de">Absolut</span><span lang="en">Absolute</span></h4>
+        <p><span lang="de">Absolutwert ohne Bezugsgröße</span><span lang="en">Absolute value without reference</span></p>
+        <p class="beispiel"><span lang="de">Gesamtumsatz 1,2 Mio. €</span><span lang="en">Total revenue €1.2M</span></p>
+      </div>
+      <div class="karte">
+        <h4><span lang="de">Relativ</span><span lang="en">Relative</span></h4>
+        <p><span lang="de">Verhältnis oder Veränderungsrate</span><span lang="en">Ratio or rate of change</span></p>
+        <p class="beispiel"><span lang="de">Umsatzwachstum +12 %</span><span lang="en">Revenue growth +12%</span></p>
+      </div>
+    </div>
+
+    <h3>Lead vs. Lag Indicators</h3>
+    <div class="tip-box">
+      <p><span lang="de">Lead Indicators sind vorausschauende KPIs, die künftige Entwicklungen anzeigen (z. B. Anzahl Neukundenanfragen). Lag Indicators sind rückblickende KPIs, die vergangene Ergebnisse messen (z. B. Quartalsumsatz).</span><span lang="en">Lead Indicators are forward-looking KPIs that signal future developments (e.g. number of new customer enquiries). Lag Indicators are backward-looking KPIs that measure past results (e.g. quarterly revenue).</span></p>
+    </div>
+
+    <h3><span lang="de">SMART-KPIs</span><span lang="en">SMART KPIs</span></h3>
+    <ol class="ebenen buchstaben">
+      <li><span class="nr">S</span><div><span class="name">Specific</span><span class="text">– <span lang="de">Klar definiert und eindeutig</span><span lang="en">Clearly defined and unambiguous</span></span></div></li>
+      <li><span class="nr">M</span><div><span class="name">Measurable</span><span class="text">– <span lang="de">Numerisch messbar</span><span lang="en">Numerically measurable</span></span></div></li>
+      <li><span class="nr">A</span><div><span class="name">Achievable</span><span class="text">– <span lang="de">Realistisch erreichbar</span><span lang="en">Realistically achievable</span></span></div></li>
+      <li><span class="nr">R</span><div><span class="name">Relevant</span><span class="text">– <span lang="de">Strategisch relevant</span><span lang="en">Strategically relevant</span></span></div></li>
+      <li><span class="nr">T</span><div><span class="name">Time-bound</span><span class="text">– <span lang="de">Zeitlich begrenzt</span><span lang="en">Time-limited</span></span></div></li>
+    </ol>
+
+    <h3><span lang="de">Retail-KPI-Beispiele</span><span lang="en">Retail KPI Examples</span></h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>KPI</th>
+            <th><span lang="de">Typ</span><span lang="en">Type</span></th>
+            <th><span lang="de">Formel / Beschreibung</span><span lang="en">Formula / Description</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span lang="de">Umsatz</span><span lang="en">Revenue</span></td>
+            <td><span lang="de">Lag, Absolut</span><span lang="en">Lag, Absolute</span></td>
+            <td><span lang="de">Summe aller Verkäufe im Zeitraum</span><span lang="en">Sum of all sales in the period</span></td>
+          </tr>
+          <tr>
+            <td>Conversion Rate</td>
+            <td><span lang="de">Lag, Relativ</span><span lang="en">Lag, Relative</span></td>
+            <td><span lang="de">Käufe / Besucher × 100 %</span><span lang="en">Purchases / Visitors × 100%</span></td>
+          </tr>
+          <tr>
+            <td>Customer Lifetime Value (CLV)</td>
+            <td><span lang="de">Lag, Absolut</span><span lang="en">Lag, Absolute</span></td>
+            <td><span lang="de">Ø Auftragswert × Kaufhäufigkeit × Kundendauer</span><span lang="en">Avg. order value × purchase frequency × customer duration</span></td>
+          </tr>
+          <tr>
+            <td>Churn Rate</td>
+            <td><span lang="de">Lag, Relativ</span><span lang="en">Lag, Relative</span></td>
+            <td><span lang="de">Verlorene Kunden / Anfangskunden × 100 %</span><span lang="en">Lost customers / Starting customers × 100%</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Durchschnittlicher Bestellwert</span><span lang="en">Average Order Value</span></td>
+            <td><span lang="de">Lag, Absolut</span><span lang="en">Lag, Absolute</span></td>
+            <td><span lang="de">Umsatz / Anzahl Bestellungen</span><span lang="en">Revenue / Number of orders</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section-block" id="tools">
+    <h2><span lang="de">Tool-Überblick</span><span lang="en">Tool Overview</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Der BI-Markt ist zweigeteilt: kommerzielle Closed-Source-Lösungen und freie Open-Source-Alternativen.</span><span lang="en">The BI market is split: commercial closed-source solutions and free open-source alternatives.</span></p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th><span lang="de">Typ</span><span lang="en">Type</span></th>
+            <th><span lang="de">Kosten</span><span lang="en">Cost</span></th>
+            <th><span lang="de">Datenhoheit</span><span lang="en">Data Sovereignty</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Power BI</td>
+            <td>Closed-Source</td>
+            <td><span lang="de">Freemium / Abo (Pro 14 $, PPU 24 $ pro Nutzer/Monat)</span><span lang="en">Freemium / subscription (Pro $14, PPU $24 per user/month)</span></td>
+            <td><span lang="de">Microsoft Cloud (SaaS) / On-Premises möglich (Report Server)</span><span lang="en">Microsoft Cloud (SaaS) / On-Premises possible (Report Server)</span></td>
+          </tr>
+          <tr>
+            <td>Microsoft Fabric</td>
+            <td>Closed-Source</td>
+            <td><span lang="de">Kapazitäts-Abo (F-SKU, ab F2)</span><span lang="en">Capacity subscription (F-SKU, from F2)</span></td>
+            <td>Microsoft Cloud (OneLake)</td>
+          </tr>
+          <tr>
+            <td>Tableau</td>
+            <td>Closed-Source</td>
+            <td><span lang="de">Abo</span><span lang="en">Subscription</span></td>
+            <td>Salesforce Cloud</td>
+          </tr>
+          <tr>
+            <td>Plotly Dash</td>
+            <td>Open-Source</td>
+            <td><span lang="de">Kostenlos</span><span lang="en">Free</span></td>
+            <td><span lang="de">Selbst gehostet</span><span lang="en">Self-hosted</span></td>
+          </tr>
+          <tr>
+            <td>Apache Superset</td>
+            <td>Open-Source</td>
+            <td><span lang="de">Kostenlos</span><span lang="en">Free</span></td>
+            <td><span lang="de">Selbst gehostet</span><span lang="en">Self-hosted</span></td>
+          </tr>
+          <tr>
+            <td>Metabase</td>
+            <td>Open-Source</td>
+            <td><span lang="de">Kostenlos / Abo</span><span lang="en">Free / Subscription</span></td>
+            <td><span lang="de">Flexibel</span><span lang="en">Flexible</span></td>
+          </tr>
+          <tr>
+            <td>Looker (Google)</td>
+            <td>Closed-Source</td>
+            <td><span lang="de">Abo (Google Cloud)</span><span lang="en">Subscription (Google Cloud)</span></td>
+            <td>Google Cloud</td>
+          </tr>
+          <tr>
+            <td>Qlik Sense</td>
+            <td>Closed-Source</td>
+            <td><span lang="de">Abo</span><span lang="en">Subscription</span></td>
+            <td>Cloud / On-Premises</td>
+          </tr>
+          <tr>
+            <td>DeltaMaster (Bissantz)</td>
+            <td>Closed-Source</td>
+            <td><span lang="de">Abo</span><span lang="en">Subscription</span></td>
+            <td>On-Premises / Cloud</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept-box">
+      <h3><span lang="de">Einordnung: Power BI und Microsoft Fabric</span><span lang="en">Context: Power BI and Microsoft Fabric</span></h3>
+      <p><span lang="de">Power BI ist seit 2023 Teil von Microsoft Fabric – einer SaaS-Plattform, die Datenintegration (Data Factory), Data Engineering (Spark), Data Warehouse, Real-Time Analytics und Power BI unter einem gemeinsamen Speicher namens OneLake zusammenfasst. Für die Lehre wichtig: Power BI Desktop und Power BI Pro funktionieren unverändert weiter – alles in diesem Kurs bleibt gültig. Geändert hat sich das Kapazitätsmodell: Die früheren Premium-Kapazitäten (P1–P5) werden zum Ende der jeweiligen Vertragslaufzeit durch Fabric-Kapazitäten (F-SKUs) ersetzt (P1→F64, P2→F128 usw.). Die entscheidende Schwelle ist F64: erst ab dieser Größe dürfen Berichte von Nutzern mit kostenloser Lizenz gelesen werden – darunter braucht jeder Betrachter eine Pro- oder PPU-Lizenz. Aus Souveränitätssicht verschärft Fabric das Lock-in: OneLake ist der gemeinsame Speicher aller Workloads, und je mehr Pipelines, Modelle und Notebooks dort liegen, desto teurer wird ein Ausstieg.</span><span lang="en">Since 2023 Power BI has been part of Microsoft Fabric, a SaaS platform that combines data integration (Data Factory), data engineering (Spark), data warehousing, real-time analytics and Power BI on top of a shared storage layer called OneLake. Important for this course: Power BI Desktop and Power BI Pro continue to work unchanged, so everything taught here remains valid. What changed is the capacity model: the former Premium capacities (P1-P5) are being replaced by Fabric capacities (F-SKUs) at the end of each contract term (P1 to F64, P2 to F128, and so on). The decisive threshold is F64: only from that size may reports be consumed by users holding a free licence; below it every viewer needs a Pro or PPU licence. From a sovereignty perspective Fabric deepens lock-in: OneLake is the shared store for all workloads, and the more pipelines, models and notebooks live there, the more expensive an exit becomes.</span></p>
+    </div>
+
+    <div class="info-box">
+      <h3><span lang="de">Hinweis zur Datensouveränität</span><span lang="en">Note on Data Sovereignty</span></h3>
+      <p><span lang="de">Open-Source-Tools wie Apache Superset und Metabase ermöglichen self-hosted Betrieb. Das kann Drittlandübermittlungen und einen Auftragsverarbeitungsvertrag mit einem BI-SaaS-Anbieter vermeiden – allerdings nur, wenn auch Hosting, Backups, Telemetrie, Support und Administration ohne externe Auftragsverarbeiter auskommen. Entscheidend ist die konkrete Betriebsarchitektur, nicht das Etikett self-hosted. DSGVO-Konformität entsteht dadurch ohnehin nicht automatisch: Rechtsgrundlage, Verarbeitungsverzeichnis (Art. 30), TOMs (Art. 32) und Betroffenenrechte sind unabhängig vom Hosting-Modell zu erfüllen. In Lab 06 vertiefen wir das.</span><span lang="en">Open-source tools like Apache Superset and Metabase allow self-hosted operation. That can avoid third-country transfers and a data processing agreement with a BI SaaS vendor – but only if hosting, backups, telemetry, support and administration also work without external processors. What matters is the actual operating architecture, not the label self-hosted. It does not by itself make you GDPR-compliant: a legal basis, records of processing (Art. 30), TOMs (Art. 32) and data subject rights apply regardless of the hosting model. Lab 06 explores this in depth.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="youtube">
+    <h2><span lang="de">Lernressourcen</span><span lang="en">Learning Resources</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Ergänzende YouTube-Kanalempfehlungen für Power BI und BI-Grundlagen:</span><span lang="en">Recommended YouTube channels for Power BI and BI fundamentals:</span></p>
+
+    <div class="youtube-box">
+      <h3>YouTube</h3>
+      <p class="hinweis-klein"><span lang="de">Externe Ziele: Die Links führen auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kanäle bieten eine zentrale Anlaufstelle.</span><span lang="en">External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.</span></p>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@GuyInACube" target="_blank" rel="noopener noreferrer">Power BI for Beginners – Guy in a Cube</a>
+        <p><span lang="de">Der bekannteste Power BI YouTube-Kanal mit Tutorials für Einsteiger und Fortgeschrittene.</span><span lang="en">The most popular Power BI YouTube channel with tutorials for beginners and advanced users.</span></p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@MicrosoftPowerBI" target="_blank" rel="noopener noreferrer">Microsoft Power BI</a>
+        <p><span lang="de">Offizielle Microsoft Power BI YouTube-Präsenz mit Produktupdates und Deep-Dives.</span><span lang="en">Official Microsoft Power BI YouTube presence with product updates and deep dives.</span></p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@SQLBI" target="_blank" rel="noopener noreferrer">SQLBI – DAX &amp; Power BI</a>
+        <p><span lang="de">Expertenwissen zu DAX-Formeln, Datenmodellierung und Power BI Best Practices.</span><span lang="en">Expert knowledge on DAX formulas, data modelling, and Power BI best practices.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block" id="quiz">
+    <h2><span lang="de">Quiz</span><span lang="en">Quiz</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Testen Sie Ihr Wissen aus Lab 01.</span><span lang="en">Test your knowledge from Lab 01.</span></p>
+    <div data-quiz></div>
+  </section>
+
+  <section class="section-block" id="zusammenfassung">
+    <span class="badge"><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></span>
+    <h2><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h2>
+    <div class="accent-line"></div>
+    <div class="concept-box">
+      <ol>
+        <li><span lang="de">Business Intelligence (BI) wurde 1958 von Hans Peter Luhn (IBM) geprägt und bezeichnet die systematische Sammlung, Integration, Analyse und Visualisierung von Geschäftsdaten zur Entscheidungsunterstützung.</span><span lang="en">Business Intelligence (BI) was coined in 1958 by Hans Peter Luhn (IBM) and refers to the systematic collection, integration, analysis, and visualisation of business data for decision support.</span></li>
+        <li><span lang="de">BI grenzt sich von Diagnostic Analytics (Warum?), Data Science (Was wird passieren?) und Prescriptive Analytics (Was sollen wir tun?) ab – jede Disziplin hat eigene Werkzeuge und Fragestellungen.</span><span lang="en">BI is distinct from Diagnostic Analytics (Why?), Data Science (What will happen?) and Prescriptive Analytics (What should we do?) – each discipline has its own tools and questions.</span></li>
+        <li><span lang="de">Die BI-Architektur besteht aus fünf Schichten: Datenquellen → ETL/ELT (z. B. dbt, Airbyte) → Data Warehouse (Snowflake, BigQuery) → Semantic Layer / BI-Tool → Dashboard.</span><span lang="en">The BI architecture consists of five layers: Data Sources → ETL/ELT (e.g. dbt, Airbyte) → Data Warehouse (Snowflake, BigQuery) → Semantic Layer / BI Tool → Dashboard.</span></li>
+        <li><span lang="de">Moderne Konzepte wie Data Lakehouse (Databricks) vereinen die Vorteile von Data Warehouse und Data Lake in einer Plattform.</span><span lang="en">Modern concepts like Data Lakehouse (Databricks) combine the advantages of Data Warehouse and Data Lake into a single platform.</span></li>
+        <li><span lang="de">KPIs werden nach Typ (quantitativ/qualitativ, absolut/relativ) und Zeitrichtung (Lead = vorausschauend, Lag = rückblickend) klassifiziert. Gute KPIs folgen dem SMART-Prinzip.</span><span lang="en">KPIs are classified by type (quantitative/qualitative, absolute/relative) and time direction (Lead = forward-looking, Lag = backward-looking). Good KPIs follow the SMART principle.</span></li>
+        <li><span lang="de">Der BI-Markt teilt sich in kommerzielle Lösungen (Power BI seit 2015, Tableau, Looker, Qlik) und Open-Source-Alternativen (Apache Superset, Metabase, Plotly Dash) mit voller Datenhoheit.</span><span lang="en">The BI market is split between commercial solutions (Power BI since 2015, Tableau, Looker, Qlik) and open-source alternatives (Apache Superset, Metabase, Plotly Dash) with full data sovereignty.</span></li>
+        <li><span lang="de">Power BI ist Teil von Microsoft Fabric: Die früheren Premium-Kapazitäten (P1–P5) weichen Fabric-F-SKUs, gemeinsamer Speicher ist OneLake. Ab F64 dürfen Nutzer mit kostenloser Lizenz Berichte lesen, sofern Inhalt und Modell auf dieser Kapazität liegen und sie im Arbeitsbereich die Viewer-Rolle haben – unterhalb braucht jeder Betrachter Pro oder PPU.</span><span lang="en">Power BI is part of Microsoft Fabric: the former Premium capacities (P1-P5) give way to Fabric F-SKUs, with OneLake as the shared store. From F64 upwards users with a free licence may read reports, provided the content and its model sit on that capacity and they hold the Viewer role in the workspace; below that every viewer needs Pro or PPU.</span></li>
+        <li><span lang="de">Bill Inmon (1992) und Ralph Kimball (1996) begründeten das Data Warehousing – die Grundlage moderner BI-Architektur.</span><span lang="en">Bill Inmon (1992) and Ralph Kimball (1996) established data warehousing – the foundation of modern BI architecture.</span></li>
+      </ol>
+    </div>
+    <nav class="nav-bottom"></nav>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span lang="de">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+  <span lang="en">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+</footer>
+
+<script type="module">
+  import { starteLab } from './assets/bint.js'
+  starteLab({ lab: 'lab-01', basis: '.' })
+</script>
 </body>
 </html>

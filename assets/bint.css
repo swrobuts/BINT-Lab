@@ -1,0 +1,734 @@
+/* ===========================================================================
+   BINT-Lab · Gemeinsames Stylesheet
+   Modul Business Intelligence · THWS Business School
+
+   Gleiche Formsprache wie PROM, PITM und DABA: fixe Kopfleiste,
+   Seitennavigation, Abschnittsbloecke, farbige Hinweiskaesten, Kacheln mit
+   Nummer. Eigene Farbfamilie, damit die Lernumgebungen im Browser-Tab
+   auseinanderzuhalten sind:
+
+     DABA  Bernstein   PROM  Petrol/Lind   BINT  Blau   PITM  Indigo/Bernstein
+
+     Marineblau #1E3A8A  traegt: Hero, Kopf der Lab-Seiten, Text, Links,
+                         Buttons. Weisse Schrift auf Marineblau erreicht 10,7:1.
+     Himmelblau #38BDF8  signalisiert: Akzentlinie, Badges, Fortschritt,
+                         Kachelnummern, aktive Navigation. Als Textfarbe auf
+                         Weiss ungeeignet (1,9:1); wo Text darauf steht, ist
+                         er dunkel (9,6:1). Auf Marineblau 5,4:1.
+     Koenigsblau #2563EB ist die zweite Signalfarbe (5,2:1 auf Weiss) und
+                         damit als Link- und Hoverfarbe zugelassen.
+   =========================================================================== */
+
+:root {
+  --primary:    #1E3A8A;   /* Marineblau: Flaechen mit weisser Schrift, Text, Links */
+  --primary-d:  #1E3A8A;   /* Textfarbe auf hellem Grund (10,7:1 auf Weiss) */
+  --primary-l:  #E8EEFA;   /* aufgehelltes Marineblau: Hinweiskaesten, aktive Navigation */
+  --signal:     #38BDF8;   /* Himmelblau: Akzente, nie als Schriftfarbe auf Weiss */
+  --signal-l:   #E0F2FE;   /* aufgehelltes Himmelblau: Chips, Fortschritt */
+  --accent:     #2563EB;   /* zweite Signalfarbe (5,2:1 auf Weiss) */
+  --on-primary: #FFFFFF;   /* Schrift auf Marineblau */
+  --ink:        #131B2E;   /* Ueberschriften, Fliesstext */
+  --ink-soft:   #4E5A6E;   /* Sekundaertext */
+  --line:       #DDE3EE;   /* Haarlinien */
+  --bg:         #FFFFFF;
+  --bg-soft:    #F4F6FB;
+  --ok:         #2F7D32;
+  --ok-bg:      #F1F8F1;
+  --warn:       #B23B1E;
+  --warn-bg:    #FDF3F0;
+  --note:       #92400E;   /* Konzept-Marke, YouTube-Kasten */
+  --note-bg:    #FFF7ED;
+  --term-bg:    #111A33;   /* Grund des Terminalblocks */
+  --term-fg:    #E6EAF5;
+  --mono: 'SFMono-Regular', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+}
+
+/* Im englischen Modus wechselt die zweite Signalfarbe leicht, die Leitfarbe bleibt. */
+[data-lang="en"] {
+  --accent:    #1D4ED8;
+  --primary-l: #E6EDFA;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+  border-style: solid;
+  border-color: currentColor;
+}
+
+/* Muss vor allen Komponenten stehen und sie ueberstimmen: Das hidden-Attribut
+   setzt die Laufzeit auf Elemente, deren Klasse ein eigenes display mitbringt. */
+[hidden] { display: none !important; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { font-family: var(--sans); color: var(--ink); line-height: 1.2; }
+h2 { font-weight: 800; font-size: 1.9rem; margin-bottom: 0.5rem; }
+h3 { font-weight: 700; font-size: 1.25rem; margin-bottom: 0.4rem; }
+h4 { font-weight: 700; font-size: 1rem; }
+.section-block h3 { margin-top: 1.8rem; }
+.section-block h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
+/* Kastenueberschriften stehen semantisch eine Stufe unter der Abschnitts-h2,
+   sollen aber die kompakte Groesse behalten. */
+.concept-box h3, .tip-box h3, .info-box h3, .warn-box h3, .challenge-box h3,
+.karte h3, .youtube-box h3, .download-box h3 { font-size: 1rem; font-weight: 700; margin: 0 0 0.3rem; }
+.concept-box h4, .tip-box h4, .info-box h4, .warn-box h4, .challenge-box h4,
+.karte h4, .download-box h4 { margin-top: 0; }
+p  { margin-bottom: 0.9rem; }
+a  { color: var(--primary-d); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--accent); }
+ul, ol { margin: 0 0 1rem 1.25rem; }
+li { margin-bottom: 0.35rem; }
+strong { font-weight: 700; }
+p, li, td, th, h1, h2, h3, h4, dd, dt { overflow-wrap: break-word; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0.05em 0.35em;
+  white-space: nowrap;
+}
+/* Sobald einspaltig gelesen wird, wiegt der Zeilenumbruch im Code leichter
+   als ein Dokument, das seitlich wegrutscht. */
+@media (max-width: 1000px) {
+  code { white-space: pre-wrap; overflow-wrap: anywhere; }
+}
+
+/* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 3px solid #F59E0B; outline-offset: 2px;
+}
+
+/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 200;
+  background: var(--primary); color: #fff; padding: 0.6rem 1rem;
+  border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none;
+}
+.skip-link:focus { left: 0; }
+
+.sr-only, .visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* --------------------------------------------------------------- Bausteine */
+
+.accent-line { width: 48px; height: 4px; background: var(--signal); margin: 0.5rem 0 1rem; }
+
+.badge {
+  background: var(--signal);
+  color: var(--ink);
+  padding: 0.2rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: inline-block;
+}
+.badge.dark { background: var(--ink); color: #fff; }
+
+.concept-box, .tip-box, .info-box, .warn-box, .challenge-box {
+  padding: 1rem 1.25rem;
+  margin: 1.1rem 0;
+  border-radius: 0 8px 8px 0;
+  border-left: 4px solid;
+  max-width: 100%;
+  min-width: 0;
+}
+.concept-box   { border-left-color: var(--primary);   background: var(--primary-l); }
+.tip-box       { border-left-color: var(--accent);    background: #EEF4FF; }
+.info-box      { border-left-color: var(--ink-soft);  background: var(--bg-soft); }
+.warn-box      { border-left-color: var(--warn);      background: var(--warn-bg); }
+.challenge-box { border-left-color: var(--ok);        background: var(--ok-bg); }
+.concept-box > :last-child, .tip-box > :last-child, .info-box > :last-child,
+.warn-box > :last-child, .challenge-box > :last-child { margin-bottom: 0; }
+.concept-box ul, .tip-box ul, .info-box ul, .warn-box ul, .challenge-box ul,
+.concept-box ol, .tip-box ol, .info-box ol, .warn-box ol, .challenge-box ol { margin-bottom: 0; }
+
+/* Der YouTube-Kasten: externe Ziele in eigener, warmer Farbe, damit sie sich
+   von den fachlichen Kaesten unterscheiden. */
+.youtube-box {
+  background: var(--note-bg); border: 1px solid #FED7AA; border-radius: 8px;
+  padding: 1.3rem 1.4rem; margin: 1.5rem 0;
+}
+.youtube-box h3 { color: #C2410C; }
+.youtube-box .hinweis-klein { font-size: 0.8rem; color: #78350F; margin-bottom: 1rem; }
+.youtube-box .ressource { padding: 0.9rem 0; border-top: 1px solid #FED7AA; }
+.youtube-box .ressource:first-of-type { border-top: 0; padding-top: 0; }
+.youtube-box .ressource:last-child { padding-bottom: 0; }
+.youtube-box .ressource p { margin: 0.25rem 0 0; font-size: 0.875rem; color: #78350F; }
+.youtube-link { color: #C2410C; text-decoration: none; font-weight: 700; }
+.youtube-link:hover { text-decoration: underline; color: #9A3412; }
+
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+th {
+  background: var(--ink); color: #fff; padding: 0.6rem 0.9rem; text-align: left;
+  font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; white-space: nowrap;
+}
+td { padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:nth-child(even) td { background: var(--bg-soft); }
+td.kopf, td:first-child strong { font-weight: 700; color: var(--primary-d); }
+td.kopf { white-space: nowrap; }
+td code { white-space: pre-wrap; overflow-wrap: anywhere; }
+/* Tabellen duerfen breiter sein als der Viewport, scrollen dann aber in
+   ihrem eigenen Container. Die Seite selbst scrollt nie horizontal. */
+.table-scroll { overflow-x: auto; margin: 1rem 0; max-width: 100%; -webkit-overflow-scrolling: touch; }
+.table-scroll > table { margin: 0; }
+
+/* Kachelreihe: Definitionen, Prinzipien, Werkzeuge nebeneinander. */
+.karten { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+.karten.breit { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.karten.schmal { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.karte {
+  border: 1px solid var(--line); border-top: 3px solid var(--signal); border-radius: 4px;
+  background: #fff; padding: 1rem 1.1rem; min-width: 0;
+  display: flex; flex-direction: column; gap: 0.35rem;
+}
+.karte .kopfzeile {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.karte h4 { color: var(--primary-d); margin: 0; }
+.karte p { margin: 0; font-size: 0.875rem; color: var(--ink-soft); line-height: 1.55; }
+.karte ul { margin: 0 0 0 1.05rem; font-size: 0.875rem; }
+.karte li { margin-bottom: 0.25rem; }
+.karte .beispiel { font-style: italic; font-size: 0.83rem; color: var(--ink); }
+.karte .marke {
+  display: inline-block; align-self: flex-start; color: #fff; background: var(--primary);
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.18rem 0.55rem; border-radius: 3px; margin-bottom: 0.35rem;
+}
+.karte.ebene { border-top-color: var(--primary); }
+.karten .concept-box, .karten .tip-box, .karten .info-box { margin: 0; }
+.karten .concept-box p, .karten .tip-box p, .karten .info-box p { font-size: 0.875rem; }
+
+/* Nummerierte Schritte: Anleitung fuer Werkzeuge. */
+.schritte { counter-reset: schritt; list-style: none; margin: 1rem 0; }
+.schritte > li {
+  counter-increment: schritt; position: relative; padding-left: 2.6rem; margin-bottom: 1rem; min-width: 0;
+}
+.schritte > li::before {
+  content: counter(schritt); position: absolute; left: 0; top: 0;
+  width: 1.85rem; height: 1.85rem; border-radius: 50%; background: var(--primary); color: #fff;
+  font-weight: 800; font-size: 0.88rem; display: grid; place-items: center;
+}
+.schritte > li > strong:first-child, .schritte .schritt-titel { display: block; color: var(--primary-d); margin-bottom: 0.15rem; }
+.schritte .codeblock { margin-top: 0.7rem; }
+
+/* Nummerierte Ebenen und Buchstabenreihen (Architekturschichten, SMART). */
+.ebenen { list-style: none; margin: 0.5rem 0 1rem; }
+.ebenen li {
+  display: flex; gap: 0.9rem; align-items: flex-start; padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line); margin: 0;
+}
+.ebenen li:last-child { border-bottom: 0; }
+.ebenen .nr {
+  flex: none; width: 28px; height: 28px; border-radius: 4px; background: var(--primary); color: #fff;
+  display: grid; place-items: center; font-weight: 800; font-size: 0.8rem;
+}
+.ebenen.buchstaben .nr { width: 36px; height: 36px; border-radius: 6px; background: var(--accent); font-size: 1rem; }
+.ebenen .name { font-weight: 700; color: var(--primary-d); margin-bottom: 0.15rem; }
+.ebenen .text { font-size: 0.9rem; color: var(--ink-soft); }
+.ebenen .name + .text { display: inline; margin-left: 0.4rem; }
+.ebenen li > div { min-width: 0; }
+
+/* Chip mit Bezeichner (Datenquellen, Formate). */
+.chip {
+  display: inline-block; background: var(--primary-l); color: var(--primary-d);
+  border: 1px solid rgba(30, 58, 138, 0.25); border-radius: 4px; padding: 0.12rem 0.5rem;
+  font-size: 0.75rem; font-weight: 600; margin: 0.15rem 0.15rem 0.15rem 0;
+}
+
+/* ------------------------------------------------------------- Codeblock */
+
+/* Ein Codeblock sagt, ob er in einer frischen Umgebung so laeuft ("run"),
+   ob er ein Konzeptsnippet mit Platzhalternamen ist ("concept") oder ob er
+   gar kein Code ist ("diagram"). Der Kopierknopf kopiert die sichtbare
+   Sprachfassung. Die Laufzeit (bint.js) baut die Kopfzeile ein. */
+.codeblock { margin: 1rem 0 1.2rem; max-width: 100%; min-width: 0; }
+.codeblock-kopf {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  padding: 0.35rem 0.6rem 0.35rem 0.85rem;
+  background: var(--term-bg); color: var(--term-fg);
+  border-radius: 6px 6px 0 0;
+  font-size: 0.72rem;
+}
+.codeblock-titel { font-family: var(--mono); font-weight: 600; color: rgba(255, 255, 255, 0.85); }
+.code-tag {
+  font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 0.18rem 0.55rem; border-radius: 4px; font-size: 0.66rem;
+}
+.code-tag-run     { background: #065F46; color: #fff; }
+.code-tag-concept { background: var(--note); color: #fff; }
+.code-tag-diagram { background: #475569; color: #fff; }
+.codeblock-kopf .spacer { flex: 1; }
+.code-kopieren {
+  border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 5px;
+  background: transparent; color: var(--term-fg); cursor: pointer;
+  font-family: var(--sans); font-size: 0.72rem; font-weight: 700;
+  padding: 0.22rem 0.6rem; min-height: 28px;
+}
+.code-kopieren:hover { background: rgba(255, 255, 255, 0.14); }
+.code-kopieren.ok { background: #065F46; border-color: #065F46; color: #fff; }
+.code-block {
+  background: var(--bg-soft);
+  color: var(--ink);
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--line);
+  border-top: 0;
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  border-radius: 0 0 6px 6px;
+  white-space: pre;
+  margin: 0;
+  max-width: 100%;
+  tab-size: 4;
+}
+/* Ein Codeblock ohne Laufzeit (etwa vor dem Laden von bint.js) bleibt lesbar. */
+.code-block:first-child { border-top: 1px solid var(--line); border-radius: 6px; }
+.codeblock-kopf + .code-block { border-top: 0; border-radius: 0 0 6px 6px; }
+.codeblock.diagram .code-block { background: #fff; }
+.codeblock.terminal .code-block { background: var(--term-bg); color: var(--term-fg); border-color: var(--term-bg); }
+.code-note { font-size: 0.8rem; color: var(--ink-soft); margin: 0.4rem 0 0; line-height: 1.55; }
+.code-status { font-size: 0.8rem; color: var(--warn); margin: 0.35rem 0 0; }
+.code-status:empty { display: none; }
+
+/* --------------------------------------------------------------- Downloads */
+
+/* Datensatz, Starterpaket, Arbeitsmappe: ein Kasten mit Knopfreihe. */
+.download-box {
+  border: 1px solid var(--line); border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0;
+  background: #fff; padding: 1rem 1.25rem; margin: 1.1rem 0;
+}
+.download-box p { font-size: 0.92rem; }
+.download-box .lizenz { font-size: 0.78rem; color: var(--ink-soft); margin: 0.75rem 0 0; }
+.download-reihe { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+.btn-download {
+  display: inline-block; text-decoration: none; padding: 0.45rem 0.95rem; border-radius: 6px;
+  font-size: 0.82rem; font-weight: 700; font-family: var(--sans);
+  background: var(--primary); color: #fff; border: 1.5px solid var(--primary);
+}
+.btn-download:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-download.sekundaer { background: #fff; color: var(--primary-d); }
+.btn-download.sekundaer:hover { background: var(--primary-l); color: var(--primary-d); }
+
+/* ------------------------------------------------------------------ Kopf */
+
+.header {
+  position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 100;
+  background: #fff; border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; gap: 1rem;
+}
+.header-left { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
+.header-logo {
+  font-weight: 800; font-size: 0.95rem; letter-spacing: 0.02em; color: var(--ink);
+  text-decoration: none; white-space: nowrap;
+}
+.header-logo .mark { color: var(--primary-d); }
+.header-back {
+  font-size: 0.85rem; color: var(--ink-soft); text-decoration: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.header-back:hover { color: var(--primary-d); }
+.header-right { display: flex; align-items: center; gap: 0.5rem; }
+
+.lang-btn {
+  padding: 0.25rem 0.7rem; font-family: var(--sans); font-weight: 700; font-size: 0.78rem;
+  cursor: pointer; border: 1px solid var(--line); border-radius: 8px;
+  background: transparent; color: var(--ink);
+  /* Mindesthoehe als Beruehrflaeche - der Knopf sitzt in der fixen Kopfleiste
+     und wird auf dem Telefon mit dem Daumen getroffen. */
+  min-height: 32px; min-width: 40px;
+}
+.lang-btn.active { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.lang-btn:hover:not(.active) { background: var(--bg-soft); }
+
+/* -------------------------------------------------------------- Startseite */
+
+.hero {
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 5.5rem 1.5rem 3.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero-inner { max-width: 880px; margin: 0 auto; position: relative; z-index: 2; }
+.hero-tag {
+  border: 1.5px solid var(--signal); color: var(--signal);
+  padding: 0.25rem 0.9rem; font-size: 0.72rem; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase; display: inline-block;
+  margin-bottom: 1.4rem;
+}
+.hero-title {
+  color: var(--on-primary);
+  font-weight: 800; font-size: clamp(4.5rem, 16vw, 11rem); line-height: 0.92;
+  letter-spacing: -0.02em; margin-bottom: 0.4rem;
+}
+.hero-subtitle {
+  font-weight: 500; font-size: clamp(1.3rem, 4vw, 2.3rem);
+  color: rgba(255, 255, 255, 0.82); margin-bottom: 1.1rem;
+}
+.hero-desc { font-size: 1.1rem; color: rgba(255, 255, 255, 0.92); margin-bottom: 1.8rem; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; margin-bottom: 2rem; }
+.hero-badge {
+  border: 1.5px solid rgba(255, 255, 255, 0.45); color: rgba(255, 255, 255, 0.92);
+  padding: 0.2rem 0.7rem; font-size: 0.72rem; font-weight: 600;
+}
+/* Dekorative Kreise; fuer Screenreader unsichtbar, weil rein visuell. */
+.hero::before, .hero::after {
+  content: ''; position: absolute; border-radius: 50%; pointer-events: none;
+  background: rgba(56, 189, 248, 0.16);
+}
+.hero::before { width: 380px; height: 380px; top: -140px; right: -110px; }
+.hero::after  { width: 260px; height: 260px; bottom: -130px; left: -70px; }
+
+.cta-row { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; }
+.btn {
+  padding: 0.7rem 1.6rem; font-family: var(--sans); font-weight: 700; font-size: 0.98rem;
+  border: 2px solid var(--ink); cursor: pointer; text-decoration: none;
+  display: inline-block; border-radius: 4px; background: transparent; color: var(--ink);
+}
+.btn:hover { background: var(--ink); color: #fff; }
+.btn.solid { background: var(--ink); color: #fff; }
+.btn.solid:hover { background: #000; border-color: #000; color: #fff; }
+.hero .btn { border-color: #fff; color: #fff; }
+.hero .btn:hover { background: #fff; color: var(--primary); }
+.hero .btn.solid { background: var(--signal); border-color: var(--signal); color: var(--ink); }
+.hero .btn.solid:hover { background: #7DD3FC; border-color: #7DD3FC; color: var(--ink); }
+
+.stats-bar { background: #fff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+.stats-grid {
+  max-width: 960px; margin: 0 auto; display: flex; flex-wrap: wrap;
+  justify-content: space-around; align-items: center;
+}
+.stat-item { text-align: center; min-width: 130px; padding: 1.6rem 1.4rem; position: relative; }
+.stat-item + .stat-item::before {
+  content: ''; position: absolute; left: 0; top: 25%; height: 50%;
+  width: 1px; background: var(--line);
+}
+.stat-value { font-weight: 800; font-size: 2.5rem; color: var(--primary-d); line-height: 1; }
+.stat-label {
+  font-size: 0.8rem; color: var(--ink-soft); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em; margin-top: 0.3rem;
+}
+@media (max-width: 600px) { .stat-item + .stat-item::before { display: none; } }
+
+/* Das Zitat, das den Kurs traegt: Deming in Serifen, das Portrait daneben.
+   Bleibt bewusst als einziger Serifensatz der Umgebung. */
+.zitat {
+  background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  padding: 4.5rem 1.5rem 4rem;
+}
+.zitat-inner { max-width: 1000px; margin: 0 auto; text-align: center; }
+.zitat-text {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: clamp(2rem, 5vw, 4.2rem); line-height: 1.15; color: var(--ink);
+  margin: 0 0 2.2rem;
+}
+.zitat-text span { display: block; }
+.zitat-autor { display: flex; align-items: center; justify-content: center; gap: 1.4rem; }
+.deming-portrait {
+  width: 96px; height: 96px; border-radius: 50%; flex: none; object-fit: cover; object-position: top center;
+  filter: grayscale(100%) contrast(0.95);
+  box-shadow: 0 0 0 4px #fff, 0 0 0 5px var(--line);
+}
+.zitat-name { display: block; font-family: var(--serif); font-size: 1.25rem; font-weight: 500; color: var(--ink); text-align: left; }
+.zitat-rolle { display: block; font-family: var(--serif); font-size: 1rem; color: var(--ink-soft); text-align: left; }
+
+.section { max-width: 1120px; margin: 0 auto; padding: 4rem 1.5rem; }
+.section.soft { max-width: none; background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.section.soft > .inner { max-width: 1120px; margin: 0 auto; }
+.section-head { margin-bottom: 2rem; }
+.section-head p { color: var(--ink-soft); max-width: 70ch; }
+
+.labs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+@media (max-width: 900px) { .labs-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .labs-grid { grid-template-columns: 1fr; } }
+
+.lab-card {
+  background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--signal);
+  padding: 1.4rem; text-decoration: none; color: inherit; display: flex;
+  flex-direction: column; gap: 0.4rem; border-radius: 0 8px 8px 0;
+  transition: transform 0.15s, box-shadow 0.15s; position: relative; min-width: 0;
+}
+/* Der Link fuellt die Karte; Fortschritt und Erledigt-Knopf stehen ausserhalb
+   des Links, weil interaktive Elemente nicht in einem <a> liegen duerfen. */
+.lab-card-link { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; text-decoration: none; color: inherit; }
+.lab-card-link:hover { color: inherit; }
+.lab-card-link h3:hover { color: var(--primary-d); }
+.lab-card:hover { transform: translateY(-3px); box-shadow: 0 8px 26px rgba(19, 27, 46, 0.12); color: inherit; }
+@media (prefers-reduced-motion: reduce) { .lab-card { transition: none; } .lab-card:hover { transform: none; } }
+.lab-num { font-weight: 800; font-size: 2rem; color: var(--primary); line-height: 1; }
+.lab-card h3 { font-size: 1.08rem; margin: 0.2rem 0 0; }
+.lab-card .sub { font-size: 0.82rem; color: var(--ink-soft); font-style: italic; }
+.lab-card .desc { font-size: 0.9rem; color: var(--ink-soft); margin-top: 0.35rem; }
+.lab-card .meta {
+  margin-top: auto; padding-top: 0.8rem; font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--primary-d);
+}
+.lab-card .meta small { display: block; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.04em; margin-top: 0.15rem; text-transform: none; }
+.lab-card.erledigt { border-left-color: var(--ok); }
+
+/* Das Bonusprojekt spannt sich ueber die ganze Breite. */
+.bonus {
+  grid-column: 1 / -1; border: 2px dashed var(--signal); border-radius: 8px; background: var(--signal-l);
+  padding: 1.6rem 1.8rem; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.6rem 2.4rem; align-items: start;
+}
+.bonus > .bonus-kopf { grid-column: 1 / -1; }
+.bonus-kopf h3 { font-size: 1.5rem; margin: 0.6rem 0 0.15rem; color: var(--primary-d); }
+.bonus-kopf .sub { font-size: 0.85rem; color: var(--ink-soft); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.bonus .chips { margin-top: 0.8rem; }
+.bonus p { font-size: 0.95rem; margin: 0; }
+.bonus ol { list-style: none; margin: 0; display: grid; gap: 0.7rem; counter-reset: krit; }
+.bonus ol li { counter-increment: krit; display: grid; grid-template-columns: 1.5rem 1fr; gap: 0.7rem; margin: 0; font-size: 0.9rem; }
+.bonus ol li::before {
+  content: counter(krit); width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--primary); color: #fff;
+  font-size: 0.72rem; font-weight: 800; display: grid; place-items: center; margin-top: 0.1rem;
+}
+.bonus ol strong { display: block; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--primary-d); }
+.bonus ol span { color: var(--ink-soft); }
+.bonus .cta-row { grid-column: 1 / -1; justify-content: flex-start; }
+@media (max-width: 760px) { .bonus { grid-template-columns: 1fr; } }
+
+/* Produktive Dashboards, gebaut mit dem Stack des Kurses. */
+.dashboards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.1rem; }
+.dashboard-card {
+  border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;
+  background: #fff; padding: 1.2rem 1.3rem; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 0.4rem; transition: box-shadow 0.15s;
+}
+.dashboard-card:hover { box-shadow: 0 6px 22px rgba(19, 27, 46, 0.1); color: inherit; }
+.dashboard-card .kopf { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+.dashboard-card .name { font-weight: 700; color: var(--primary-d); }
+.dashboard-card p { margin: 0; font-size: 0.875rem; color: var(--ink-soft); flex: 1; }
+.dashboard-card .tech { font-size: 0.74rem; font-weight: 600; color: var(--ink-soft); }
+.live-badge {
+  flex: none; background: var(--ok); color: #fff; font-size: 0.62rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.5rem;
+}
+
+/* ------------------------------------------------------------ Lab-Layout */
+
+.sidebar {
+  position: fixed; top: 56px; left: 0; width: 262px; height: calc(100vh - 56px);
+  overflow-y: auto; border-right: 1px solid var(--line); background: #fff;
+  padding: 1.4rem 0;
+}
+.sidebar-title {
+  font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-soft); padding: 0 1.25rem; margin-bottom: 0.6rem;
+}
+.sidebar-link {
+  display: block; padding: 0.5rem 1.25rem; font-size: 0.88rem; color: var(--ink-soft);
+  text-decoration: none; border-left: 3px solid transparent;
+}
+.sidebar-link:hover { color: var(--primary-d); background: var(--bg-soft); }
+.sidebar-link.active {
+  color: var(--ink); border-left-color: var(--signal);
+  background: var(--primary-l); font-weight: 700;
+}
+
+.lab-header {
+  padding: 88px 3rem 1.8rem; margin-left: 262px;
+  background: var(--primary); color: var(--on-primary);
+}
+.lab-header h1, .lab-header .lab-title { color: var(--on-primary); }
+.lab-num-big { font-weight: 800; font-size: 3.4rem; color: var(--signal); line-height: 1; }
+.lab-title { font-size: 2.1rem; font-weight: 800; margin: 0.2rem 0 0.6rem; }
+.lab-intro { color: rgba(255, 255, 255, 0.9); max-width: 76ch; font-size: 1.05rem; }
+.lernziele { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 1.1rem; }
+.lernziel-chip {
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.45);
+  color: var(--on-primary); padding: 0.25rem 0.75rem; font-size: 0.78rem; font-weight: 600;
+  border-radius: 999px;
+}
+.lab-einordnung {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem 1.4rem; margin-top: 1.3rem; font-size: 0.85rem; max-width: 76ch;
+  border-top: 1px solid rgba(255, 255, 255, 0.25); padding-top: 1rem;
+}
+.lab-einordnung > div { min-width: 0; }
+.lab-einordnung dt {
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--signal); margin-bottom: 0.15rem;
+}
+.lab-einordnung dd { color: rgba(255, 255, 255, 0.9); margin: 0; }
+
+.main-content { margin-left: 262px; padding: 1rem 3rem 4rem; max-width: 1040px; min-width: 0; }
+.section-block { margin-bottom: 3.5rem; scroll-margin-top: 76px; min-width: 0; }
+.section-block > h2 + .accent-line { margin-top: 0.4rem; }
+
+.nav-bottom {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  flex-wrap: wrap; margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid var(--line);
+}
+
+.footer {
+  background: var(--ink); color: rgba(255, 255, 255, 0.62); text-align: center;
+  padding: 1.4rem; font-size: 0.85rem;
+}
+.footer a { color: var(--signal); }
+.lab-page .footer { margin-left: 262px; }
+
+@media (max-width: 1000px) {
+  .sidebar { display: none; }
+  .main-content, .lab-header { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
+  .lab-page .footer { margin-left: 0; }
+}
+
+/* ============================================================== Uebungsbox */
+
+/* Das Quiz eines Labs: eine Box je Frage, Sofortfeedback mit Begruendung,
+   zweiter Versuch statt Einmal-Sperre. */
+.uebung {
+  border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  margin: 1.2rem 0; overflow: hidden;
+}
+.uebung-kopf {
+  display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+  padding: 0.8rem 1.1rem; background: var(--bg-soft); border-bottom: 1px solid var(--line);
+}
+.uebung-id {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  color: var(--ink); background: var(--signal); padding: 0.12rem 0.5rem; border-radius: 3px;
+}
+.uebung-titel { font-weight: 700; font-size: 1rem; }
+.uebung-typ {
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft); margin-left: auto;
+}
+.uebung-ok {
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em;
+  color: var(--ok); background: var(--ok-bg); border: 1px solid var(--ok);
+  padding: 0.1rem 0.55rem; border-radius: 999px;
+}
+.uebung-koerper { padding: 1rem 1.1rem; }
+.frage-text { font-weight: 700; margin-bottom: 0.6rem; }
+.optionen { list-style: none; margin: 0; display: grid; gap: 0.35rem; }
+.optionen li { margin: 0; }
+.optionen button {
+  display: flex; gap: 0.6rem; align-items: flex-start; width: 100%; text-align: left;
+  padding: 0.55rem 0.8rem; border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+  background: #fff; color: var(--ink); font-family: var(--sans); font-size: 0.9rem; line-height: 1.45;
+}
+.optionen button:hover:not(:disabled) { border-color: var(--primary-d); background: var(--bg-soft); }
+.optionen button:disabled { cursor: default; }
+.optionen button.richtig { border-color: var(--ok); background: var(--ok-bg); color: #1B4D1E; }
+.optionen button.falsch { border-color: var(--warn); background: var(--warn-bg); color: #7A2612; }
+.optionen .mark { font-weight: 800; flex: none; width: 1.1rem; }
+.uebung-status { margin-top: 0.8rem; font-size: 0.88rem; }
+.uebung-status .line { padding: 0.6rem 0.85rem; border-radius: 6px; border-left: 4px solid; }
+.uebung-status .ok   { background: var(--ok-bg);   border-left-color: var(--ok);   color: #1B4D1E; }
+.uebung-status .fail { background: var(--warn-bg); border-left-color: var(--warn); color: #7A2612; }
+.uebung-status .note { background: var(--bg-soft); border-left-color: var(--ink-soft); color: var(--ink); }
+.uebung-status .line strong { display: block; margin-bottom: 0.15rem; }
+.uebung-aktionen { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.7rem; }
+.uebung-aktionen .versuche { font-size: 0.78rem; color: var(--ink-soft); }
+.btn-sm {
+  padding: 0.42rem 0.9rem; font-family: var(--sans); font-size: 0.84rem; font-weight: 700;
+  border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink);
+  cursor: pointer;
+}
+.btn-sm:hover:not(:disabled) { border-color: var(--primary-d); background: var(--bg-soft); }
+.btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sm.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.btn-sm.primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
+.btn-sm.gefahr { border-color: var(--warn); color: var(--warn); }
+.btn-sm.gefahr:hover:not(:disabled) { background: var(--warn-bg); border-color: var(--warn); }
+
+/* ============================================================== Checkliste */
+
+/* Abhakbare Liste (DSGVO-Checkliste in Lab 06); der Stand bleibt lokal. */
+.checkliste { border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 1.1rem 1.4rem; margin: 1rem 0; }
+.checkliste-kopf { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.checkliste-stand { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.checkliste .balken { width: 140px; margin: 0; }
+.checkliste ul { list-style: none; margin: 0; }
+.checkliste li { margin: 0; border-bottom: 1px solid var(--line); }
+.checkliste li:last-child { border-bottom: 0; }
+.checkliste label { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.55rem 0; cursor: pointer; font-size: 0.92rem; }
+.checkliste input { margin-top: 0.25rem; flex: none; width: 1.05rem; height: 1.05rem; accent-color: var(--primary); }
+.checkliste input:checked + span { color: var(--ink-soft); text-decoration: line-through; }
+.checkliste .uebung-aktionen { margin-top: 0.9rem; }
+
+/* ============================================================== Fortschritt */
+
+.fortschritt-panel {
+  border: 1px solid var(--line); border-left: 5px solid var(--signal);
+  border-radius: 0 8px 8px 0; background: #fff;
+  padding: 1.2rem 1.4rem; margin: 0 0 2rem;
+}
+.fortschritt-kopf { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.fortschritt-titel { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--primary-d); }
+.fortschritt-zahl { font-weight: 800; font-size: 1.35rem; line-height: 1; }
+.fortschritt-zahl small { font-weight: 600; font-size: 0.8rem; color: var(--ink-soft); }
+.fortschritt-panel .spacer, .fortschritt-aktionen .spacer { flex: 1; }
+.fortschritt-hinweis { font-size: 0.85rem; color: var(--ink-soft); margin: 0.7rem 0 0; }
+.balken { height: 9px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 0.35rem 0 0; }
+.balken > i { display: block; height: 100%; background: var(--signal); transition: width 0.3s; }
+.balken.voll > i { background: var(--ok); }
+.fortschritt-aktionen { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+.fortschritt-frage {
+  margin-top: 0.8rem; font-size: 0.88rem; background: var(--warn-bg); border-left: 4px solid var(--warn);
+  border-radius: 0 6px 6px 0; padding: 0.7rem 0.9rem;
+}
+.fortschritt-frage .fortschritt-aktionen { margin-top: 0.6rem; }
+
+/* Stand je Lab auf der Karte */
+.lab-fortschritt { margin-top: 0.7rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
+.lab-card .balken { margin-top: 0.3rem; }
+.lab-card .lab-num { display: flex; align-items: center; gap: 0.5rem; }
+.lab-haken {
+  font-size: 0.95rem; color: var(--ok); font-weight: 800; border: 2px solid var(--ok); border-radius: 50%;
+  width: 1.35rem; height: 1.35rem; line-height: 1.1rem; text-align: center;
+}
+.lab-erledigt {
+  margin-top: 0.7rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 700; padding: 0.4rem 0.8rem;
+  border-radius: 6px; border: 1.5px solid var(--line); background: #fff; color: var(--ink-soft); cursor: pointer;
+}
+.lab-erledigt:hover { border-color: var(--primary-d); color: var(--primary-d); }
+.lab-erledigt.is-done { background: var(--ok-bg); border-color: var(--ok); color: #1B4D1E; }
+
+/* ------------------------------------------------- Abbildungen */
+
+/* Bildschirmfotos aus Power BI und Tableau. */
+.abbildung { border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 0.6rem 0.6rem 0.5rem; margin: 1.2rem 0; }
+.abbildung img { display: block; width: 100%; height: auto; border-radius: 4px; }
+.abbildung figcaption { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.55rem; padding: 0 0.2rem; }
+.abbildung figcaption strong { color: var(--ink); }
+
+/* Sprachumschaltung: nur der aktive Sprachzweig ist sichtbar. */
+[data-lang="de"] [lang="en"], [data-lang="en"] [lang="de"] { display: none; }
+
+/* ------------------------------------------------- Hinweis auf Seitenscroll */
+
+.scrollhinweis { display: flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; color: var(--ink-soft); margin: 0.25rem 0 0.9rem; }
+.scrollhinweis::before { content: '↔'; font-size: 0.95rem; line-height: 1; color: var(--primary-d); }
+.table-scroll[data-scrollbar] { border: 1px solid var(--primary); border-radius: 6px; padding: 0 0 0.15rem; }
+
+@media print {
+  .sidebar, .header, .code-kopieren, .uebung-aktionen, .lang-btn { display: none; }
+  .main-content, .lab-header, .footer { margin-left: 0; }
+}

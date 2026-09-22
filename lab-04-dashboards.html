@@ -1,423 +1,213 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 04 – Dashboard-Design &amp; Plotly Dash · THWS BINT-Lab</title>
+  <title>Lab 04 · Dashboard-Design &amp; Plotly Dash · BINT-Lab</title>
+  <meta name="bint:titel-en" content="Lab 04 · Dashboard Design &amp; Plotly Dash · BINT-Lab" />
+  <meta name="description" content="In diesem Lab lernen Sie, wie Sie nach bewährten Design-Prinzipien professionelle Dashboards gestalten, interaktive Charts mit Plotly Express erstellen und vollständige Web-Dashboards mit Plotly Dash bauen." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
-       die dieses build-freie Setup (Transpilierung per text/babel im Browser) voraussetzt. -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-          integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-          integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-  <!-- Babel bewusst auf 7.x gepinnt: Babel 8 stellt auf den automatic JSX runtime um
-       und bricht damit text/babel ohne Bundler. 7.29.8 = letzter 7.x-Stand. -->
-  <script src="https://unpkg.com/@babel/standalone@7.29.8/babel.min.js"
-          integrity="sha384-Ux6uBqExf/7ahsSNrA9VI7vuaw6sKjDoVdjdUxmIoL2qdlzFVZ157sTi6JK3Z9Q8" crossorigin="anonymous"></script>
-  <style>
-
-    :root {
-      --col-primary: #1E3A8A;
-      --col-accent: #2563EB;
-      --col-primary-light: rgba(30,58,138,0.08);
-    }
-    [data-lang="en"] {
-      --col-primary: #0D9488;
-      --col-accent: #0D9488;
-      --col-primary-light: rgba(13,148,136,0.08);
-    }
-    :root {
-      --primary: #1E3A8A;
-      --accent: #2563EB;
-      --dark: #1A1A1A;
-      --light-bg: #FAFAFA;
-      --primary-light: rgba(30,58,138,0.08);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background: #FAFAFA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; color: #1A1A1A; }
-    h2 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-top: 0; }
-    h3 { color: #1E3A8A; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; margin: 0.5rem 0; }
-    p { line-height: 1.7; }
-
-    /* Bauhaus */
-    .bauhaus-card { border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.5rem; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .bauhaus-accent-line { width: 48px; height: 4px; background: #2563EB; margin: 0.5rem 0 1rem 0; }
-    .bauhaus-badge { background: #2563EB; color: white; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 0; display: inline-block; }
-
-    /* Code */
-    .code-block { background: #F3F4F6; color: #1A1A1A; padding: 1.25rem; border-left: 4px solid #D1D5DB; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.85rem; overflow-x: auto; position: relative; border-radius: 0 8px 8px 0; white-space: pre; margin: 1rem 0; }
-
-    /* Info boxes */
-    .tip-box { border-left: 4px solid #2563EB; background: #EFF6FF; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .info-box { border-left: 4px solid #3b82f6; background: #eff6ff; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .concept-box { border-left: 4px solid #1E3A8A; background: rgba(30,58,138,0.08); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .install-box { border-left: 4px solid #059669; background: #ECFDF5; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-
-    /* Layout */
-    .header {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 100;
-      background: white; border-bottom: 1px solid #E5E7EB; box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.5rem;
-    }
-    .header-left { display: flex; align-items: center; gap: 1.5rem; }
-    .header-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: #1E3A8A; text-decoration: none; }
-    .header-back { font-size: 0.85rem; color: #555; text-decoration: none; font-weight: 500; }
-    .header-back:hover { color: #1E3A8A; }
-    .lang-btn { border: 2px solid #1A1A1A; background: white; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; border-radius: 4px; letter-spacing: 0.05em; }
-    .lang-btn.active { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .lang-btn:hover:not(.active) { background: #f5f5f5; }
-
-    .sidebar {
-      position: fixed; top: 56px; left: 0; width: 260px;
-      height: calc(100vh - 56px); overflow-y: auto;
-      border-right: 1px solid #E5E7EB; background: white;
-      padding: 1.5rem 0;
-    }
-    .sidebar-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #888; padding: 0 1.25rem; margin-bottom: 0.75rem; }
-    .sidebar-link {
-      display: block; padding: 0.55rem 1.25rem; font-size: 0.88rem; color: #444;
-      text-decoration: none; border-left: 3px solid transparent;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      font-weight: 500;
-    }
-    .sidebar-link:hover { color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .sidebar-link.active { color: #1E3A8A; border-left-color: #1E3A8A; background: rgba(30,58,138,0.06); font-weight: 700; }
-
-    .main-content {
-      margin-left: 260px; padding-top: 72px; padding-bottom: 4rem;
-      padding-left: 3rem; padding-right: 3rem; max-width: 960px;
-    }
-    .section-block { margin-bottom: 4rem; }
-
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-    /* ── Kennzeichnung kopierbarer Codebloecke ───────────────────────────────
-       Jeder Block sagt, ob er in einer frischen Umgebung so laeuft ("run")
-       oder ob er ein Konzeptsnippet mit Platzhalternamen ist ("concept"). */
-    .code-tag { display: inline-block; font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 5px 5px 0 0; }
-    .code-tag-run { background: #065F46; color: #fff; }
-    .code-tag-concept { background: #92400E; color: #fff; }
-    .code-tag + .code-block { border-radius: 0 8px 8px 0; margin-top: 0; }
-    .code-note { font-size: 0.78rem; color: #4B5563; margin: 0.35rem 0 0; line-height: 1.55; }
-    /* ── Quiz: zweiter Versuch statt Einmal-Sperre ───────────────────────────
-       Eine falsche Antwort sperrt die Frage nicht mehr. Die Loesung wird erst
-       gezeigt, wenn sie getroffen oder ausdruecklich angefordert wurde. */
-    .quiz-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    .quiz-retry-btn { font-family: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1.5px solid var(--col-primary, #1E3A8A); background: white; color: var(--col-primary, #1E3A8A); cursor: pointer; }
-    .quiz-retry-btn:hover { background: rgba(30,58,138,0.06); }
-    .quiz-retry-btn.secondary { border-color: #9CA3AF; color: #4B5563; }
-    .quiz-retry-btn.secondary:hover { background: #F3F4F6; }
-    .quiz-hint { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: #92400E; background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 0.55rem 0.9rem; border-radius: 0 6px 6px 0; }
-    .quiz-attempts { font-size: 0.78rem; color: #6B7280; align-self: center; }
-    /* ── Responsive Guards (Mobilnutzung) ────────────────────────────────────
-       Tabellen und Codebloecke duerfen breiter sein als der Viewport, aber sie
-       scrollen dann in ihrem eigenen Container. Die Seite selbst scrollt nie
-       horizontal. Pruefwert: document.scrollWidth <= window.innerWidth bei
-       320 / 390 / 768 / 1024 / 1440 px. */
-    .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1rem 0; }
-    .table-wrap > table { margin: 0; }
-    /* Flex- und Grid-Kinder duerfen unter ihre Inhaltsbreite schrumpfen,
-       sonst sprengt ein <pre> den Elternteil (min-width:auto ist der Default). */
-    .step-content, .step-block > * { min-width: 0; }
-    .section-block, .content, main { min-width: 0; }
-    .code-block { max-width: 100%; }
-    /* Lange Bezeichner ohne Leerzeichen (Spaltennamen, URLs) umbrechen lassen. */
-    p, li, td, th, h1, h2, h3, h4 { overflow-wrap: break-word; }
-    code { overflow-wrap: anywhere; word-break: break-word; }
-    .tip-box, .info-box, .concept-box, .challenge-box, .youtube-box { max-width: 100%; overflow-wrap: break-word; }
-    th { background: #1E3A8A; color: white; padding: 0.65rem 1rem; text-align: left; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.05em; }
-    td { padding: 0.6rem 1rem; border-bottom: 1px solid #e5e7eb; }
-    tr:nth-child(even) td { background: #f9fafb; }
-    tr:hover td { background: rgba(30,58,138,0.03); }
-    td code { font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.82rem; background: #F3F4F6; padding: 0.1rem 0.35rem; border-radius: 3px; }
-
-    /* Nav bottom */
-    .nav-bottom { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid #E5E7EB; }
-    .nav-btn { border: 2px solid #1A1A1A; background: white; padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; color: #1A1A1A; font-family: 'Space Grotesk', sans-serif; display: inline-block; border-radius: 4px; }
-    .nav-btn:hover { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .nav-btn.primary { background: #1E3A8A; border-color: #1E3A8A; color: white; }
-    .nav-btn.primary:hover { background: #1e40af; border-color: #1e40af; }
-
-    /* Lab header */
-    .lab-header { padding: 3rem 3rem 2rem; margin-left: 260px; padding-top: 88px; }
-    .lab-num { font-family: 'Space Grotesk', sans-serif; font-size: 4rem; font-weight: 900; color: #2563EB; line-height: 1; margin-bottom: 0.5rem; }
-    .lab-title-h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: #1A1A1A; margin-bottom: 0.75rem; }
-    .lab-desc-intro { font-size: 1.1rem; color: #4B5563; line-height: 1.6; max-width: 680px; margin-bottom: 1.5rem; }
-    .lernziele-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .lernziel-chip { background: rgba(30,58,138,0.08); color: #1E3A8A; border: 1px solid rgba(30,58,138,0.2); padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600; border-radius: 20px; font-family: 'Space Grotesk', sans-serif; }
-
-    /* YouTube box */
-    .youtube-box { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 1.5rem; margin: 2rem 0; }
-    .youtube-box h3 { color: #EA580C; margin-top: 0; }
-    .youtube-link { color: #EA580C; text-decoration: none; font-weight: 600; }
-    .youtube-link:hover { text-decoration: underline; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-      .lab-header { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-    }
-
-    /* Footer */
-    .footer { background: #1A1A1A; color: rgba(255,255,255,0.6); text-align: center; padding: 1.5rem; margin-left: 260px; font-size: 0.85rem; }
-    @media (max-width: 768px) { .footer { margin-left: 0; } }
-  
-    /* ── EN mode: Teal #0D9488 (mirrors index.html) ── */
-    [data-lang="en"] h2,
-    [data-lang="en"] h3 { color: #0D9488; }
-    [data-lang="en"] h4 { color: #0D9488; }
-    [data-lang="en"] .bauhaus-accent-line { background: #14B8A6; }
-    [data-lang="en"] .bauhaus-badge { background: #0D9488; }
-    [data-lang="en"] .header-logo { color: #0D9488; }
-    [data-lang="en"] .lang-btn.active { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .sidebar-link:hover { color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .sidebar-link.active { color: #0D9488; border-left-color: #0D9488; background: rgba(13,148,136,0.06); }
-    [data-lang="en"] .lernziel-chip { background: rgba(13,148,136,0.1); color: #0D9488; border-color: rgba(13,148,136,0.25); }
-    [data-lang="en"] .bauhaus-card h4 { color: #0D9488 !important; }
-    [data-lang="en"] th { background: #0D9488; }
-    [data-lang="en"] .lab-num { color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary:hover { background: #0f766e; border-color: #0f766e; }
-    [data-lang="en"] .tip-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .concept-box { border-left-color: #0D9488; background: rgba(13,148,136,0.08); }
-    [data-lang="en"] .info-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .challenge-box { border-left-color: #0D9488; }
-    .quiz-option:hover:not(:disabled) { border-color: #2563EB; background: rgba(37,99,235,0.04); }
-    [data-lang="en"] .quiz-option:hover:not(:disabled) { border-color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .footer { background: #0D9488; }
-  
-    /* ── Barrierefreiheit ────────────────────────────────────────────────────
-       sr-only blendet Text visuell aus, laesst ihn aber vorlesbar. Wird fuer
-       die Antwortzustaende im Quiz und den Sprunglink gebraucht. */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .quiz-mark { font-weight: 800; margin-right: 0.4rem; }
-    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--col-primary, #1E3A8A); color: #fff; padding: 0.6rem 1rem; border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 0; }
-    /* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
-    a:focus-visible, button:focus-visible { outline: 3px solid #F59E0B; outline-offset: 2px; }
-  </style>
+  <link rel="stylesheet" href="assets/bint.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231E3A8A'/><text x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' text-anchor='middle' fill='%2338BDF8'>B</text></svg>" />
 </head>
-<body>
-  <div id="root"></div>
+<body class="lab-page" data-lab="lab-04">
 
-  <!-- Ausfallsicherung fuer die CDN-Abhaengigkeiten.
-       React, ReactDOM und Babel kommen von unpkg.com. Faellt der Dienst aus
-       oder sperrt ein Hochschulnetz die Domain, blieb die Seite bisher weiss
-       und der Lernende sah keinen Hinweis, woran es liegt. Dieses Skript
-       laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
-       wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
-       hat (faengt Transpilierungsfehler ab). -->
-  <script src="assets/site.js"></script>
-  <script>
-  (function () {
-    var isEn = BINTLab.getLanguage() === 'en';
-    var T = isEn ? {
-      head: 'This page could not load',
-      miss: 'The following libraries were not delivered:',
-      why: 'The page loads React and Babel from unpkg.com at runtime. If your network blocks that host, or the service is unavailable, nothing can be rendered.',
-      what: 'What you can do:',
-      s1: 'Reload the page - the CDN is often only briefly unavailable.',
-      s2: 'Try a different network (mobile hotspot instead of campus Wi-Fi).',
-      s3: 'Check whether a proxy, VPN or content blocker is blocking unpkg.com.',
-      s4: 'If it persists, report it - the lab content itself is fine, only the delivery failed.',
-      slow: 'The libraries loaded, but the page did not render. That points to a script error rather than the network. Please report it with the browser console output.'
-    } : {
-      head: 'Diese Seite konnte nicht geladen werden',
-      miss: 'Folgende Bibliotheken wurden nicht ausgeliefert:',
-      why: 'Die Seite laedt React und Babel zur Laufzeit von unpkg.com. Sperrt das Netz diesen Host oder ist der Dienst gestoert, kann nichts dargestellt werden.',
-      what: 'Was du tun kannst:',
-      s1: 'Seite neu laden - das CDN ist oft nur kurz nicht erreichbar.',
-      s2: 'Ein anderes Netz probieren (Mobilfunk statt Campus-WLAN).',
-      s3: 'Pruefen, ob ein Proxy, VPN oder Contentblocker unpkg.com blockiert.',
-      s4: 'Bleibt es dabei: melden - die Lab-Inhalte sind in Ordnung, nur die Auslieferung ist gescheitert.',
-      slow: 'Die Bibliotheken sind geladen, die Seite hat aber nicht gerendert. Das deutet auf einen Skriptfehler hin, nicht auf das Netz. Bitte mit der Ausgabe der Browser-Konsole melden.'
-    };
+<a class="skip-link" href="#main"><span lang="de">Zum Inhalt springen</span><span lang="en">Skip to content</span></a>
 
-    function panel(title, body) {
-      var root = document.getElementById('root') || document.body;
-      root.innerHTML =
-        '<div style="max-width:44rem;margin:4rem auto;padding:1.75rem;font-family:' +
-        "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" +
-        ';line-height:1.65;color:#1A1A1A;background:#fff;border:1px solid #E5E7EB;' +
-        'border-left:5px solid #DC2626;border-radius:0 10px 10px 0">' +
-        '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
-        body +
-        '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
-        '</div>';
-    }
+<header class="header">
+  <div class="header-left">
+    <a class="header-logo" href="index.html" data-lab-link><span class="mark">BINT</span>-Lab</a>
+    <a class="header-back" href="index.html" data-lab-link>
+      <span lang="de">← Zur Übersicht</span><span lang="en">← Back to overview</span>
+    </a>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" data-lang-btn="de" aria-pressed="true" aria-label="Deutsch">DE</button>
+    <button class="lang-btn" data-lang-btn="en" aria-pressed="false" aria-label="English">EN</button>
+  </div>
+</header>
 
-    var missing = [];
-    if (typeof window.React === 'undefined') missing.push('React');
-    if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
-    if (typeof window.Babel === 'undefined') missing.push('Babel');
+<nav class="sidebar" aria-label="Lab-Navigation">
+  <div class="sidebar-title"><span lang="de">Abschnitte</span><span lang="en">Sections</span></div>
+  <a class="sidebar-link" href="#design-prinzipien"><span lang="de">Design-Prinzipien</span><span lang="en">Design Principles</span></a>
+  <a class="sidebar-link" href="#plotly-express">Plotly Express</a>
+  <a class="sidebar-link" href="#plotly-dash">Plotly Dash</a>
+  <a class="sidebar-link" href="#vergleich">Power BI vs. Dash</a>
+  <a class="sidebar-link" href="#youtube"><span lang="de">Ressourcen</span><span lang="en">Resources</span></a>
+  <a class="sidebar-link" href="#quiz">Quiz</a>
+  <a class="sidebar-link" href="#zusammenfassung"><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></a>
+</nav>
 
-    if (missing.length) {
-      panel(T.head,
-        '<p><strong>' + T.miss + '</strong> ' + missing.join(', ') + '</p>' +
-        '<p>' + T.why + '</p>' +
-        '<p><strong>' + T.what + '</strong></p>' +
-        '<ol style="padding-left:1.25rem"><li>' + T.s1 + '</li><li>' + T.s2 +
-        '</li><li>' + T.s3 + '</li><li>' + T.s4 + '</li></ol>');
-      return;
-    }
+<div class="lab-header">
+  <div class="lab-num-big">04</div>
+  <h1 class="lab-title"><span lang="de">Dashboard-Design &amp; Plotly Dash</span><span lang="en">Dashboard Design &amp; Plotly Dash</span></h1>
+  <p class="lab-intro">
+    <span lang="de">In diesem Lab lernen Sie, wie Sie nach bewährten Design-Prinzipien professionelle Dashboards gestalten, interaktive Charts mit Plotly Express erstellen und vollständige Web-Dashboards mit Plotly Dash bauen.</span>
+    <span lang="en">In this lab you will learn how to design professional dashboards following proven design principles, create interactive charts with Plotly Express, and build complete web dashboards with Plotly Dash.</span>
+  </p>
+  <div class="lernziele">
+    <span class="lernziel-chip"><span lang="de">Dashboard-Design-Prinzipien anwenden</span><span lang="en">Apply dashboard design principles</span></span>
+    <span class="lernziel-chip"><span lang="de">Plotly Express Charts erstellen</span><span lang="en">Create Plotly Express charts</span></span>
+    <span class="lernziel-chip"><span lang="de">Plotly Dash App mit Layout und Callbacks bauen</span><span lang="en">Build a Plotly Dash app with layout and callbacks</span></span>
+    <span class="lernziel-chip"><span lang="de">Power BI vs. Plotly Dash architektonisch vergleichen</span><span lang="en">Compare Power BI vs. Plotly Dash architecturally</span></span>
+  </div>
+</div>
 
-    // Bibliotheken da, aber die App mountet nicht -> Skriptfehler.
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        panel(T.head, '<p>' + T.slow + '</p>');
-      }
-    }, 5000);
-  })();
-  </script>
+<main class="main-content" id="main">
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+  <section class="section-block" id="design-prinzipien">
+    <h2><span lang="de">Dashboard-Design</span><span lang="en">Dashboard Design</span></h2>
+    <div class="accent-line"></div>
+    <p>
+      <span lang="de">Ein gutes Dashboard kommuniziert Erkenntnisse schnell und klar. Diese Prinzipien helfen dabei, visuelle Überladung zu vermeiden und den Fokus auf das Wesentliche zu legen.</span>
+      <span lang="en">A good dashboard communicates insights quickly and clearly. These principles help avoid visual overload and keep focus on what matters.</span>
+    </p>
 
-    // ─── CodeBlock Component ──────────────────────────────────────────────────
-    function CodeBlock({ code, lang, kind, note }) {
-      const [copied, setCopied] = React.useState(false);
-    const [copyFailed, setCopyFailed] = React.useState(false);
-      const copy = async () => {
-      const ok = await BINTLab.copyText(code);
-      setCopied(ok);
-      setCopyFailed(!ok);
-      if (ok) setTimeout(() => setCopied(false), 1500);
-    };
-      const labelCopy = lang === 'en' ? 'Copy' : 'Kopieren';
-      const labelDone = lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert';
-      return (
-        <div style={{ position: 'relative', marginBottom: '1rem' }}>
-          {kind && (
-            <div className={'code-tag ' + (kind === 'run' ? 'code-tag-run' : 'code-tag-concept')}>
-              {kind === 'run'
-                ? (lang === 'en' ? 'Runnable as-is' : 'L\u00E4uft unver\u00E4ndert')
-                : kind === 'diagram'
-                  ? (lang === 'en' ? 'Schema \u2013 not code' : 'Schema \u2013 kein Code')
-                  : (lang === 'en' ? 'Concept \u2013 placeholder names' : 'Konzept \u2013 Platzhalternamen')}
-            </div>
-          )}
-          <pre className="code-block">{code}</pre>
-          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
-          {note && <p className="code-note">{note}</p>}
-          <button onClick={copy} style={{
-            position: 'absolute', top: '0.5rem', right: '0.5rem',
-            background: copied ? '#059669' : '#E5E7EB',
-            color: copied ? 'white' : '#374151',
-            border: 'none', borderRadius: '4px',
-            padding: '0.2rem 0.5rem', fontSize: '0.75rem',
-            cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif'
-          }}>
-            {copied ? labelDone : labelCopy}
-          </button>
-        </div>
-      );
-    }
+    <div class="karten">
+      <div class="karte">
+        <span class="marke">01</span>
+        <h4>Data-Ink Ratio (Tufte)</h4>
+        <p>
+          <span lang="de">Nur nötige visuelle Elemente verwenden. Jede Tinte muss Daten repräsentieren – kein Dekor, keine Verzierungen.</span>
+          <span lang="en">Use only necessary visual elements. Every drop of ink must represent data – no decoration, no ornaments.</span>
+        </p>
+      </div>
+      <div class="karte">
+        <span class="marke">02</span>
+        <h4>5-Second Rule</h4>
+        <p>
+          <span lang="de">Die Kernaussage des Dashboards muss in 5 Sekunden erkennbar sein. Wenn Nutzer suchen müssen, scheitert das Design.</span>
+          <span lang="en">The key message of the dashboard must be recognizable within 5 seconds. If users need to search, the design has failed.</span>
+        </p>
+      </div>
+      <div class="karte">
+        <span class="marke">03</span>
+        <h4>Visual Hierarchy</h4>
+        <p>
+          <span lang="de">Wichtigstes oben links, Details unten rechts. Nutzer lesen Dashboards wie Text – in Z-Mustern.</span>
+          <span lang="en">Most important content top-left, details bottom-right. Users read dashboards like text – in Z-patterns.</span>
+        </p>
+      </div>
+      <div class="karte">
+        <span class="marke">04</span>
+        <h4><span lang="de">Farbe sparsam einsetzen</span><span lang="en">Use Color Sparingly</span></h4>
+        <p>
+          <span lang="de">Max. 3–4 Farben, mit semantischer Bedeutung (Rot = schlecht, Grün = gut). Farbe zur Hervorhebung, nicht zur Dekoration.</span>
+          <span lang="en">Max. 3–4 colors, with semantic meaning (red = bad, green = good). Color for emphasis, not decoration.</span>
+        </p>
+      </div>
+    </div>
 
-    // ─── QuizQuestion Component ──────────────────────────────────────────────
-    function QuizQuestion({ question, index, lang }) {
-      // Mastery statt One-shot: falsche Antwort sperrt die Frage nicht mehr.
-      const [selected, setSelected] = React.useState(null);
-      const [revealed, setRevealed] = React.useState(false);
-      const [attempts, setAttempts] = React.useState(0);
-      const solved = selected === question.correct;
-      const wrongPick = selected !== null && !solved;
+    <h3><span lang="de">Richtiger Chart-Typ</span><span lang="en">Choosing the Right Chart Type</span></h3>
+    <p>
+      <span lang="de">Die Wahl des falschen Chart-Typs kann Daten verzerren oder Aussagen unklar machen.</span>
+      <span lang="en">Choosing the wrong chart type can distort data or make insights unclear.</span>
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Situation</th>
+            <th><span lang="de">Empfohlener Chart-Typ</span><span lang="en">Recommended Chart Type</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="kopf"><span lang="de">Vergleich über Zeit</span><span lang="en">Comparison over time</span></td>
+            <td><span lang="de">Linien- oder Balkendiagramm</span><span lang="en">Line or bar chart</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Rangliste</span><span lang="en">Ranking</span></td>
+            <td><span lang="de">Horizontales Balkendiagramm</span><span lang="en">Horizontal bar chart</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Anteil/Komposition (≤ 4 Kategorien)</span><span lang="en">Part-to-whole (≤ 4 categories)</span></td>
+            <td><span lang="de">Gestapeltes Balkendiagramm</span><span lang="en">Stacked bar</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Korrelation</span><span lang="en">Correlation</span></td>
+            <td><span lang="de">Streudiagramm (Scatter Plot)</span><span lang="en">Scatter plot</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Geografisch</span><span lang="en">Geographic distribution</span></td>
+            <td><span lang="de">Choropleth / Karte</span><span lang="en">Choropleth / Map</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">KPI-Einzelwert</span><span lang="en">Single KPI value</span></td>
+            <td>Card / Scorecard</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      const pick = (oi) => {
-        if (revealed) return;
-        setSelected(oi);
-        setAttempts((n) => n + 1);
-        if (oi === question.correct) setRevealed(true);
-      };
+    <div class="tip-box">
+      <h4><span lang="de">Wann KEIN Tortendiagramm?</span><span lang="en">When NOT to use a pie chart?</span></h4>
+      <p>
+        <span lang="de">Bei mehr als 4 Kategorien oder wenn exakte Wertevergleiche wichtig sind. Das menschliche Auge vergleicht Winkel schlecht. Ein horizontales Balkendiagramm ist fast immer besser.</span>
+        <span lang="en">When more than 4 categories exist or when exact value comparisons matter. The human eye is poor at comparing angles. A horizontal bar chart is almost always better.</span>
+      </p>
+    </div>
 
-      return (
-        <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: 'white', border: '1px solid #E5E7EB', borderRadius: '10px' }}>
-          <p style={{ fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", margin: '0 0 0.75rem', color: '#1A1A1A' }}>
-            {index + 1}. {question.q}
-          </p>
-          <div style={{ display: 'grid', gap: '0.5rem' }}>
-            {question.options.map((opt, oi) => {
-              let bg = 'white'; let border = '#D1D5DB'; let color = '#374151'; let mark = null;
-              // Zustand nie nur ueber Farbe - das Zeichen steht im DOM.
-              if (revealed && oi === question.correct) { bg = '#D1FAE5'; border = '#059669'; color = '#065F46'; mark = '\u2713'; }
-              else if (oi === selected && oi !== question.correct) { bg = '#FEE2E2'; border = '#DC2626'; color = '#991B1B'; mark = '\u2717'; }
-              return (
-                <button key={oi} disabled={revealed} onClick={() => pick(oi)}
-                  className="quiz-option"
-                  style={{
-                    textAlign: 'left', padding: '0.6rem 1rem', fontSize: '0.88rem',
-                    background: bg, border: '1.5px solid ' + border, borderRadius: '6px',
-                    color, cursor: revealed ? 'default' : 'pointer',
-                    fontFamily: 'inherit', transition: 'border-color 0.15s, background 0.15s'
-                  }}>
-                  {mark && <span className="quiz-mark" aria-hidden="true">{mark}</span>}
-                  {mark && <span className="sr-only">
-                    {mark === '\u2713'
-                      ? (lang === 'en' ? 'Correct answer: ' : 'Richtige Antwort: ')
-                      : (lang === 'en' ? 'Your wrong answer: ' : 'Deine falsche Antwort: ')}
-                  </span>}
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
+    <div class="concept-box">
+      <h4><span lang="de">Gestalt-Prinzipien im Dashboard-Design</span><span lang="en">Gestalt Principles in Dashboard Design</span></h4>
+      <p>
+        <span lang="de">Die Gestalt-Prinzipien (Nähe, Ähnlichkeit, Geschlossenheit, Kontinuität) beeinflussen, wie Nutzer visuelle Gruppen wahrnehmen. KPIs, die zusammengehören, sollten räumlich nahe platziert werden (Nähe); gleiche Chart-Typen signalisieren Vergleichbarkeit (Ähnlichkeit).</span>
+        <span lang="en">The Gestalt principles (proximity, similarity, closure, continuity) influence how users perceive visual groups. KPIs that belong together should be placed close to each other (proximity); similar chart types signal comparability (similarity).</span>
+      </p>
+    </div>
 
-          {wrongPick && !revealed && (
-            <div className="quiz-hint" role="status" aria-live="polite">
-              {lang === 'en'
-                ? '\u2717 Not quite. Re-read the question and try again \u2013 or reveal the answer.'
-                : '\u2717 Noch nicht richtig. Lies die Frage noch einmal und versuche es erneut \u2013 oder lass dir die L\u00F6sung zeigen.'}
-            </div>
-          )}
+    <div class="info-box">
+      <h4><span lang="de">Barrierefreiheit</span><span lang="en">Accessibility</span></h4>
+      <p>
+        <span lang="de">Ca. 8 % der Männer haben eine Rot-Grün-Schwäche. Verwenden Sie farbenblind-sichere Paletten (z. B. Viridis, Cividis) und ergänzen Sie Farben durch Muster oder Beschriftungen. WCAG 2.1 empfiehlt ein Kontrastverhältnis von mindestens 4,5:1.</span>
+        <span lang="en">Approx. 8% of men have a red-green colour deficiency. Use colourblind-safe palettes (e.g. Viridis, Cividis) and supplement colour with patterns or labels. WCAG 2.1 recommends a minimum contrast ratio of 4.5:1.</span>
+      </p>
+    </div>
 
-          {wrongPick && !revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn" onClick={() => setSelected(null)}>
-                {lang === 'en' ? 'Try again' : 'Nochmal versuchen'}
-              </button>
-              <button type="button" className="quiz-retry-btn secondary" onClick={() => setRevealed(true)}>
-                {lang === 'en' ? 'Show answer' : 'L\u00F6sung anzeigen'}
-              </button>
-              <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-            </div>
-          )}
+    <div class="tip-box">
+      <p>
+        <span lang="de">Quellenverweis: Edward Tufte, "The Visual Display of Quantitative Information" (1983) – das Standardwerk zur datengetriebenen Visualisierung. Ergänzend: Stephen Few, "Information Dashboard Design" (2006) – speziell für Dashboard-Gestaltung.</span>
+        <span lang="en">Source reference: Edward Tufte, "The Visual Display of Quantitative Information" (1983) – the seminal work on data-driven visualisation. Supplementary: Stephen Few, "Information Dashboard Design" (2006) – specifically for dashboard design.</span>
+      </p>
+    </div>
+  </section>
 
-          {revealed && (
-            <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: solved ? '#059669' : '#B45309' }} role="status" aria-live="polite">
-              {solved
-                ? (lang === 'en' ? '\u2713 Correct!' : '\u2713 Richtig!')
-                : (lang === 'en' ? 'Answer shown' : 'L\u00F6sung eingeblendet')}
-            </p>
-          )}
-          {revealed && question.explanation && (
-            <p style={{ marginTop: '0.35rem', fontSize: '0.85rem', lineHeight: 1.6, color: '#374151' }}>
-              {question.explanation}
-            </p>
-          )}
-          {revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn secondary"
-                onClick={() => { setSelected(null); setRevealed(false); setAttempts(0); }}>
-                {lang === 'en' ? 'Reset question' : 'Frage zur\u00FCcksetzen'}
-              </button>
-              {attempts > 1 && (
-                <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
+  <section class="section-block" id="plotly-express">
+    <h2>Plotly Express</h2>
+    <div class="accent-line"></div>
+    <p>
+      <span lang="de">Plotly Express ist eine High-Level Python-Bibliothek für interaktive Charts. Mit wenigen Zeilen Code entstehen publikationsreife Visualisierungen, die im Browser als interaktive HTML-Grafiken dargestellt werden.</span>
+      <span lang="en">Plotly Express is a high-level Python library for interactive charts. With just a few lines of code you can create publication-ready visualizations displayed as interactive HTML graphics in the browser.</span>
+    </p>
 
-    // ─── Code Strings ─────────────────────────────────────────────────────────
-    const CODE_PX_BAR = {
-      de: `import plotly.express as px
+    <div class="download-box">
+      <h3><span lang="de">Datensatz für alle Beispiele</span><span lang="en">Dataset for all examples</span></h3>
+      <p>
+        <span lang="de">Alle Codebeispiele in diesem Lab arbeiten mit train.csv aus dem Superstore Sales Dataset (Kaggle, GPL 2): 9.800 Bestellpositionen, 2015–2018. Legen Sie die Datei in dasselbe Verzeichnis wie Ihr Skript. Achtung: Die Datumsspalten liegen als TT/MM/JJJJ vor – deshalb dayfirst=True beim Parsen. Eine Profit-Spalte gibt es in dieser Variante nicht; einzige Kennzahl ist Sales.</span>
+        <span lang="en">Every code example in this lab uses train.csv from the Superstore Sales Dataset (Kaggle, GPL 2): 9,800 order line items, 2015–2018. Place the file in the same directory as your script. Note: the date columns are DD/MM/YYYY, hence dayfirst=True when parsing. This variant has no Profit column; Sales is the only measure.</span>
+      </p>
+      <div class="download-reihe">
+        <a class="btn-download" href="data/train.csv" download><span lang="de">↓ train.csv herunterladen</span><span lang="en">↓ Download train.csv</span></a>
+        <a class="btn-download sekundaer" href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting" target="_blank" rel="noopener noreferrer"><span lang="de">Quelle auf Kaggle ↗</span><span lang="en">Source on Kaggle ↗</span></a>
+      </div>
+    </div>
+
+    <div class="download-box">
+      <h3><span lang="de">Starterpaket herunterladen</span><span lang="en">Download the starter package</span></h3>
+      <p>
+        <span lang="de">Statt die Bloecke einzeln zu kopieren: das Paket enthaelt charts.py, app.py, requirements.txt, Dockerfile und eine README mit Sollausgaben und typischen Fehlern. train.csv daneben legen, pip install -r requirements.txt, fertig.</span>
+        <span lang="en">Instead of copying the blocks one by one: the package contains charts.py, app.py, requirements.txt, Dockerfile and a README with expected output and common errors. Put train.csv next to it, pip install -r requirements.txt, done.</span>
+      </p>
+      <div class="download-reihe">
+        <a class="btn-download" href="starter/lab-04-dash.zip" download>lab-04-dash.zip</a>
+      </div>
+    </div>
+
+    <h3><span lang="de">Balkendiagramm: Umsatz nach Kategorie</span><span lang="en">Bar Chart: Revenue by Category</span></h3>
+    <div class="codeblock" data-kind="run" data-name="CODE_PX_BAR">
+<pre class="code-block" lang="de">import plotly.express as px
 import pandas as pd
 
 df = pd.read_csv('train.csv', encoding='latin-1')
@@ -435,8 +225,8 @@ fig.update_layout(
     paper_bgcolor='white',
     font_family='Space Grotesk'  # Font muss via Google Fonts geladen sein; lokal ggf. weglassen
 )
-fig.show()`,
-      en: `import plotly.express as px
+fig.show()</pre>
+<pre class="code-block" lang="en">import plotly.express as px
 import pandas as pd
 
 df = pd.read_csv('train.csv', encoding='latin-1')
@@ -454,19 +244,24 @@ fig.update_layout(
     paper_bgcolor='white',
     font_family='Space Grotesk'  # font must be loaded via Google Fonts; drop it locally if unavailable
 )
-fig.show()`,
-    };
+fig.show()</pre>
+      <p class="code-note">
+        <span lang="de">Voraussetzung: pip install plotly pandas, train.csv im selben Verzeichnis. Der Block öffnet eine Figur im Browser – kommt keine, fehlt meist der Aufruf fig.show() in einer nicht-interaktiven Umgebung.</span>
+        <span lang="en">Prerequisites: pip install plotly pandas, train.csv in the same directory. The block opens a figure in the browser – if none appears, fig.show() is usually missing in a non-interactive environment.</span>
+      </p>
+    </div>
+    <!-- SCREENSHOT: plotly-bar-kategorie · Ausgabe von fig.show(): Balkendiagramm „Umsatz nach Kategorie“ im Browser -->
 
-    const CODE_PX_LINE = {
-
-      de: `import plotly.express as px
+    <h3><span lang="de">Liniendiagramm: Umsatz-Trend über Zeit</span><span lang="en">Line Chart: Revenue Trend over Time</span></h3>
+    <div class="codeblock" data-kind="run" data-name="CODE_PX_LINE">
+<pre class="code-block" lang="de">import plotly.express as px
 import pandas as pd
 
 df = pd.read_csv('train.csv', encoding='latin-1')
 
 # Umsatz-Trend über Zeit (Linie)
 # dayfirst=True ist Pflicht: die Daten liegen als TT/MM/JJJJ vor.
-# Ohne den Parameter bricht pandas ab, sobald der Tag > 12 ist.
+# Ohne den Parameter bricht pandas ab, sobald der Tag &gt; 12 ist.
 df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
 monthly = df.groupby(df['Order Date'].dt.to_period('M'))['Sales'].sum().reset_index()
 monthly['Order Date'] = monthly['Order Date'].astype(str)
@@ -477,9 +272,8 @@ fig2 = px.line(
     y='Sales',
     title='Monatlicher Umsatz-Trend'
 )
-fig2.show()`,
-
-      en: `import plotly.express as px
+fig2.show()</pre>
+<pre class="code-block" lang="en">import plotly.express as px
 import pandas as pd
 
 df = pd.read_csv('train.csv', encoding='latin-1')
@@ -497,13 +291,16 @@ fig2 = px.line(
     y='Sales',
     title='Monthly revenue trend'
 )
-fig2.show()`,
+fig2.show()</pre>
+      <p class="code-note">
+        <span lang="de">Voraussetzung: pip install plotly pandas, train.csv im selben Verzeichnis. Der Block öffnet eine Figur im Browser – kommt keine, fehlt meist der Aufruf fig.show() in einer nicht-interaktiven Umgebung.</span>
+        <span lang="en">Prerequisites: pip install plotly pandas, train.csv in the same directory. The block opens a figure in the browser – if none appears, fig.show() is usually missing in a non-interactive environment.</span>
+      </p>
+    </div>
 
-    };
-
-    const CODE_PX_SCATTER = {
-
-      de: `import plotly.express as px
+    <h3><span lang="de">Scatter Plot: Umsatz vs. Bestellvolumen</span><span lang="en">Scatter Plot: Revenue vs. Order Volume</span></h3>
+    <div class="codeblock" data-kind="run" data-name="CODE_PX_SCATTER">
+<pre class="code-block" lang="de">import plotly.express as px
 import pandas as pd
 
 df = pd.read_csv('train.csv', encoding='latin-1')
@@ -526,9 +323,8 @@ fig3 = px.scatter(
     title='Umsatz vs. Bestellpositionen je Sub-Kategorie'
 )
 fig3.update_traces(textposition='top center')
-fig3.show()`,
-
-      en: `import plotly.express as px
+fig3.show()</pre>
+<pre class="code-block" lang="en">import plotly.express as px
 import pandas as pd
 
 df = pd.read_csv('train.csv', encoding='latin-1')
@@ -551,13 +347,50 @@ fig3 = px.scatter(
     title='Revenue vs. line items per sub-category'
 )
 fig3.update_traces(textposition='top center')
-fig3.show()`,
+fig3.show()</pre>
+      <p class="code-note">
+        <span lang="de">Voraussetzung: pip install plotly pandas, train.csv im selben Verzeichnis. Der Block öffnet eine Figur im Browser – kommt keine, fehlt meist der Aufruf fig.show() in einer nicht-interaktiven Umgebung.</span>
+        <span lang="en">Prerequisites: pip install plotly pandas, train.csv in the same directory. The block opens a figure in the browser – if none appears, fig.show() is usually missing in a non-interactive environment.</span>
+      </p>
+    </div>
+  </section>
 
-    };
+  <section class="section-block" id="plotly-dash">
+    <h2>Plotly Dash</h2>
+    <div class="accent-line"></div>
+    <p>
+      <span lang="de">Plotly Dash ist ein Python-Framework zum Erstellen vollständiger Web-Dashboards. Es verbindet ein Flask-Backend mit einem automatisch generierten React-Frontend. Das Layout ist deklarativ, die Reaktivität wird durch Callbacks gesteuert.</span>
+      <span lang="en">Plotly Dash is a Python framework for building complete web dashboards. It connects a Flask backend with an automatically generated React frontend. The layout is declarative and reactivity is controlled through callbacks.</span>
+    </p>
 
-    const CODE_DASH_APP = {
+    <h3><span lang="de">Architektur-Konzepte</span><span lang="en">Architecture Concepts</span></h3>
+    <div class="karten">
+      <div class="info-box">
+        <h4>App</h4>
+        <p>
+          <span lang="de">Flask-Backend + React-Frontend (automatisch generiert). Dash übernimmt die gesamte Infrastruktur.</span>
+          <span lang="en">Flask backend + React frontend (automatically generated). Dash handles the entire infrastructure.</span>
+        </p>
+      </div>
+      <div class="info-box">
+        <h4>Layout</h4>
+        <p>
+          <span lang="de">Deklarativ wie HTML, aber als Python-Objekte. html.Div(), dcc.Graph(), dcc.Dropdown() usw.</span>
+          <span lang="en">Declarative like HTML, but as Python objects. html.Div(), dcc.Graph(), dcc.Dropdown() etc.</span>
+        </p>
+      </div>
+      <div class="info-box">
+        <h4>Callbacks</h4>
+        <p>
+          <span lang="de">Reaktivität durch @app.callback: Input → Python-Funktion → Output. Ähnlich wie Event-Listener.</span>
+          <span lang="en">Reactivity via @app.callback: Input → Python function → Output. Similar to event listeners.</span>
+        </p>
+      </div>
+    </div>
 
-      de: `# app.py – Vollständiges Dash-Dashboard
+    <h3><span lang="de">Vollständige Dash-App (app.py)</span><span lang="en">Complete Dash App (app.py)</span></h3>
+    <div class="codeblock" data-kind="run" data-name="CODE_DASH_APP" data-title="app.py">
+<pre class="code-block" lang="de"># app.py – Vollständiges Dash-Dashboard
 import dash
 from dash import dcc, html, Input, Output
 import plotly.express as px
@@ -624,9 +457,8 @@ def update_scatter(category):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)`,
-
-      en: `# app.py - complete Dash dashboard
+    app.run(debug=True)</pre>
+<pre class="code-block" lang="en"># app.py - complete Dash dashboard
 import dash
 from dash import dcc, html, Input, Output
 import plotly.express as px
@@ -693,838 +525,272 @@ def update_scatter(category):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)`,
+    app.run(debug=True)</pre>
+      <p class="code-note">
+        <span lang="de">Voraussetzung: pip install dash plotly pandas, train.csv im selben Verzeichnis. Als app.py speichern und mit python app.py starten. Sollzustand: Konsole meldet Running on http://127.0.0.1:8050, die Seite zeigt ein Kategorie-Dropdown und zwei Diagramme, die auf jede Auswahl im Dropdown reagieren.</span>
+        <span lang="en">Prerequisites: pip install dash plotly pandas, train.csv in the same directory. Save as app.py and run python app.py. Expected state: the console reports Running on http://127.0.0.1:8050 and the page shows a category dropdown and two charts that react to every selection in the dropdown.</span>
+      </p>
+    </div>
+    <!-- SCREENSHOT: dash-app-laeuft · python app.py → http://127.0.0.1:8050: Kategorie-Dropdown und zwei Diagramme -->
 
-    };
+    <div class="challenge-box">
+      <h4><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h4>
+      <ul>
+        <li><span lang="de">Die Konsole meldet Running on http://127.0.0.1:8050.</span><span lang="en">The console reports Running on http://127.0.0.1:8050.</span></li>
+        <li><span lang="de">Die Seite zeigt ein Kategorie-Dropdown und zwei Diagramme.</span><span lang="en">The page shows a category dropdown and two charts.</span></li>
+        <li><span lang="de">Beim Umschalten der Kategorie ändern sich beide Diagramme – sonst ist der Callback nicht verdrahtet.</span><span lang="en">Switching category updates both charts – otherwise the callback is not wired up.</span></li>
+        <li><span lang="de">Technology, Furniture und Office Supplies stehen im Dropdown.</span><span lang="en">Technology, Furniture and Office Supplies appear in the dropdown.</span></li>
+        <li><span lang="de">Typischer Fehler: Port 8050 belegt – dann app.run(debug=True, port=8051) verwenden.</span><span lang="en">Common error: port 8050 in use – then use app.run(debug=True, port=8051).</span></li>
+        <li><span lang="de">Aufräumen: Strg+C im Terminal beendet den Entwicklungsserver.</span><span lang="en">Cleanup: Ctrl+C in the terminal stops the development server.</span></li>
+      </ul>
+    </div>
 
-    const CODE_INSTALL = {
-
-      de: `pip install dash plotly pandas gunicorn
+    <h3><span lang="de">Installation &amp; Start</span><span lang="en">Installation &amp; Start</span></h3>
+    <div class="codeblock terminal" data-kind="run" data-name="CODE_INSTALL" data-title="Terminal">
+<pre class="code-block" lang="de">pip install dash plotly pandas gunicorn
 python app.py
-# Öffne http://localhost:8050`,
-
-      en: `pip install dash plotly pandas gunicorn
+# Öffne http://localhost:8050</pre>
+<pre class="code-block" lang="en">pip install dash plotly pandas gunicorn
 python app.py
-# Open http://localhost:8050`,
+# Open http://localhost:8050</pre>
+    </div>
 
-    };
+    <div class="info-box">
+      <p>
+        <span lang="de">Google Colab: Den Code oben können Sie in ein leeres Colab-Notebook einfügen und dort ausführen – ohne lokale Installation, kostenlos im Browser. Laden Sie train.csv vorher über das Dateisymbol links in die Sitzung hoch, sonst findet pandas die Datei nicht. Dash-Apps laufen in Colab nur eingeschränkt; für die Dash-App ist eine lokale Umgebung der einfachere Weg.</span>
+        <span lang="en">Google Colab: paste the code above into an empty Colab notebook and run it there – no local installation, free in the browser. Upload train.csv to the session via the file icon on the left first, otherwise pandas will not find it. Dash apps only run with limitations in Colab; for the Dash app a local environment is the simpler route.</span>
+      </p>
+    </div>
 
-    const CODE_GUNICORN = {
+    <h3><span lang="de">Produktiver Deployment-Stack</span><span lang="en">Production Deployment Stack</span></h3>
+    <div class="concept-box">
+      <p><strong>
+        <span lang="de">Lokale Entwicklung → Gunicorn (WSGI) → Docker Container → Traefik Reverse Proxy → HTTPS</span>
+        <span lang="en">Local Dev → Gunicorn (WSGI) → Docker Container → Traefik Reverse Proxy → HTTPS</span>
+      </strong></p>
+    </div>
 
-      de: `# Starten mit Gunicorn (Production)
+    <h4>Gunicorn</h4>
+    <p>
+      <span lang="de">Production-WSGI-Server für Python/Dash (ersetzt den eingebauten Dev-Server).</span>
+      <span lang="en">Production WSGI server for Python/Dash (replaces the built-in dev server).</span>
+    </p>
+    <div class="codeblock terminal" data-kind="run" data-name="CODE_GUNICORN" data-title="Terminal">
+<pre class="code-block" lang="de"># Starten mit Gunicorn (Production)
 # gunicorn bedient app:server - das ist die Flask-Instanz
 # aus "server = app.server" in app.py.
-gunicorn app:server -b 0.0.0.0:8050 --workers 2`,
-
-      en: `# Start with Gunicorn (production)
+gunicorn app:server -b 0.0.0.0:8050 --workers 2</pre>
+<pre class="code-block" lang="en"># Start with Gunicorn (production)
 # gunicorn serves app:server - that is the Flask instance
 # from "server = app.server" in app.py.
-gunicorn app:server -b 0.0.0.0:8050 --workers 2`,
+gunicorn app:server -b 0.0.0.0:8050 --workers 2</pre>
+    </div>
 
-    };
-
-    // Wird vom Dockerfile mit "COPY requirements.txt ." erwartet - muss also existieren.
-    const CODE_REQUIREMENTS = {
-      de: `# requirements.txt
+    <h4>Docker</h4>
+    <p>
+      <span lang="de">Container-Image mit requirements.txt + app.py + Dockerfile.</span>
+      <span lang="en">Container image with requirements.txt + app.py + Dockerfile.</span>
+    </p>
+    <p>
+      <span lang="de">Legen Sie zuerst die requirements.txt neben app.py an – das Dockerfile kopiert sie im nächsten Schritt und bricht ohne sie ab:</span>
+      <span lang="en">Create requirements.txt next to app.py first – the Dockerfile copies it in the next step and fails without it:</span>
+    </p>
+    <div class="codeblock" data-kind="run" data-name="CODE_REQUIREMENTS" data-title="requirements.txt">
+<pre class="code-block" lang="de"># requirements.txt
 # Untergrenze = mindestens noetige Version, Obergrenze = naechstes Major.
 # Ohne Obergrenze bricht ein kuenftiges Major-Release die Uebung, ohne dass
 # am Kurs etwas geaendert wurde. Gepruefte Kombination:
 # dash 3.4.0, plotly 6.5.2, pandas 3.0.0, gunicorn 24.1.1.
-dash>=3.0,<4
-plotly>=6.0,<7
-pandas>=2.2,<4
-gunicorn>=23.0,<25`,
-      en: `# requirements.txt
+dash&gt;=3.0,&lt;4
+plotly&gt;=6.0,&lt;7
+pandas&gt;=2.2,&lt;4
+gunicorn&gt;=23.0,&lt;25</pre>
+<pre class="code-block" lang="en"># requirements.txt
 # Lower bound = minimum required version, upper bound = next major.
 # Without an upper bound a future major release breaks the exercise without
 # anything in the course having changed. Verified combination:
 # dash 3.4.0, plotly 6.5.2, pandas 3.0.0, gunicorn 24.1.1.
-dash>=3.0,<4
-plotly>=6.0,<7
-pandas>=2.2,<4
-gunicorn>=23.0,<25`,
-    };
-
-    const CODE_DOCKERFILE = `FROM python:3.13-slim
+dash&gt;=3.0,&lt;4
+plotly&gt;=6.0,&lt;7
+pandas&gt;=2.2,&lt;4
+gunicorn&gt;=23.0,&lt;25</pre>
+    </div>
+    <div class="codeblock" data-kind="run" data-name="CODE_DOCKERFILE" data-title="Dockerfile">
+<pre class="code-block">FROM python:3.13-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 EXPOSE 8050
-CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]`;
-
-    // ─── Translations ─────────────────────────────────────────────────────────
-    const translations = {
-      de: {
-        title: 'Dashboard-Design & Plotly Dash',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
-        desc: 'In diesem Lab lernen Sie, wie Sie nach bewährten Design-Prinzipien professionelle Dashboards gestalten, interaktive Charts mit Plotly Express erstellen und vollständige Web-Dashboards mit Plotly Dash bauen.',
-        lernziele: [
-          'Dashboard-Design-Prinzipien anwenden',
-          'Plotly Express Charts erstellen',
-          'Plotly Dash App mit Layout und Callbacks bauen',
-          'Power BI vs. Plotly Dash architektonisch vergleichen',
-        ],
-        navContents: 'Inhalt',
-        nav: [
-          { href: '#design-prinzipien', label: 'Design-Prinzipien' },
-          { href: '#plotly-express',    label: 'Plotly Express' },
-          { href: '#plotly-dash',       label: 'Plotly Dash' },
-          { href: '#vergleich',         label: 'Power BI vs. Dash' },
-          { href: '#youtube',           label: 'Ressourcen' },
-          { href: '#quiz',             label: 'Quiz' },
-          { href: '#zusammenfassung',  label: 'Zusammenfassung' },
-        ],
-        backLabel: '\u2190 Übersicht',
-
-        s1Title: 'Dashboard-Design',
-        s1Desc: 'Ein gutes Dashboard kommuniziert Erkenntnisse schnell und klar. Diese Prinzipien helfen dabei, visuelle Überladung zu vermeiden und den Fokus auf das Wesentliche zu legen.',
-        s1Principles: [
-          {
-            title: 'Data-Ink Ratio (Tufte)',
-            desc: 'Nur nötige visuelle Elemente verwenden. Jede Tinte muss Daten repräsentieren – kein Dekor, keine Verzierungen.',
-          },
-          {
-            title: '5-Second Rule',
-            desc: 'Die Kernaussage des Dashboards muss in 5 Sekunden erkennbar sein. Wenn Nutzer suchen müssen, scheitert das Design.',
-          },
-          {
-            title: 'Visual Hierarchy',
-            desc: 'Wichtigstes oben links, Details unten rechts. Nutzer lesen Dashboards wie Text – in Z-Mustern.',
-          },
-          {
-            title: 'Farbe sparsam einsetzen',
-            desc: 'Max. 3–4 Farben, mit semantischer Bedeutung (Rot = schlecht, Grün = gut). Farbe zur Hervorhebung, nicht zur Dekoration.',
-          },
-        ],
-        s1ChartTitle: 'Richtiger Chart-Typ',
-        s1ChartDesc: 'Die Wahl des falschen Chart-Typs kann Daten verzerren oder Aussagen unklar machen.',
-        s1ChartHeaders: ['Situation', 'Empfohlener Chart-Typ'],
-        s1ChartRows: [
-          ['Vergleich über Zeit', 'Linien- oder Balkendiagramm'],
-          ['Rangliste', 'Horizontales Balkendiagramm'],
-          ['Anteil/Komposition (≤ 4 Kategorien)', 'Gestapeltes Balken'],
-          ['Korrelation', 'Streudiagramm (Scatter Plot)'],
-          ['Geografisch', 'Choropleth / Karte'],
-          ['KPI-Einzelwert', 'Card / Scorecard'],
-        ],
-        s1TufteRef: 'Quellenverweis: Edward Tufte, "The Visual Display of Quantitative Information" (1983) \u2013 das Standardwerk zur datengetriebenen Visualisierung. Erg\u00E4nzend: Stephen Few, "Information Dashboard Design" (2006) \u2013 speziell f\u00FCr Dashboard-Gestaltung.',
-        s1GestaltTitle: 'Gestalt-Prinzipien im Dashboard-Design',
-        s1GestaltText: 'Die Gestalt-Prinzipien (N\u00E4he, \u00C4hnlichkeit, Geschlossenheit, Kontinuit\u00E4t) beeinflussen, wie Nutzer visuelle Gruppen wahrnehmen. KPIs, die zusammengeh\u00F6ren, sollten r\u00E4umlich nahe platziert werden (N\u00E4he); gleiche Chart-Typen signalisieren Vergleichbarkeit (\u00C4hnlichkeit).',
-        s1AccessTitle: 'Barrierefreiheit',
-        s1AccessText: 'Ca. 8\u00A0% der M\u00E4nner haben eine Rot-Gr\u00FCn-Schw\u00E4che. Verwenden Sie farbenblind-sichere Paletten (z.\u00A0B. Viridis, Cividis) und erg\u00E4nzen Sie Farben durch Muster oder Beschriftungen. WCAG 2.1 empfiehlt ein Kontrastverh\u00E4ltnis von mindestens 4,5:1.',
-        s1TipTitle: 'Wann KEIN Tortendiagramm?',
-        s1TipText: 'Bei mehr als 4 Kategorien oder wenn exakte Wertevergleiche wichtig sind. Das menschliche Auge vergleicht Winkel schlecht. Ein horizontales Balkendiagramm ist fast immer besser.',
-
-        s2Title: 'Plotly Express',
-        s2Desc: 'Plotly Express ist eine High-Level Python-Bibliothek für interaktive Charts. Mit wenigen Zeilen Code entstehen publikationsreife Visualisierungen, die im Browser als interaktive HTML-Grafiken dargestellt werden.',
-        dataTitle: 'Datensatz für alle Beispiele',
-        dataText: 'Alle Codebeispiele in diesem Lab arbeiten mit train.csv aus dem Superstore Sales Dataset (Kaggle, GPL 2): 9.800 Bestellpositionen, 2015\u20132018. Legen Sie die Datei in dasselbe Verzeichnis wie Ihr Skript. Achtung: Die Datumsspalten liegen als TT/MM/JJJJ vor \u2013 deshalb dayfirst=True beim Parsen. Eine Profit-Spalte gibt es in dieser Variante nicht; einzige Kennzahl ist Sales.',
-        starterTitle: 'Starterpaket herunterladen',
-        starterText: 'Statt die Bloecke einzeln zu kopieren: das Paket enthaelt charts.py, app.py, requirements.txt, Dockerfile und eine README mit Sollausgaben und typischen Fehlern. train.csv daneben legen, pip install -r requirements.txt, fertig.',
-        starterBtn: 'lab-04-dash.zip',
-        runNoteCsv: 'Voraussetzung: pip install plotly pandas, train.csv im selben Verzeichnis. Der Block \u00F6ffnet eine Figur im Browser \u2013 kommt keine, fehlt meist der Aufruf fig.show() in einer nicht-interaktiven Umgebung.',
-        runNoteApp: 'Voraussetzung: pip install dash plotly pandas, train.csv im selben Verzeichnis. Als app.py speichern und mit python app.py starten. Sollzustand: Konsole meldet Running on http://127.0.0.1:8050, die Seite zeigt vier KPI-Karten mit Gesamtumsatz 2.261.536,78 und 4.922 Bestellungen.',
-        selfCheckTitle: 'Selbstcheck (1 Minute)',
-        selfCheckItems: [
-          'Die Konsole meldet Running on http://127.0.0.1:8050.',
-          'Die Seite zeigt ein Kategorie-Dropdown und zwei Diagramme.',
-          'Beim Umschalten der Kategorie \u00E4ndern sich beide Diagramme \u2013 sonst ist der Callback nicht verdrahtet.',
-          'Technology, Furniture und Office Supplies stehen im Dropdown.',
-          'Typischer Fehler: Port 8050 belegt \u2013 dann app.run(debug=True, port=8051) verwenden.',
-          'Aufr\u00E4umen: Strg+C im Terminal beendet den Entwicklungsserver.',
-        ],
-        dataDirect: '\u2193 train.csv herunterladen',
-        dataKaggle: 'Quelle auf Kaggle \u2197',
-        s2Code1Title: 'Balkendiagramm: Umsatz nach Kategorie',
-        s2Code2Title: 'Liniendiagramm: Umsatz-Trend über Zeit',
-        s2Code3Title: 'Scatter Plot: Umsatz vs. Bestellvolumen',
-
-        s3Title: 'Plotly Dash',
-        s3Desc: 'Plotly Dash ist ein Python-Framework zum Erstellen vollständiger Web-Dashboards. Es verbindet ein Flask-Backend mit einem automatisch generierten React-Frontend. Das Layout ist deklarativ, die Reaktivität wird durch Callbacks gesteuert.',
-        s3ArchTitle: 'Architektur-Konzepte',
-        s3Concepts: [
-          { title: 'App', desc: 'Flask-Backend + React-Frontend (automatisch generiert). Dash übernimmt die gesamte Infrastruktur.' },
-          { title: 'Layout', desc: 'Deklarativ wie HTML, aber als Python-Objekte. html.Div(), dcc.Graph(), dcc.Dropdown() usw.' },
-          { title: 'Callbacks', desc: 'Reaktivität durch @app.callback: Input → Python-Funktion → Output. Ähnlich wie Event-Listener.' },
-        ],
-        s3AppTitle: 'Vollständige Dash-App (app.py)',
-        s3InstallTitle: 'Installation & Start',
-
-        s4Title: 'Power BI vs. Plotly Dash',
-        s4Desc: 'Beide Tools eignen sich für Business Intelligence – aber für unterschiedliche Anwendungsfälle und Nutzerprofile.',
-        s4Headers: ['Aspekt', 'Power BI', 'Plotly Dash'],
-        s4Rows: [
-          ['Lernkurve', 'Niedrig (GUI)', 'Mittel (Python)'],
-          ['Flexibilität', 'Mittel', 'Sehr hoch'],
-          ['Deployment', 'Power BI Service (Cloud)', 'Eigener Server / Cloud'],
-          ['Kosten', 'Desktop kostenlos; Service ab ~10\u20AC/User/Monat', 'Kostenlos (Open Source)'],
-          ['Datenhoheit', 'Beim Anbieter (wie bei allen SaaS-Tools)', 'Vollst\u00E4ndig selbst kontrolliert'],
-          ['Customization', 'Begrenzt', 'Unbegrenzt'],
-          ['KI-Integration', 'Built-in (Copilot)', 'Manuell (Python-Ökosystem)'],
-          ['Ideal für', 'Schnelle Business Reports', 'Entwickler, komplexe Apps'],
-        ],
-        s4RecommTitle: 'Empfehlung',
-        s4RecommText: 'F\u00FCr interne Business Reports ohne Programmieraufwand \u2192 Power BI. F\u00FCr \u00F6ffentliche Web-Dashboards, individuelle Anforderungen oder volle Datenkontrolle \u2192 Plotly Dash.',
-        s4VendorNote: 'Hinweis: Vendor Lock-in und Datensouver\u00E4nit\u00E4tsfragen betreffen alle Cloud-basierten BI-Tools \u2013 Tableau (Salesforce), Looker (Google), Qlik (Cloud) haben \u00E4hnliche Charakteristika. Die Wahl h\u00E4ngt von den spezifischen Anforderungen, dem Team und dem Compliance-Umfeld ab.',
-
-        s3DeployTitle: 'Produktiver Deployment-Stack',
-        s3DeployDesc: 'Lokale Entwicklung \u2192 Gunicorn (WSGI) \u2192 Docker Container \u2192 Traefik Reverse Proxy \u2192 HTTPS',
-        s3GunicornTitle: 'Gunicorn',
-        s3GunicornDesc: 'Production-WSGI-Server f\u00FCr Python/Dash (ersetzt den eingebauten Dev-Server).',
-        s3DockerTitle: 'Docker',
-        s3DockerDesc: 'Container-Image mit requirements.txt + app.py + Dockerfile.',
-        s3ReqDesc: 'Legen Sie zuerst die requirements.txt neben app.py an – das Dockerfile kopiert sie im nächsten Schritt und bricht ohne sie ab:',
-        s3TraefikTitle: 'Traefik',
-        s3TraefikDesc: 'Automatisches HTTPS + Routing \u2013 kein manuelles nginx n\u00F6tig. Genau dieser Stack l\u00E4uft auf den Live-Dashboards der Kurs-Seite.',
-        s3ColabNote: 'Google Colab: Den Code oben kannst du in ein leeres Colab-Notebook einf\u00FCgen und dort ausf\u00FChren \u2013 ohne lokale Installation, kostenlos im Browser. Lade train.csv vorher \u00FCber das Dateisymbol links in die Sitzung hoch, sonst findet pandas die Datei nicht. Dash-Apps laufen in Colab nur eingeschr\u00E4nkt; f\u00FCr Schritt\u00A04 ist eine lokale Umgebung der einfachere Weg.',
-
-        s5Title: 'YouTube-Ressourcen',
-        s5Desc: 'Empfohlene Kan\u00E4le zur Vertiefung von Plotly und Dash:',
-        s5Resources: [
-          {
-            title: '"Charming Data" – Plotly Dash Tutorials',
-            url: 'https://www.youtube.com/@CharmingData',
-            desc: 'Der beste YouTube-Kanal für Plotly Dash. Praxisnahe Tutorials für alle Erfahrungsstufen.',
-          },
-          {
-            title: '"Plotly Express Full Tutorial" – Rob Mulla',
-            url: 'https://www.youtube.com/@RobMulla',
-            desc: 'Umfangreiche Tutorials zu Plotly Express und Python Data Visualization.',
-          },
-          {
-            title: 'Streamlit',
-            url: 'https://www.youtube.com/@Streamlit',
-            desc: 'Offizieller Streamlit-Kanal. Tutorials, neue Features und Community-Showcases.',
-          },
-        ],
-
-        // Streamlit note
-        s4StreamlitTitle: 'Alternative: Streamlit',
-        s4StreamlitText: 'Streamlit (seit 2019, von Snowflake \u00FCbernommen 2022) ist eine beliebte Dash-Alternative mit noch einfacherer Syntax. Ideal f\u00FCr schnelle Prototypen und ML-Demos. Dash bleibt leistungsst\u00E4rker f\u00FCr komplexe Multi-Page-Apps und Enterprise-Deployments.',
-        // Quiz
-        quizTitle: 'Quiz',
-        quizQuestions: [
-          {
-            q: 'Was beschreibt das Data-Ink-Ratio-Prinzip (Tufte)?',
-            options: ['M\u00F6glichst viele Farben verwenden', 'Nur n\u00F6tige visuelle Elemente \u2013 jede Tinte muss Daten repr\u00E4sentieren', 'Alle Achsen entfernen', 'Immer 3D-Charts verwenden'],
-            correct: 1,
-            explanation: 'Edward Tufte definiert Data-Ink-Ratio als Verh\u00E4ltnis von datentragender zu gesamter \u201ETinte". Ziel ist ein m\u00F6glichst hoher Wert: Gitternetze, 3D-Effekte, Schatten und Rahmen weg, damit die Daten selbst dominieren. Nicht gemeint ist, alle Achsen zu entfernen \u2013 Achsen tragen Information.',
-          },
-          {
-            q: 'Warum sind Tortendiagramme bei > 4 Kategorien problematisch?',
-            options: ['Sie laden langsamer', 'Das menschliche Auge vergleicht Winkel schlecht', 'Plotly unterst\u00FCtzt sie nicht', 'Sie ben\u00F6tigen zu viel Speicher'],
-            correct: 1,
-            explanation: 'Menschen vergleichen L\u00E4ngen deutlich zuverl\u00E4ssiger als Winkel und Fl\u00E4chen (Cleveland/McGill). Ab etwa f\u00FCnf Segmenten lassen sich \u00E4hnlich gro\u00DFe Anteile kaum noch unterscheiden \u2013 ein sortiertes Balkendiagramm ist fast immer die bessere Wahl.',
-          },
-          {
-            q: 'Was ist ein Callback in Plotly Dash?',
-            options: ['Ein CSS-Selektor', 'Eine Datenbankabfrage', 'Eine reaktive Funktion: Input \u2192 Python \u2192 Output', 'Ein Plotly-Chart-Typ'],
-            correct: 2,
-            explanation: 'Ein Callback ist eine mit @app.callback dekorierte Python-Funktion: \u00C4ndert sich ein Input (z. B. ein Dropdown-Wert), f\u00FChrt Dash die Funktion serverseitig aus und schreibt den R\u00FCckgabewert in den Output (z. B. eine Figure). Genau das macht ein Dash-Dashboard interaktiv.',
-          },
-          {
-            q: 'Welches Gestalt-Prinzip empfiehlt, zusammengeh\u00F6rige KPIs r\u00E4umlich nah zu platzieren?',
-            options: ['Kontinuit\u00E4t', 'N\u00E4he (Proximity)', '\u00C4hnlichkeit', 'Geschlossenheit'],
-            correct: 1,
-            explanation: 'Das Prinzip der N\u00E4he (Proximity): Elemente, die r\u00E4umlich nah beieinanderstehen, werden automatisch als zusammengeh\u00F6rig wahrgenommen \u2013 st\u00E4rker noch als durch Rahmen oder Farbe. Deshalb gruppiert man verwandte KPIs eng und trennt Gruppen durch Wei\u00DFraum.',
-          },
-          {
-            q: 'Welcher Production-Server ersetzt den Dash-Dev-Server?',
-            options: ['nginx', 'Apache', 'Gunicorn', 'Traefik'],
-            correct: 2,
-            explanation: 'Gunicorn ist ein WSGI-Server f\u00FCr den Produktivbetrieb. Der eingebaute Dash-/Flask-Dev-Server ist ausdr\u00FCcklich nicht f\u00FCr Produktion gedacht (single-threaded, keine Lastverteilung, debug=True erlaubt Codeausf\u00FChrung). Deshalb existiert in app.py die Zeile server = app.server \u2013 genau dieses Objekt bedient gunicorn app:server.',
-          },
-          {
-            q: 'Ca. wie viel Prozent der M\u00E4nner haben eine Rot-Gr\u00FCn-Schw\u00E4che?',
-            options: ['1 %', '4 %', '8 %', '15 %'],
-            correct: 2,
-            explanation: 'Rund 8 % der M\u00E4nner (etwa jeder Zw\u00F6lfte) und ca. 0,5 % der Frauen haben eine Rot-Gr\u00FCn-Sehschw\u00E4che. Deshalb darf Farbe nie der einzige Bedeutungstr\u00E4ger sein: Rot/Gr\u00FCn-Ampeln zus\u00E4tzlich durch Form, Symbol oder Beschriftung erg\u00E4nzen.',
-          },
-        ],
-        // Zusammenfassung
-        summaryTitle: 'Zusammenfassung',
-        summaryItems: [
-          'Gute Dashboards folgen dem Data-Ink-Ratio (Tufte) und der 5-Sekunden-Regel.',
-          'Gestalt-Prinzipien (N\u00E4he, \u00C4hnlichkeit) strukturieren die visuelle Wahrnehmung.',
-          'Barrierefreiheit erfordert farbenblind-sichere Paletten und ausreichende Kontraste (WCAG 2.1).',
-          'Plotly Express erm\u00F6glicht interaktive Charts mit wenigen Zeilen Python.',
-          'Plotly Dash verbindet ein Flask-Backend mit einem React-Frontend \u00FCber deklarative Callbacks.',
-          'Power BI eignet sich f\u00FCr schnelle Reports; Dash f\u00FCr flexible, selbst gehostete Web-Apps.',
-          'Production-Deployment: Gunicorn \u2192 Docker \u2192 Traefik (HTTPS).',
-        ],
-
-        navPrev: '\u2190 Lab 03: KPIs',
-        navNext: 'Lab 05: Fallstudie \u2192',
-      },
-
-      en: {
-        title: 'Dashboard Design & Plotly Dash',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
-        desc: 'In this lab you will learn how to design professional dashboards following proven design principles, create interactive charts with Plotly Express, and build complete web dashboards with Plotly Dash.',
-        lernziele: [
-          'Apply dashboard design principles',
-          'Create Plotly Express charts',
-          'Build a Plotly Dash app with layout and callbacks',
-          'Compare Power BI vs. Plotly Dash architecturally',
-        ],
-        navContents: 'Contents',
-        nav: [
-          { href: '#design-prinzipien', label: 'Design Principles' },
-          { href: '#plotly-express',    label: 'Plotly Express' },
-          { href: '#plotly-dash',       label: 'Plotly Dash' },
-          { href: '#vergleich',         label: 'Power BI vs. Dash' },
-          { href: '#youtube',           label: 'Resources' },
-          { href: '#quiz',             label: 'Quiz' },
-          { href: '#zusammenfassung',  label: 'Summary' },
-        ],
-        backLabel: '\u2190 Overview',
-
-        s1Title: 'Dashboard Design',
-        s1Desc: 'A good dashboard communicates insights quickly and clearly. These principles help avoid visual overload and keep focus on what matters.',
-        s1Principles: [
-          {
-            title: 'Data-Ink Ratio (Tufte)',
-            desc: 'Use only necessary visual elements. Every drop of ink must represent data – no decoration, no ornaments.',
-          },
-          {
-            title: '5-Second Rule',
-            desc: 'The key message of the dashboard must be recognizable within 5 seconds. If users need to search, the design has failed.',
-          },
-          {
-            title: 'Visual Hierarchy',
-            desc: 'Most important content top-left, details bottom-right. Users read dashboards like text – in Z-patterns.',
-          },
-          {
-            title: 'Use Color Sparingly',
-            desc: 'Max. 3–4 colors, with semantic meaning (red = bad, green = good). Color for emphasis, not decoration.',
-          },
-        ],
-        s1ChartTitle: 'Choosing the Right Chart Type',
-        s1ChartDesc: 'Choosing the wrong chart type can distort data or make insights unclear.',
-        s1ChartHeaders: ['Situation', 'Recommended Chart Type'],
-        s1ChartRows: [
-          ['Comparison over time', 'Line or bar chart'],
-          ['Ranking', 'Horizontal bar chart'],
-          ['Part-to-whole (≤ 4 categories)', 'Stacked bar'],
-          ['Correlation', 'Scatter plot'],
-          ['Geographic distribution', 'Choropleth / Map'],
-          ['Single KPI value', 'Card / Scorecard'],
-        ],
-        s1TufteRef: 'Source reference: Edward Tufte, "The Visual Display of Quantitative Information" (1983) \u2013 the seminal work on data-driven visualisation. Supplementary: Stephen Few, "Information Dashboard Design" (2006) \u2013 specifically for dashboard design.',
-        s1GestaltTitle: 'Gestalt Principles in Dashboard Design',
-        s1GestaltText: 'The Gestalt principles (proximity, similarity, closure, continuity) influence how users perceive visual groups. KPIs that belong together should be placed close to each other (proximity); similar chart types signal comparability (similarity).',
-        s1AccessTitle: 'Accessibility',
-        s1AccessText: 'Approx. 8% of men have a red-green colour deficiency. Use colourblind-safe palettes (e.g. Viridis, Cividis) and supplement colour with patterns or labels. WCAG 2.1 recommends a minimum contrast ratio of 4.5:1.',
-        s1TipTitle: 'When NOT to use a pie chart?',
-        s1TipText: 'When more than 4 categories exist or when exact value comparisons matter. The human eye is poor at comparing angles. A horizontal bar chart is almost always better.',
-
-        s2Title: 'Plotly Express',
-        s2Desc: 'Plotly Express is a high-level Python library for interactive charts. With just a few lines of code you can create publication-ready visualizations displayed as interactive HTML graphics in the browser.',
-        dataTitle: 'Dataset for all examples',
-        dataText: 'Every code example in this lab uses train.csv from the Superstore Sales Dataset (Kaggle, GPL 2): 9,800 order line items, 2015\u20132018. Place the file in the same directory as your script. Note: the date columns are DD/MM/YYYY, hence dayfirst=True when parsing. This variant has no Profit column; Sales is the only measure.',
-        starterTitle: 'Download the starter package',
-        starterText: 'Instead of copying the blocks one by one: the package contains charts.py, app.py, requirements.txt, Dockerfile and a README with expected output and common errors. Put train.csv next to it, pip install -r requirements.txt, done.',
-        starterBtn: 'lab-04-dash.zip',
-        runNoteCsv: 'Prerequisites: pip install plotly pandas, train.csv in the same directory. The block opens a figure in the browser \u2013 if none appears, fig.show() is usually missing in a non-interactive environment.',
-        runNoteApp: 'Prerequisites: pip install dash plotly pandas, train.csv in the same directory. Save as app.py and run python app.py. Expected state: the console reports Running on http://127.0.0.1:8050 and the page shows four KPI cards with total revenue 2,261,536.78 and 4,922 orders.',
-        selfCheckTitle: 'Self-check (1 minute)',
-        selfCheckItems: [
-          'The console reports Running on http://127.0.0.1:8050.',
-          'The page shows a category dropdown and two charts.',
-          'Switching category updates both charts \u2013 otherwise the callback is not wired up.',
-          'Technology, Furniture and Office Supplies appear in the dropdown.',
-          'Common error: port 8050 in use \u2013 then use app.run(debug=True, port=8051).',
-          'Cleanup: Ctrl+C in the terminal stops the development server.',
-        ],
-        dataDirect: '\u2193 Download train.csv',
-        dataKaggle: 'Source on Kaggle \u2197',
-        s2Code1Title: 'Bar Chart: Revenue by Category',
-        s2Code2Title: 'Line Chart: Revenue Trend over Time',
-        s2Code3Title: 'Scatter Plot: Revenue vs. Order Volume',
-
-        s3Title: 'Plotly Dash',
-        s3Desc: 'Plotly Dash is a Python framework for building complete web dashboards. It connects a Flask backend with an automatically generated React frontend. The layout is declarative and reactivity is controlled through callbacks.',
-        s3ArchTitle: 'Architecture Concepts',
-        s3Concepts: [
-          { title: 'App', desc: 'Flask backend + React frontend (automatically generated). Dash handles the entire infrastructure.' },
-          { title: 'Layout', desc: 'Declarative like HTML, but as Python objects. html.Div(), dcc.Graph(), dcc.Dropdown() etc.' },
-          { title: 'Callbacks', desc: 'Reactivity via @app.callback: Input → Python function → Output. Similar to event listeners.' },
-        ],
-        s3AppTitle: 'Complete Dash App (app.py)',
-        s3InstallTitle: 'Installation & Start',
-
-        s4Title: 'Power BI vs. Plotly Dash',
-        s4Desc: 'Both tools are suitable for Business Intelligence – but for different use cases and user profiles.',
-        s4Headers: ['Aspect', 'Power BI', 'Plotly Dash'],
-        s4Rows: [
-          ['Learning Curve', 'Low (GUI)', 'Medium (Python)'],
-          ['Flexibility', 'Medium', 'Very high'],
-          ['Deployment', 'Power BI Service (Cloud)', 'Own server / cloud'],
-          ['Cost', 'Desktop free; Service from ~\u20AC10/user/month', 'Free (Open Source)'],
-          ['Data Sovereignty', 'With provider (like all SaaS tools)', 'Fully self-controlled'],
-          ['Customization', 'Limited', 'Unlimited'],
-          ['AI Integration', 'Built-in (Copilot)', 'Manual (Python ecosystem)'],
-          ['Ideal for', 'Quick business reports', 'Developers, complex apps'],
-        ],
-        s4RecommTitle: 'Recommendation',
-        s4RecommText: 'For internal business reports without programming effort \u2192 Power BI. For public web dashboards, custom requirements or full data control \u2192 Plotly Dash.',
-        s4VendorNote: 'Note: Vendor lock-in and data sovereignty concerns affect all cloud-based BI tools \u2013 Tableau (Salesforce), Looker (Google), Qlik (Cloud) have similar characteristics. The choice depends on specific requirements, the team, and the compliance environment.',
-
-        s3DeployTitle: 'Production Deployment Stack',
-        s3DeployDesc: 'Local Dev \u2192 Gunicorn (WSGI) \u2192 Docker Container \u2192 Traefik Reverse Proxy \u2192 HTTPS',
-        s3GunicornTitle: 'Gunicorn',
-        s3GunicornDesc: 'Production WSGI server for Python/Dash (replaces the built-in dev server).',
-        s3DockerTitle: 'Docker',
-        s3DockerDesc: 'Container image with requirements.txt + app.py + Dockerfile.',
-        s3ReqDesc: 'Create requirements.txt next to app.py first – the Dockerfile copies it in the next step and fails without it:',
-        s3TraefikTitle: 'Traefik',
-        s3TraefikDesc: 'Automatic HTTPS + routing \u2013 no manual nginx required. This exact stack powers the live dashboards on the course page.',
-        s3ColabNote: 'Google Colab: paste the code above into an empty Colab notebook and run it there \u2013 no local installation, free in the browser. Upload train.csv to the session via the file icon on the left first, otherwise pandas will not find it. Dash apps only run with limitations in Colab; for step\u00A04 a local environment is the simpler route.',
-
-        s5Title: 'YouTube Resources',
-        s5Desc: 'Recommended channels for deepening your knowledge of Plotly and Dash:',
-        s5Resources: [
-          {
-            title: '"Charming Data" – Plotly Dash Tutorials',
-            url: 'https://www.youtube.com/@CharmingData',
-            desc: 'The best YouTube channel for Plotly Dash. Practical tutorials for all experience levels.',
-          },
-          {
-            title: '"Plotly Express Full Tutorial" – Rob Mulla',
-            url: 'https://www.youtube.com/@RobMulla',
-            desc: 'Extensive tutorials on Plotly Express and Python data visualization.',
-          },
-          {
-            title: 'Streamlit',
-            url: 'https://www.youtube.com/@Streamlit',
-            desc: 'Official Streamlit channel. Tutorials, new features and community showcases.',
-          },
-        ],
-
-        // Streamlit note
-        s4StreamlitTitle: 'Alternative: Streamlit',
-        s4StreamlitText: 'Streamlit (since 2019, acquired by Snowflake in 2022) is a popular Dash alternative with even simpler syntax. Ideal for rapid prototypes and ML demos. Dash remains more powerful for complex multi-page apps and enterprise deployments.',
-        // Quiz
-        quizTitle: 'Quiz',
-        quizQuestions: [
-          {
-            q: 'What does Tufte\'s Data-Ink Ratio principle describe?',
-            options: ['Use as many colours as possible', 'Only necessary visual elements \u2013 every drop of ink must represent data', 'Remove all axes', 'Always use 3D charts'],
-            correct: 1,
-            explanation: 'Edward Tufte defines the data-ink ratio as data-carrying ink divided by total ink. The goal is to maximise it: drop gridlines, 3D effects, shadows and frames so the data itself dominates. It does not mean removing all axes - axes carry information.',
-          },
-          {
-            q: 'Why are pie charts problematic with > 4 categories?',
-            options: ['They load more slowly', 'The human eye is poor at comparing angles', 'Plotly doesn\'t support them', 'They require too much memory'],
-            correct: 1,
-            explanation: 'People compare lengths far more reliably than angles and areas (Cleveland/McGill). From about five slices onward, similarly sized shares become nearly indistinguishable - a sorted bar chart is almost always the better choice.',
-          },
-          {
-            q: 'What is a Callback in Plotly Dash?',
-            options: ['A CSS selector', 'A database query', 'A reactive function: Input \u2192 Python \u2192 Output', 'A Plotly chart type'],
-            correct: 2,
-            explanation: 'A callback is a Python function decorated with @app.callback: when an input changes (e.g. a dropdown value), Dash runs the function server-side and writes the return value into the output (e.g. a figure). This is exactly what makes a Dash dashboard interactive.',
-          },
-          {
-            q: 'Which Gestalt principle recommends placing related KPIs close together?',
-            options: ['Continuity', 'Proximity', 'Similarity', 'Closure'],
-            correct: 1,
-            explanation: 'Proximity: elements placed near each other are automatically perceived as belonging together - more strongly than grouping by frame or colour. Hence related KPIs are grouped tightly and separated from other groups by whitespace.',
-          },
-          {
-            q: 'Which production server replaces the Dash dev server?',
-            options: ['nginx', 'Apache', 'Gunicorn', 'Traefik'],
-            correct: 2,
-            explanation: 'Gunicorn is a WSGI server for production use. The built-in Dash/Flask dev server is explicitly not production-grade (single-threaded, no load distribution, debug=True allows code execution). That is why app.py contains server = app.server - that object is what gunicorn app:server serves.',
-          },
-          {
-            q: 'Approximately what percentage of men have a red-green colour deficiency?',
-            options: ['1%', '4%', '8%', '15%'],
-            correct: 2,
-            explanation: 'Around 8% of men (roughly one in twelve) and about 0.5% of women have a red-green colour vision deficiency. Colour must therefore never be the only carrier of meaning: supplement red/green status with shape, icon or label.',
-          },
-        ],
-        // Summary
-        summaryTitle: 'Summary',
-        summaryItems: [
-          'Good dashboards follow the Data-Ink Ratio (Tufte) and the 5-second rule.',
-          'Gestalt principles (proximity, similarity) structure visual perception.',
-          'Accessibility requires colourblind-safe palettes and sufficient contrast (WCAG 2.1).',
-          'Plotly Express enables interactive charts with just a few lines of Python.',
-          'Plotly Dash connects a Flask backend with a React frontend via declarative callbacks.',
-          'Power BI suits quick reports; Dash suits flexible, self-hosted web apps.',
-          'Production deployment: Gunicorn \u2192 Docker \u2192 Traefik (HTTPS).',
-        ],
-
-        navPrev: '\u2190 Lab 03: KPIs',
-        navNext: 'Lab 05: Case Study \u2192',
-      },
-    };
-
-    // ─── App Component ────────────────────────────────────────────────────────
-    function App() {
-
-      const [lang, setLang] = useState(BINTLab.getLanguage);
-      const [activeSection, setActiveSection] = useState('design-prinzipien');
-
-      const setLangAndStore = (l) => {
-        setLang(l);
-        BINTLab.setLanguage(l);
-      };
-
-      useEffect(() => {
-        const sections = ['design-prinzipien', 'plotly-express', 'plotly-dash', 'vergleich', 'youtube', 'quiz', 'zusammenfassung'];
-        const handler = () => {
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const el = document.getElementById(sections[i]);
-            if (el && el.getBoundingClientRect().top <= 100) {
-              setActiveSection(sections[i]);
-              return;
-            }
-          }
-          setActiveSection('design-prinzipien');
-        };
-        window.addEventListener('scroll', handler, { passive: true });
-        return () => window.removeEventListener('scroll', handler);
-      }, []);
-
-      const tx = translations[lang];
-
-      // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
-      React.useEffect(() => {
-        document.title = 'Lab 04 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
-        document.documentElement.lang = lang;
-        BINTLab.setLanguage(lang);
-      }, [lang, tx.title]);
-
-      return (
-        <div data-lang={lang}>
-
-          {/* Fixed Header */}
-          {/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */}
-          <a className="skip-link" href="#main">
-            {lang === 'en' ? 'Skip to content' : 'Zum Inhalt springen'}
-          </a>
-          <header className="header">
-            <div className="header-left">
-              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
-              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
-            </div>
-            <div style={{ display: 'flex', gap: '0.35rem' }}>
-              <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
-              <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => setLangAndStore('en')} aria-pressed={lang === 'en'} aria-label="English">{'EN'}</button>
-            </div>
-          </header>
-
-          {/* Sidebar */}
-          <nav className="sidebar">
-            <div className="sidebar-title">{tx.navContents}</div>
-            {tx.nav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={'sidebar-link' + (activeSection === item.href.slice(1) ? ' active' : '')}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Lab Header */}
-          <div className="lab-header">
-            <div className="lab-num">{'04'}</div>
-            <h1 className="lab-title-h1">{tx.title}</h1>
-            <p className="lab-desc-intro">{tx.desc}</p>
-            <div className="lernziele-chips">
-              {tx.lernziele.map((lz, i) => (
-                <span key={i} className="lernziel-chip">{lz}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <main className="main-content" id="main">
-
-            {/* ── Section 1: Dashboard-Design ── */}
-            <section id="design-prinzipien" className="section-block">
-              <h2>{tx.s1Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s1Desc}</p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem', margin: '1.5rem 0' }}>
-                {tx.s1Principles.map((p, i) => (
-                  <div key={i} className="bauhaus-card">
-                    <div style={{
-                      display: 'inline-block', background: 'var(--col-primary)', color: 'white',
-                      fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
-                      fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
-                      padding: '0.2rem 0.6rem', borderRadius: '3px', marginBottom: '0.75rem'
-                    }}>
-                      {'0' + (i + 1)}
-                    </div>
-                    <h4 style={{ color: 'var(--col-primary)', marginTop: 0 }}>{p.title}</h4>
-                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{p.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s1ChartTitle}</h3>
-              <p style={{ color: '#4B5563' }}>{tx.s1ChartDesc}</p>
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>
-                    {tx.s1ChartHeaders.map((h, i) => <th key={i}>{h}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tx.s1ChartRows.map((row, i) => (
-                    <tr key={i}>
-                      <td style={{ fontWeight: 600, color: '#374151' }}>{row[0]}</td>
-                      <td>{row[1]}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-
-              <div className="tip-box" style={{ marginTop: '1.5rem' }}>
-                <strong style={{ color: 'var(--col-primary)' }}>{tx.s1TipTitle}</strong>
-                <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: '#1e40af' }}>{tx.s1TipText}</p>
-              </div>
-
-              {/* Gestalt Principles */}
-              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s1GestaltTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s1GestaltText}</p>
-              </div>
-
-              {/* Accessibility */}
-              <div className="info-box" style={{ marginTop: '1rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s1AccessTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s1AccessText}</p>
-              </div>
-
-              {/* Tufte / Few reference */}
-              <div className="tip-box" style={{ marginTop: '1rem' }}>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>{tx.s1TufteRef}</p>
-              </div>
-            </section>
-
-            {/* ── Section 2: Plotly Express ── */}
-            <section id="plotly-express" className="section-block">
-              <h2>{tx.s2Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s2Desc}</p>
-
-              {/* Datensatz-Beschaffung – ohne die Datei laeuft kein Codeblock hier */}
-              <div className="info-box" style={{ marginTop: '1.25rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.dataTitle}</h4>
-                <p style={{ margin: '0 0 0.75rem' }}>{tx.dataText}</p>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <a href="starter/lab-04-dash.zip" download
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)',
-                              textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px',
-                              fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.starterBtn}
-                  </a>
-                  <a href="data/train.csv" download
-                     style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none',
-                              padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataDirect}
-                  </a>
-                  <a href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting"
-                     target="_blank" rel="noopener noreferrer"
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)',
-                              textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px',
-                              fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataKaggle}
-                  </a>
-                </div>
-              </div>
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s2Code1Title}</h3>
-              <CodeBlock code={CODE_PX_BAR[lang]} lang={lang} kind="run" note={tx.runNoteCsv} />
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s2Code2Title}</h3>
-              <CodeBlock code={CODE_PX_LINE[lang]} lang={lang} kind="run" note={tx.runNoteCsv} />
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s2Code3Title}</h3>
-              <CodeBlock code={CODE_PX_SCATTER[lang]} lang={lang} kind="run" note={tx.runNoteCsv} />
-            </section>
-
-            {/* ── Section 3: Plotly Dash ── */}
-            <section id="plotly-dash" className="section-block">
-              <h2>{tx.s3Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s3Desc}</p>
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s3ArchTitle}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', margin: '1rem 0 2rem' }}>
-                {tx.s3Concepts.map((c, i) => (
-                  <div key={i} className="info-box" style={{ margin: 0 }}>
-                    <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{c.title}</h4>
-                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{c.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s3AppTitle}</h3>
-              <CodeBlock code={CODE_DASH_APP[lang]} lang={lang} kind="run" note={tx.runNoteApp} />
-              <div className="challenge-box">
-                <h4 style={{ marginTop: 0 }}>{tx.selfCheckTitle}</h4>
-                <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
-                  {tx.selfCheckItems.map((item, i) => <li key={i}>{item}</li>)}
-                </ul>
-              </div>
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s3InstallTitle}</h3>
-              <div className="install-box">
-                <p style={{ margin: '0 0 0.5rem', fontWeight: 700, color: '#065F46', fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {'Terminal'}
-                </p>
-                <CodeBlock code={CODE_INSTALL[lang]} lang={lang} kind="run" />
-              </div>
-
-              {/* Google Colab note */}
-              <div className="info-box" style={{ marginTop: '1rem' }}>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>{tx.s3ColabNote}</p>
-              </div>
-
-              <h3 style={{ marginTop: '2.5rem' }}>{tx.s3DeployTitle}</h3>
-              <div className="concept-box">
-                <p style={{ margin: '0 0 0.5rem', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, color: 'var(--col-primary)', fontSize: '0.9rem' }}>{tx.s3DeployDesc}</p>
-              </div>
-
-              <h4 style={{ marginTop: '1.5rem', color: 'var(--col-primary)' }}>{tx.s3GunicornTitle}</h4>
-              <p style={{ margin: '0.25rem 0 0.5rem', fontSize: '0.9rem', color: '#374151' }}>{tx.s3GunicornDesc}</p>
-              <CodeBlock code={CODE_GUNICORN[lang]} lang={lang} kind="run" />
-
-              <h4 style={{ marginTop: '1.5rem', color: 'var(--col-primary)' }}>{tx.s3DockerTitle}</h4>
-              <p style={{ margin: '0.25rem 0 0.5rem', fontSize: '0.9rem', color: '#374151' }}>{tx.s3DockerDesc}</p>
-              <p style={{ margin: '0.25rem 0 0.5rem', fontSize: '0.9rem', color: '#374151' }}>{tx.s3ReqDesc}</p>
-              <CodeBlock code={CODE_REQUIREMENTS[lang]} lang={lang} kind="run" />
-              <CodeBlock code={CODE_DOCKERFILE} lang={lang} kind="run" />
-
-              <div className="tip-box" style={{ marginTop: '1rem' }}>
-                <strong style={{ color: 'var(--col-primary)' }}>{tx.s3TraefikTitle}:</strong>{' '}
-                <span style={{ fontSize: '0.9rem', color: '#1e40af' }}>{tx.s3TraefikDesc}</span>
-              </div>
-            </section>
-
-            {/* ── Section 4: Vergleich ── */}
-            <section id="vergleich" className="section-block">
-              <h2>{tx.s4Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s4Desc}</p>
-
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>
-                    {tx.s4Headers.map((h, i) => <th key={i}>{h}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tx.s4Rows.map((row, i) => (
-                    <tr key={i}>
-                      <td style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: 'var(--col-primary)' }}>{row[0]}</td>
-                      <td>{row[1]}</td>
-                      <td>{row[2]}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-
-              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s4RecommTitle}</h4>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>{tx.s4RecommText}</p>
-              </div>
-              <div className="tip-box" style={{ marginTop: '1rem' }}>
-                <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151' }}><em>{tx.s4VendorNote}</em></p>
-              </div>
-
-              {/* Streamlit alternative */}
-              <div className="info-box" style={{ marginTop: '1rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s4StreamlitTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s4StreamlitText}</p>
-              </div>
-            </section>
-
-            {/* ── Section 5: YouTube-Ressourcen ── */}
-            <section id="youtube" className="section-block">
-              <h2>{tx.s5Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s5Desc}</p>
-
-              <div className="youtube-box">
-                <h3>{'YouTube'}</h3>
-
-                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#78350F' }}>
-
-                  {tx.ytNote}
-
-                </p>
-                {tx.s5Resources.map((res, i) => (
-                  <div key={i} style={{
-                    marginBottom: i < tx.s5Resources.length - 1 ? '1.25rem' : 0,
-                    paddingBottom: i < tx.s5Resources.length - 1 ? '1.25rem' : 0,
-                    borderBottom: i < tx.s5Resources.length - 1 ? '1px solid #FED7AA' : 'none'
-                  }}>
-                    <a href={res.url} target="_blank" rel="noopener noreferrer" className="youtube-link">{res.title}</a>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#78350F' }}>{res.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ── Section 6: Quiz ── */}
-            <section id="quiz" className="section-block">
-              <h2>{tx.quizTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              {tx.quizQuestions.map((qq, qi) => (
-                <QuizQuestion key={qi} question={qq} index={qi} lang={lang} />
-              ))}
-            </section>
-
-            {/* ── Section 7: Zusammenfassung ── */}
-            <section id="zusammenfassung" className="section-block">
-              <h2>{tx.summaryTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <div className="concept-box">
-                <ol style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                  {tx.summaryItems.map((item, i) => (
-                    <li key={i} style={{ fontSize: '0.9rem', lineHeight: 1.7, color: '#1A1A1A', marginBottom: '0.35rem' }}>{item}</li>
-                  ))}
-                </ol>
-              </div>
-            </section>
-
-            {/* ── Nav Bottom ── */}
-            <div className="nav-bottom">
-              <a href={'lab-03-kpis.html' + ('?lang=' + lang)} className="nav-btn">
-                {tx.navPrev}
-              </a>
-              <a href={'lab-05-fallstudie.html' + ('?lang=' + lang)} className="nav-btn primary">
-                {tx.navNext}
-              </a>
-            </div>
-
-          </main>
-
-          {/* Footer */}
-          <footer className="footer">
-            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
-          </footer>
-
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050", "--workers", "2"]</pre>
+    </div>
+
+    <div class="tip-box">
+      <h4>Traefik</h4>
+      <p>
+        <span lang="de">Automatisches HTTPS + Routing – kein manuelles nginx nötig. Genau dieser Stack läuft auf den Live-Dashboards der Kurs-Seite.</span>
+        <span lang="en">Automatic HTTPS + routing – no manual nginx required. This exact stack powers the live dashboards on the course page.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="section-block" id="vergleich">
+    <h2>Power BI vs. Plotly Dash</h2>
+    <div class="accent-line"></div>
+    <p>
+      <span lang="de">Beide Tools eignen sich für Business Intelligence – aber für unterschiedliche Anwendungsfälle und Nutzerprofile.</span>
+      <span lang="en">Both tools are suitable for Business Intelligence – but for different use cases and user profiles.</span>
+    </p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th><span lang="de">Aspekt</span><span lang="en">Aspect</span></th>
+            <th>Power BI</th>
+            <th>Plotly Dash</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="kopf"><span lang="de">Lernkurve</span><span lang="en">Learning Curve</span></td>
+            <td><span lang="de">Niedrig (GUI)</span><span lang="en">Low (GUI)</span></td>
+            <td><span lang="de">Mittel (Python)</span><span lang="en">Medium (Python)</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Flexibilität</span><span lang="en">Flexibility</span></td>
+            <td><span lang="de">Mittel</span><span lang="en">Medium</span></td>
+            <td><span lang="de">Sehr hoch</span><span lang="en">Very high</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Deployment</td>
+            <td>Power BI Service (Cloud)</td>
+            <td><span lang="de">Eigener Server / Cloud</span><span lang="en">Own server / cloud</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Kosten</span><span lang="en">Cost</span></td>
+            <td><span lang="de">Desktop kostenlos; Service ab ~10€/User/Monat</span><span lang="en">Desktop free; Service from ~€10/user/month</span></td>
+            <td><span lang="de">Kostenlos (Open Source)</span><span lang="en">Free (Open Source)</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Datenhoheit</span><span lang="en">Data Sovereignty</span></td>
+            <td><span lang="de">Beim Anbieter (wie bei allen SaaS-Tools)</span><span lang="en">With provider (like all SaaS tools)</span></td>
+            <td><span lang="de">Vollständig selbst kontrolliert</span><span lang="en">Fully self-controlled</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Customization</td>
+            <td><span lang="de">Begrenzt</span><span lang="en">Limited</span></td>
+            <td><span lang="de">Unbegrenzt</span><span lang="en">Unlimited</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">KI-Integration</span><span lang="en">AI Integration</span></td>
+            <td>Built-in (Copilot)</td>
+            <td><span lang="de">Manuell (Python-Ökosystem)</span><span lang="en">Manual (Python ecosystem)</span></td>
+          </tr>
+          <tr>
+            <td class="kopf"><span lang="de">Ideal für</span><span lang="en">Ideal for</span></td>
+            <td><span lang="de">Schnelle Business Reports</span><span lang="en">Quick business reports</span></td>
+            <td><span lang="de">Entwickler, komplexe Apps</span><span lang="en">Developers, complex apps</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept-box">
+      <h3><span lang="de">Empfehlung</span><span lang="en">Recommendation</span></h3>
+      <p>
+        <span lang="de">Für interne Business Reports ohne Programmieraufwand → Power BI. Für öffentliche Web-Dashboards, individuelle Anforderungen oder volle Datenkontrolle → Plotly Dash.</span>
+        <span lang="en">For internal business reports without programming effort → Power BI. For public web dashboards, custom requirements or full data control → Plotly Dash.</span>
+      </p>
+    </div>
+
+    <div class="tip-box">
+      <p><em>
+        <span lang="de">Hinweis: Vendor Lock-in und Datensouveränitätsfragen betreffen alle Cloud-basierten BI-Tools – Tableau (Salesforce), Looker (Google), Qlik (Cloud) haben ähnliche Charakteristika. Die Wahl hängt von den spezifischen Anforderungen, dem Team und dem Compliance-Umfeld ab.</span>
+        <span lang="en">Note: Vendor lock-in and data sovereignty concerns affect all cloud-based BI tools – Tableau (Salesforce), Looker (Google), Qlik (Cloud) have similar characteristics. The choice depends on specific requirements, the team, and the compliance environment.</span>
+      </em></p>
+    </div>
+
+    <div class="info-box">
+      <h3><span lang="de">Alternative: Streamlit</span><span lang="en">Alternative: Streamlit</span></h3>
+      <p>
+        <span lang="de">Streamlit (seit 2019, von Snowflake übernommen 2022) ist eine beliebte Dash-Alternative mit noch einfacherer Syntax. Ideal für schnelle Prototypen und ML-Demos. Dash bleibt leistungsstärker für komplexe Multi-Page-Apps und Enterprise-Deployments.</span>
+        <span lang="en">Streamlit (since 2019, acquired by Snowflake in 2022) is a popular Dash alternative with even simpler syntax. Ideal for rapid prototypes and ML demos. Dash remains more powerful for complex multi-page apps and enterprise deployments.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="section-block" id="youtube">
+    <h2><span lang="de">YouTube-Ressourcen</span><span lang="en">YouTube Resources</span></h2>
+    <div class="accent-line"></div>
+    <p>
+      <span lang="de">Empfohlene Kanäle zur Vertiefung von Plotly und Dash:</span>
+      <span lang="en">Recommended channels for deepening your knowledge of Plotly and Dash:</span>
+    </p>
+
+    <div class="youtube-box">
+      <h3>YouTube</h3>
+      <p class="hinweis-klein">
+        <span lang="de">Externe Ziele: Die Links führen auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kanäle bieten eine zentrale Anlaufstelle.</span>
+        <span lang="en">External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.</span>
+      </p>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@CharmingData" target="_blank" rel="noopener noreferrer">"Charming Data" – Plotly Dash Tutorials</a>
+        <p>
+          <span lang="de">Der beste YouTube-Kanal für Plotly Dash. Praxisnahe Tutorials für alle Erfahrungsstufen.</span>
+          <span lang="en">The best YouTube channel for Plotly Dash. Practical tutorials for all experience levels.</span>
+        </p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@RobMulla" target="_blank" rel="noopener noreferrer">"Plotly Express Full Tutorial" – Rob Mulla</a>
+        <p>
+          <span lang="de">Umfangreiche Tutorials zu Plotly Express und Python Data Visualization.</span>
+          <span lang="en">Extensive tutorials on Plotly Express and Python data visualization.</span>
+        </p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@Streamlit" target="_blank" rel="noopener noreferrer">Streamlit</a>
+        <p>
+          <span lang="de">Offizieller Streamlit-Kanal. Tutorials, neue Features und Community-Showcases.</span>
+          <span lang="en">Official Streamlit channel. Tutorials, new features and community showcases.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block" id="quiz">
+    <h2><span lang="de">Quiz</span><span lang="en">Quiz</span></h2>
+    <div class="accent-line"></div>
+    <div data-quiz></div>
+  </section>
+
+  <section class="section-block" id="zusammenfassung">
+    <h2><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h2>
+    <div class="accent-line"></div>
+    <div class="concept-box">
+      <ol>
+        <li><span lang="de">Gute Dashboards folgen dem Data-Ink-Ratio (Tufte) und der 5-Sekunden-Regel.</span><span lang="en">Good dashboards follow the Data-Ink Ratio (Tufte) and the 5-second rule.</span></li>
+        <li><span lang="de">Gestalt-Prinzipien (Nähe, Ähnlichkeit) strukturieren die visuelle Wahrnehmung.</span><span lang="en">Gestalt principles (proximity, similarity) structure visual perception.</span></li>
+        <li><span lang="de">Barrierefreiheit erfordert farbenblind-sichere Paletten und ausreichende Kontraste (WCAG 2.1).</span><span lang="en">Accessibility requires colourblind-safe palettes and sufficient contrast (WCAG 2.1).</span></li>
+        <li><span lang="de">Plotly Express ermöglicht interaktive Charts mit wenigen Zeilen Python.</span><span lang="en">Plotly Express enables interactive charts with just a few lines of Python.</span></li>
+        <li><span lang="de">Plotly Dash verbindet ein Flask-Backend mit einem React-Frontend über deklarative Callbacks.</span><span lang="en">Plotly Dash connects a Flask backend with a React frontend via declarative callbacks.</span></li>
+        <li><span lang="de">Power BI eignet sich für schnelle Reports; Dash für flexible, selbst gehostete Web-Apps.</span><span lang="en">Power BI suits quick reports; Dash suits flexible, self-hosted web apps.</span></li>
+        <li><span lang="de">Production-Deployment: Gunicorn → Docker → Traefik (HTTPS).</span><span lang="en">Production deployment: Gunicorn → Docker → Traefik (HTTPS).</span></li>
+      </ol>
+    </div>
+    <nav class="nav-bottom"></nav>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span lang="de">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+  <span lang="en">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+</footer>
+
+<script type="module">
+  import { starteLab } from './assets/bint.js'
+  starteLab({ lab: 'lab-04', basis: '.' })
+</script>
 </body>
 </html>

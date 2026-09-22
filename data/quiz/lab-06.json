@@ -1,0 +1,182 @@
+[
+  {
+    "id": "B06-01",
+    "frage": {
+      "de": "Was ist der Haupttreiber für Cloud Lock-in bei BI-Tools?",
+      "en": "What is the main driver of cloud lock-in for BI tools?"
+    },
+    "optionen": [
+      {
+        "de": "Proprietäre Datenformate und API-Abhängigkeiten",
+        "en": "Proprietary data formats and API dependencies"
+      },
+      {
+        "de": "Zu viele Nutzer im Team",
+        "en": "Too many users on the team"
+      },
+      {
+        "de": "Zu hohe Lizenzkosten",
+        "en": "License costs too high"
+      },
+      {
+        "de": "Fehlende Internet-Anbindung",
+        "en": "Lack of internet connectivity"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "Lock-in entsteht primär durch proprietäre Formate (DAX, VizQL, LookML) und API-Abhängigkeiten, die einen Wechsel technisch aufwendig machen.",
+      "en": "Lock-in primarily arises from proprietary formats (DAX, VizQL, LookML) and API dependencies that make switching technically complex."
+    }
+  },
+  {
+    "id": "B06-02",
+    "frage": {
+      "de": "Welches EU-Gesetz regelt den Zugang zu und die Nutzung von Daten?",
+      "en": "Which EU law regulates access to and use of data?"
+    },
+    "optionen": [
+      {
+        "de": "DSGVO",
+        "en": "GDPR"
+      },
+      {
+        "de": "ePrivacy-Verordnung",
+        "en": "ePrivacy Regulation"
+      },
+      {
+        "de": "EU Data Act",
+        "en": "EU Data Act"
+      },
+      {
+        "de": "EU AI Act",
+        "en": "EU AI Act"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "Der EU Data Act (Verordnung (EU) 2023/2854). Er regelt den fairen Zugang zu und die Nutzung von Daten, insbesondere IoT-Daten und Cloud-Wechsel-Rechte.",
+      "en": "The EU Data Act (Regulation (EU) 2023/2854). It regulates fair access to and use of data, particularly IoT data and cloud switching rights."
+    }
+  },
+  {
+    "id": "B06-03",
+    "frage": {
+      "de": "Welche Lizenz verlangt, den Quellcode einer geänderten Anwendung auch dann herauszugeben, wenn sie nur über das Netzwerk angeboten wird?",
+      "en": "Which license requires releasing the source of a modified application even when it is only offered over a network?"
+    },
+    "optionen": [
+      {
+        "de": "Apache 2.0",
+        "en": "Apache 2.0"
+      },
+      {
+        "de": "MIT",
+        "en": "MIT"
+      },
+      {
+        "de": "BSD",
+        "en": "BSD"
+      },
+      {
+        "de": "AGPL 3.0",
+        "en": "AGPL 3.0"
+      }
+    ],
+    "richtig": 3,
+    "erklaerung": {
+      "de": "Die AGPL 3.0 (z.B. Metabase, Grafana) schliesst die „ASP-Lücke“: Wer eine geänderte Fassung über ein Netzwerk bereitstellt, muss deren Nutzern den korrespondierenden Quellcode anbieten. Der unveränderte Betrieb löst diese Pflicht nicht aus, und eine Veröffentlichung gegenüber der Allgemeinheit verlangt die Lizenz nicht.",
+      "en": "AGPL 3.0 (e.g., Metabase, Grafana) closes the “ASP loophole”: whoever offers a modified version over a network must provide its users with the corresponding source. Running it unmodified does not trigger this, and the licence does not require publishing to the general public."
+    }
+  },
+  {
+    "id": "B06-04",
+    "frage": {
+      "de": "Welches Tool eignet sich am besten für einen dbt-basierten Modern Data Stack?",
+      "en": "Which tool is best suited for a dbt-based modern data stack?"
+    },
+    "optionen": [
+      {
+        "de": "Grafana",
+        "en": "Grafana"
+      },
+      {
+        "de": "Power BI",
+        "en": "Power BI"
+      },
+      {
+        "de": "Lightdash",
+        "en": "Lightdash"
+      },
+      {
+        "de": "Metabase",
+        "en": "Metabase"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "Lightdash ist speziell für dbt-Workflows konzipiert und bietet native Metrics-Layer-Integration.",
+      "en": "Lightdash is specifically designed for dbt workflows and offers native metrics layer integration."
+    }
+  },
+  {
+    "id": "B06-05",
+    "frage": {
+      "de": "Was fordert Art. 32 DSGVO von Verantwortlichen?",
+      "en": "What does Art. 32 GDPR require from data controllers?"
+    },
+    "optionen": [
+      {
+        "de": "Verbot von Cloud-Nutzung",
+        "en": "Prohibition of cloud use"
+      },
+      {
+        "de": "Technische und organisatorische Maßnahmen (TOMs)",
+        "en": "Technical and organizational measures (TOMs)"
+      },
+      {
+        "de": "Einwilligung der Nutzer",
+        "en": "User consent"
+      },
+      {
+        "de": "Datenschutzfolgenabschätzung",
+        "en": "Data protection impact assessment"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "Art. 32 DSGVO verpflichtet zur Umsetzung geeigneter technischer und organisatorischer Maßnahmen (TOMs) zur Sicherheit der Datenverarbeitung.",
+      "en": "Art. 32 GDPR requires the implementation of appropriate technical and organizational measures (TOMs) for data processing security."
+    }
+  },
+  {
+    "id": "B06-06",
+    "frage": {
+      "de": "Warum ist HTTPS via Reverse Proxy für Self-Hosted BI essentiell?",
+      "en": "Why is HTTPS via reverse proxy essential for self-hosted BI?"
+    },
+    "optionen": [
+      {
+        "de": "Verschlüsselter Datenverkehr und Schutz vor Man-in-the-Middle-Angriffen",
+        "en": "Encrypted traffic and protection against man-in-the-middle attacks"
+      },
+      {
+        "de": "Bessere Kompatibilität mit Docker",
+        "en": "Better Docker compatibility"
+      },
+      {
+        "de": "Schönere Dashboard-URLs",
+        "en": "Better-looking dashboard URLs"
+      },
+      {
+        "de": "Schnellere Datenbank-Abfragen",
+        "en": "Faster database queries"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "HTTPS verschlüsselt den gesamten Datenverkehr zwischen Browser und Server und schützt vor Abhören und Manipulation (Man-in-the-Middle).",
+      "en": "HTTPS encrypts all traffic between browser and server, protecting against eavesdropping and manipulation (man-in-the-middle)."
+    }
+  }
+]

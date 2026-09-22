@@ -1,1447 +1,316 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BINT-Lab · Modul Business Intelligence · THWS Business School</title>
+  <meta name="bint:titel-en" content="BINT-Lab · Business intelligence module · THWS Business School" />
+  <meta name="description" content="Interaktive Lernumgebung zu Business Intelligence: sechs Labs von den Grundlagen über Datenmodelle, KPIs mit DAX, Tableau und Python und Dashboards mit Plotly Dash bis zur Fallstudie und zum Open-Source-BI-Stack – ohne Anmeldung." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Tailwind CSS 2 wurde entfernt: keine einzige Tailwind-Utility-Klasse wurde benutzt
-       (alle Klassen sind eigene, unten definierte Klassen). Die 2,9 MB Datei lieferte faktisch
-       nur zwei Defaults aus dem Preflight-Reset, die jetzt unten explizit gesetzt sind:
-       body { line-height: 1.5 } und der border-style-Default. Die Lab-Seiten laden Tailwind
-       ohnehin nicht - damit sind alle sieben Seiten jetzt konsistent. -->
-  <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
-       die dieses build-freie Setup (Transpilierung per text/babel im Browser) voraussetzt. -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-          integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-          integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-  <!-- Babel bewusst auf 7.x gepinnt: Babel 8 stellt auf den automatic JSX runtime um
-       und bricht damit text/babel ohne Bundler. 7.29.8 = letzter 7.x-Stand. -->
-  <script src="https://unpkg.com/@babel/standalone@7.29.8/babel.min.js"
-          integrity="sha384-Ux6uBqExf/7ahsSNrA9VI7vuaw6sKjDoVdjdUxmIoL2qdlzFVZ157sTi6JK3Z9Q8" crossorigin="anonymous"></script>
-
-  <style>
-    /* DESIGN DECISION: Bilingual color scheme
-       DE mode: Navy #1E3A8A (primary brand color)
-       EN mode: Teal #0D9488 (alternative accent)
-       The language toggle intentionally switches the entire color palette. */
-
-    :root {
-      --primary: #1E3A8A;
-      --accent: #2563EB;
-      --dark: #1A1A1A;
-      --light-bg: #FAFAFA;
-      --primary-light: rgba(30,58,138,0.08);
-    }
-
-    /* Ersetzt die beiden einzigen Defaults, die vorher aus Tailwinds Preflight kamen. */
-    *, *::before, *::after {
-      box-sizing: border-box; margin: 0; padding: 0;
-      border-width: 0; border-style: solid; border-color: currentColor;
-    }
-
-    body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: #FFFFFF;
-      color: var(--dark);
-      line-height: 1.5;
-    }
-
-    h2 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; }
-    h3 { color: #1E3A8A; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    a { color: var(--primary); }
-    button { transition: all 0.2s ease; }
-
-    .bauhaus-accent-line {
-      width: 48px;
-      height: 4px;
-      background: #2563EB;
-      margin: 0.5rem 0 1rem 0;
-    }
-
-    .bauhaus-badge {
-      background: #2563EB;
-      color: white;
-      padding: 0.2rem 0.7rem;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      border-radius: 0;
-      display: inline-block;
-    }
-
-    /* Geometric background animations */
-    @keyframes floatCircle {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-30px) scale(1.05); }
-    }
-    @keyframes floatSquare {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(20px) rotate(8deg); }
-    }
-
-    .geo-circle {
-      position: absolute;
-      width: 420px; height: 420px;
-      border-radius: 50%;
-      opacity: 0.15;
-      top: -80px; right: -100px;
-      animation: floatCircle 8s ease-in-out infinite;
-      pointer-events: none;
-    }
-    .geo-square {
-      position: absolute;
-      width: 260px; height: 260px;
-      opacity: 0.2;
-      bottom: -60px; left: -60px;
-      animation: floatSquare 10s ease-in-out infinite;
-      pointer-events: none;
-    }
-
-    /* Navbar */
-    .navbar {
-      position: sticky;
-      top: 0;
-      height: 56px;
-      background: white;
-      border-bottom: 1px solid #E5E7EB;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-    }
-
-    /* Lang toggle */
-    .lang-btn {
-      padding: 0.25rem 0.75rem;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 0.8rem;
-      cursor: pointer;
-      border: 1px solid #E5E7EB;
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      background: transparent;
-      color: #1A1A1A;
-      transition: background 0.15s, color 0.15s;
-    }
-    .lang-btn.active {
-      background: #1E3A8A;
-      color: white;
-      border-color: #1E3A8A;
-    }
-    .lang-btn:hover:not(.active) { background: #f5f5f5; }
-
-    /* Hero */
-    .hero {
-      background: #1E3A8A;
-      position: relative;
-      min-height: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 1.5rem 3rem;
-      overflow: hidden;
-    }
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      padding: 3.5rem 2rem;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .hero-tag {
-      border: 1.5px solid rgba(255,255,255,0.5);
-      color: rgba(255,255,255,0.85);
-      padding: 0.25rem 0.9rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      display: inline-block;
-      margin-bottom: 1.5rem;
-    }
-    .hero-eyebrow {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 500;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.65);
-      margin-bottom: 1rem;
-    }
-    .hero-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 800;
-      font-size: clamp(3rem, 11vw, 7.5rem);
-      color: white;
-      line-height: 0.95;
-      margin-bottom: 0.5rem;
-    }
-    .hero-subtitle {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 400;
-      font-size: 2.6rem;
-      color: rgba(255,255,255,0.75);
-      margin-bottom: 1.25rem;
-      letter-spacing: 0.02em;
-    }
-    .hero-desc {
-      color: rgba(255,255,255,0.88);
-      font-size: 1.25rem;
-      margin-bottom: 2.5rem;
-    }
-    .course-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: center;
-      margin-bottom: 2.5rem;
-    }
-    .course-badge {
-      border: 1.5px solid rgba(255,255,255,0.4);
-      color: rgba(255,255,255,0.75);
-      padding: 0.2rem 0.75rem;
-      font-size: 0.72rem;
-      font-weight: 600;
-      display: inline-block;
-    }
-    .cta-row {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .btn-primary {
-      background: white;
-      color: #1E3A8A;
-      padding: 0.75rem 1.75rem;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      border: 2px solid white;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: background 0.15s;
-    }
-    .btn-primary:hover { background: #E0E7FF; border-color: #E0E7FF; }
-    .btn-outline-white {
-      background: transparent;
-      color: white;
-      padding: 0.75rem 1.75rem;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      border: 2px solid rgba(255,255,255,0.6);
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: border-color 0.15s, color 0.15s;
-    }
-    .btn-outline-white:hover { border-color: white; color: white; }
-
-    /* Stats Bar */
-    .stats-bar {
-      background: white;
-      box-shadow: 0 -1px 0 rgba(30,58,138,0.08), 0 4px 20px rgba(0,0,0,0.05);
-    }
-    .stats-grid {
-      max-width: 900px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      justify-content: space-around;
-      align-items: center;
-    }
-    .stat-item {
-      text-align: center;
-      min-width: 120px;
-      padding: 1.75rem 1.5rem;
-      position: relative;
-    }
-    .stat-item + .stat-item::before {
-      content: '';
-      position: absolute; left: 0; top: 25%; height: 50%;
-      width: 1px; background: rgba(30,58,138,0.12);
-    }
-    .stat-value {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 800;
-      font-size: 2.75rem;
-      color: #1E3A8A;
-      line-height: 1;
-      margin-bottom: 0.25rem;
-    }
-    .stat-label {
-      font-size: 0.9rem;
-      color: #6B7280;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-top: 0.35rem;
-    }
-
-    /* Quote Section */
-    .quote-section {
-      background: #F7F7F5;
-      padding: 5.5rem 2rem 5rem;
-      border-top: 1px solid #E5E7EB;
-      border-bottom: 1px solid #E5E7EB;
-    }
-    .quote-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3.5rem;
-    }
-    .quote-text-block {
-      width: 100%;
-      text-align: center;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
-                  transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
-    }
-    .quote-text-block.q-visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .quote-body {
-      font-family: 'EB Garamond', Georgia, serif;
-      font-size: clamp(2.6rem, 5vw, 4.5rem);
-      line-height: 1.2;
-      color: #1A1A1A;
-      font-style: italic;
-      font-weight: 400;
-      text-align: center;
-      margin: 0;
-    }
-    .quote-author-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-    }
-    .quote-attribution {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-    .quote-name {
-      font-family: 'EB Garamond', Georgia, serif;
-      font-weight: 500;
-      font-size: 1.2rem;
-      color: #1A1A1A;
-      font-style: normal;
-    }
-    .quote-role {
-      font-family: 'EB Garamond', Georgia, serif;
-      font-size: 1rem;
-      color: #9CA3AF;
-      font-weight: 400;
-      font-style: normal;
-    }
-    @media (max-width: 640px) {
-      .quote-body { font-size: 2rem; }
-    }
-
-    /* Labs Section */
-    .labs-section {
-      background: #FFFFFF;
-      padding: 3.5rem 2rem;
-    }
-    .section-header {
-      max-width: 1200px;
-      margin: 0 auto 2.5rem;
-    }
-    .labs-grid {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-    }
-    @media (max-width: 900px) { .labs-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) {
-      .hero-title { font-size: clamp(2.3rem, 10vw, 4rem); }
-      .hero-subtitle { font-size: 1.4rem; }
-      .labs-grid { grid-template-columns: 1fr; }
-      .stat-item + .stat-item::before { display: none; }
-    }
-
-    /* ── Fortschritt und Lab-Metadaten ───────────────────────────────────────
-       Der Usability-Test bemaengelte, dass die Startseite weder Gesamtfortschritt
-       noch Zeit- und Voraussetzungsuebersicht zeigt. Gespeichert wird nur lokal. */
-    .progress-panel { max-width: 1200px; margin: 0 auto 2rem; background: #fff; border: 1px solid #E5E7EB; border-left: 5px solid var(--col-primary, #1E3A8A); border-radius: 0 10px 10px 0; padding: 1.25rem 1.5rem; }
-    .progress-head { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; justify-content: space-between; }
-    .progress-count { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--col-primary, #1E3A8A); }
-    .progress-track { height: 8px; background: #E5E7EB; border-radius: 4px; margin: 0.85rem 0 0.6rem; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--col-primary, #1E3A8A); border-radius: 4px; transition: width 0.25s ease; }
-    .progress-note { margin: 0; font-size: 0.82rem; line-height: 1.6; color: #4B5563; }
-    .progress-reset { margin-top: 0.75rem; font-family: inherit; font-size: 0.8rem; font-weight: 600; padding: 0.35rem 0.8rem; border-radius: 6px; border: 1.5px solid #9CA3AF; background: #fff; color: #4B5563; cursor: pointer; }
-    .progress-reset:hover { background: #F3F4F6; }
-
-    .lab-meta { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.6rem; margin: 0.75rem 0 1rem; font-size: 0.78rem; line-height: 1.5; }
-    .lab-meta dt { font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.68rem; align-self: center; }
-    .lab-meta dd { margin: 0; color: #374151; }
-    .lab-done-btn { margin-top: 0.6rem; width: 100%; font-family: inherit; font-size: 0.8rem; font-weight: 600; padding: 0.4rem 0.8rem; border-radius: 6px; border: 1.5px solid #D1D5DB; background: #fff; color: #4B5563; cursor: pointer; }
-    .lab-done-btn:hover { border-color: var(--col-primary, #1E3A8A); color: var(--col-primary, #1E3A8A); }
-    .lab-done-btn.is-done { background: #F0FDF4; border-color: #059669; color: #065F46; }
-    .lab-card-done .lab-num-badge { background: #059669; }
-    .lab-card {
-      border: 2px solid #1A1A1A;
-      border-left: 4px solid #2563EB;
-      border-radius: 0;
-      background: white;
-      padding: 1.75rem 1.75rem;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      min-height: 220px;
-    }
-    .lab-num-badge {
-      display: block;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 900;
-      font-size: 2.5rem;
-      color: #2563EB;
-      line-height: 1;
-      margin-bottom: 0.75rem;
-      letter-spacing: -0.03em;
-      position: static;
-      padding: 0;
-      background: none;
-    }
-    .lab-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      color: #1E3A8A;
-      margin-bottom: 0.1rem;
-    }
-    .lab-subtitle {
-      font-size: 0.8rem;
-      color: #6B7280;
-      font-weight: 500;
-    }
-    .lab-desc {
-      font-size: 0.875rem;
-      color: #374151;
-      line-height: 1.5;
-      flex: 1;
-    }
-    .btn-lab-link {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: calc(100% + 3.5rem);
-      margin: auto -1.75rem -1.75rem;
-      padding: 1rem 1.75rem;
-      background: none;
-      border-top: 1px solid #E5E7EB;
-      color: #1A1A1A;
-      font-weight: 800;
-      font-size: 1rem;
-      text-decoration: none;
-      font-family: 'Space Grotesk', sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-      transition: background 0.18s, color 0.18s;
-    }
-    .btn-lab-link::after {
-      content: '\2192';
-      font-size: 1.1rem;
-      transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .btn-lab-link:hover {
-      background: #1E3A8A;
-      color: white;
-      border-top-color: #1E3A8A;
-    }
-
-    /* Bonus Card */
-    .bonus-card {
-      grid-column: span 3;
-      border: 2px dashed #93C5FD;
-      padding: 32px 32px 0;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background: #F8FAFF;
-    }
-    @media (max-width: 640px) {
-      .bonus-card { grid-column: span 1; }
-      .bonus-inner { grid-template-columns: 1fr !important; }
-    }
-    .bonus-badge {
-      display: inline-block;
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: white;
-      background: #2563EB;
-      border: none;
-      padding: 4px 12px;
-      margin-bottom: 16px;
-      width: fit-content;
-    }
-    .bonus-title {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #1E3A8A;
-      letter-spacing: -0.02em;
-      margin-bottom: 6px;
-      line-height: 1.15;
-    }
-    .bonus-subtitle {
-      font-size: 0.85rem;
-      color: #4B5563;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-    .bonus-highlights {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 28px;
-    }
-    .bonus-chip {
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #1E3A8A;
-      background: #DBEAFE;
-      padding: 5px 12px;
-      border: none;
-    }
-    .bonus-inner {
-      display: grid;
-      grid-template-columns: 1fr 1px 1fr;
-      gap: 32px;
-      align-items: start;
-    }
-    .bonus-divider {
-      background: #BFDBFE;
-      height: 100%;
-      min-height: 160px;
-    }
-    .bonus-why {
-      font-size: 1rem;
-      color: #374151;
-      line-height: 1.65;
-      margin-bottom: 0;
-    }
-    .bonus-criteria {
-      list-style: none;
-      padding: 0; margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .bonus-criteria li {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-    }
-    .bonus-crit-num {
-      flex-shrink: 0;
-      width: 24px; height: 24px;
-      background: #1E3A8A;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      margin-top: 2px;
-      border-radius: 50%;
-    }
-    .bonus-crit-text strong {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #1E3A8A;
-      margin-bottom: 2px;
-    }
-    .bonus-crit-text span {
-      font-size: 0.9rem;
-      color: #4B5563;
-      line-height: 1.5;
-    }
-    .btn-bonus-link {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 2px dashed #93C5FD;
-      padding: 16px 0;
-      font-size: 0.85rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #1E3A8A;
-      text-decoration: none;
-      margin-top: 28px;
-      transition: color 0.15s;
-    }
-    .btn-bonus-link:hover { color: #2563EB; }
-
-    /* Footer */
-    .footer {
-      background: #1A1A1A;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      padding: 3rem 2rem;
-    }
-    .footer-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
-    .footer-sep {
-      width: 48px;
-      height: 3px;
-      background: #2563EB;
-      margin-bottom: 1.25rem;
-    }
-    .footer-logo {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 800;
-      font-size: 1.4rem;
-      color: white;
-      letter-spacing: -0.01em;
-    }
-    .footer-tagline {
-      color: rgba(255,255,255,0.5);
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-top: 0.35rem;
-    }
-    .footer-nav-label {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #9CA3AF;
-      margin-bottom: 0.75rem;
-    }
-    .footer-nav-links {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-    .footer-nav-links a {
-      color: rgba(255,255,255,0.55);
-      font-size: 0.875rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.15s;
-    }
-    .footer-nav-links a:hover { color: white; }
-    .footer-bottom {
-      max-width: 1200px;
-      margin: 2rem auto 0;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.35);
-      font-size: 0.8rem;
-      text-align: center;
-    }
-
-    /* ═══════════════════════════════════════════
-       EN TEAL MODE
-       DE = Navy (#1E3A8A) | EN = Teal (#0D9488)
-       ═══════════════════════════════════════════ */
-    [data-lang="en"] h2,
-    [data-lang="en"] h3 { color: #0D9488; }
-    [data-lang="en"] .bauhaus-accent-line { background: #14B8A6; }
-    [data-lang="en"] .bauhaus-badge { background: #0D9488; }
-    [data-lang="en"] .lab-card { border-left-color: #14B8A6; }
-    [data-lang="en"] .lab-num-badge { color: #1A1A1A; }
-    [data-lang="en"] .lab-title { color: #0D9488; }
-    [data-lang="en"] .btn-lab-link { color: #1A1A1A; }
-    [data-lang="en"] .btn-lab-link:hover { background: #14B8A6; color: white; border-top-color: #14B8A6; }
-    [data-lang="en"] .stat-value { color: #1A1A1A; }
-    [data-lang="en"] .stat-label { color: #6B7280; }
-    [data-lang="en"] .stat-item + .stat-item::before { background: rgba(0,0,0,0.12); }
-    [data-lang="en"] .quote-name { color: #0D9488; }
-    [data-lang="en"] .bonus-card { border-color: #99F6E4; background: #F0FDFA; }
-    [data-lang="en"] .bonus-badge { background: #0D9488; }
-    [data-lang="en"] .bonus-chip { background: #CCFBF1; color: #0F766E; }
-    [data-lang="en"] .bonus-title { color: #0F766E; }
-    [data-lang="en"] .bonus-crit-num { background: #0D9488; }
-    [data-lang="en"] .bonus-crit-text strong { color: #0F766E; }
-    [data-lang="en"] .bonus-divider { background: #99F6E4; }
-    [data-lang="en"] .btn-bonus-link { border-top-color: #99F6E4; color: #0F766E; }
-    [data-lang="en"] .btn-bonus-link:hover { color: #0D9488; }
-    [data-lang="en"] .btn-bonus-link:hover { color: #0D9488; }
-    [data-lang="en"] .bonus-crit-num { background: #0D9488; }
-    [data-lang="en"] .lang-btn.active { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .footer { background: #0D9488; }
-    [data-lang="en"] .footer-sep { background: #14B8A6; }
-    [data-lang="en"] .footer-nav-links a { color: rgba(255,255,255,0.75); }
-    [data-lang="en"] .footer-nav-links a:hover { color: white; }
-    [data-lang="en"] .footer-bottom { border-top-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
-    [data-lang="en"] .footer-tagline { color: rgba(255,255,255,0.75); }
-
-    /* Deming Portrait */
-    .deming-portrait {
-      width: 84px;
-      height: 84px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      object-fit: cover;
-      object-position: top center;
-      filter: grayscale(100%) contrast(0.9);
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
-    }
-
-    /* Implementierte Dashboards Section */
-    .dashboards-section {
-      background: #FAFAFA;
-      padding: 3.5rem 2rem;
-      border-top: 1px solid #E5E7EB;
-    }
-    .dashboards-grid {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-    @media (max-width: 900px) { .dashboards-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .dashboards-grid { grid-template-columns: 1fr; } }
-    .dashboard-card {
-      border: 1.5px solid #E5E7EB;
-      border-left: 4px solid #2563EB;
-      background: white;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      text-decoration: none;
-      color: inherit;
-      transition: box-shadow 0.2s ease;
-    }
-    .dashboard-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
-    .live-badge {
-      display: inline-block;
-      background: #059669;
-      color: white;
-      font-size: 0.65rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.15rem 0.5rem;
-      flex-shrink: 0;
-    }
-    .dashboard-card-name {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      color: #1E3A8A;
-    }
-    .dashboard-card-desc {
-      font-size: 0.875rem;
-      color: #374151;
-      line-height: 1.5;
-      flex: 1;
-      margin: 0;
-    }
-    .dashboard-card-tech {
-      font-size: 0.75rem;
-      color: #6B7280;
-      font-weight: 600;
-    }
-    [data-lang="en"] .dashboard-card { border-left-color: #14B8A6; }
-    [data-lang="en"] .dashboard-card-name { color: #0D9488; }
-  
-    /* ── Barrierefreiheit ────────────────────────────────────────────────────
-       sr-only blendet Text visuell aus, laesst ihn aber vorlesbar. Wird fuer
-       die Antwortzustaende im Quiz und den Sprunglink gebraucht. */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .quiz-mark { font-weight: 800; margin-right: 0.4rem; }
-    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--col-primary, #1E3A8A); color: #fff; padding: 0.6rem 1rem; border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 0; }
-    /* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
-    a:focus-visible, button:focus-visible { outline: 3px solid #F59E0B; outline-offset: 2px; }
-  </style>
-  <script>
-    function setVH() {
-      document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
-    }
-    setVH();
-    window.addEventListener('resize', setVH);
-  </script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/bint.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231E3A8A'/><text x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' text-anchor='middle' fill='%2338BDF8'>B</text></svg>" />
 </head>
 <body>
-  <div id="root"></div>
 
-  <!-- Ausfallsicherung fuer die CDN-Abhaengigkeiten.
-       React, ReactDOM und Babel kommen von unpkg.com. Faellt der Dienst aus
-       oder sperrt ein Hochschulnetz die Domain, blieb die Seite bisher weiss
-       und der Lernende sah keinen Hinweis, woran es liegt. Dieses Skript
-       laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
-       wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
-       hat (faengt Transpilierungsfehler ab). -->
-  <script src="assets/site.js"></script>
-  <script>
-  (function () {
-    var isEn = BINTLab.getLanguage() === 'en';
-    var T = isEn ? {
-      head: 'This page could not load',
-      miss: 'The following libraries were not delivered:',
-      why: 'The page loads React and Babel from unpkg.com at runtime. If your network blocks that host, or the service is unavailable, nothing can be rendered.',
-      what: 'What you can do:',
-      s1: 'Reload the page - the CDN is often only briefly unavailable.',
-      s2: 'Try a different network (mobile hotspot instead of campus Wi-Fi).',
-      s3: 'Check whether a proxy, VPN or content blocker is blocking unpkg.com.',
-      s4: 'If it persists, report it - the lab content itself is fine, only the delivery failed.',
-      slow: 'The libraries loaded, but the page did not render. That points to a script error rather than the network. Please report it with the browser console output.'
-    } : {
-      head: 'Diese Seite konnte nicht geladen werden',
-      miss: 'Folgende Bibliotheken wurden nicht ausgeliefert:',
-      why: 'Die Seite laedt React und Babel zur Laufzeit von unpkg.com. Sperrt das Netz diesen Host oder ist der Dienst gestoert, kann nichts dargestellt werden.',
-      what: 'Was du tun kannst:',
-      s1: 'Seite neu laden - das CDN ist oft nur kurz nicht erreichbar.',
-      s2: 'Ein anderes Netz probieren (Mobilfunk statt Campus-WLAN).',
-      s3: 'Pruefen, ob ein Proxy, VPN oder Contentblocker unpkg.com blockiert.',
-      s4: 'Bleibt es dabei: melden - die Lab-Inhalte sind in Ordnung, nur die Auslieferung ist gescheitert.',
-      slow: 'Die Bibliotheken sind geladen, die Seite hat aber nicht gerendert. Das deutet auf einen Skriptfehler hin, nicht auf das Netz. Bitte mit der Ausgabe der Browser-Konsole melden.'
-    };
+<a class="skip-link" href="#labs"><span lang="de">Zum Inhalt springen</span><span lang="en">Skip to content</span></a>
 
-    function panel(title, body) {
-      var root = document.getElementById('root') || document.body;
-      root.innerHTML =
-        '<div style="max-width:44rem;margin:4rem auto;padding:1.75rem;font-family:' +
-        "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" +
-        ';line-height:1.65;color:#1A1A1A;background:#fff;border:1px solid #E5E7EB;' +
-        'border-left:5px solid #DC2626;border-radius:0 10px 10px 0">' +
-        '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
-        body +
-        '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
-        '</div>';
-    }
+<header class="header">
+  <div class="header-left">
+    <a class="header-logo" href="index.html" data-lab-link><span class="mark">BINT</span>-Lab</a>
+    <span class="header-back">
+      <span lang="de">THWS Business School · Modul Business Intelligence</span>
+      <span lang="en">THWS Business School · Business intelligence module</span>
+    </span>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" data-lang-btn="de" aria-pressed="true" aria-label="Deutsch">DE</button>
+    <button class="lang-btn" data-lang-btn="en" aria-pressed="false" aria-label="English">EN</button>
+  </div>
+</header>
 
-    var missing = [];
-    if (typeof window.React === 'undefined') missing.push('React');
-    if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
-    if (typeof window.Babel === 'undefined') missing.push('Babel');
+<section class="hero">
+  <div class="hero-inner">
+    <span class="hero-tag">
+      <span lang="de">Lernumgebung · Business Intelligence</span>
+      <span lang="en">Learning environment · Business intelligence</span>
+    </span>
+    <h1 class="hero-title">BINT</h1>
+    <p class="hero-subtitle">
+      <span lang="de">Entscheidungen begründen, indem man Daten sprechen lässt</span>
+      <span lang="en">Justifying decisions by letting the data speak</span>
+    </p>
+    <p class="hero-desc">
+      <span lang="de">Sechs Labs führen von den Grundlagen der Business Intelligence über Datenquellen und Sternschema,
+        Kennzahlen in DAX, Tableau und pandas und Dashboards mit Plotly Dash bis zu einer durchgehenden Fallstudie und
+        zur Frage, wem die eigenen Daten gehören. Jeder Codeblock läuft so, wie er dasteht; jedes Lab endet mit einem
+        Quiz, das die Antwort begründet.</span>
+      <span lang="en">Six labs lead from the foundations of business intelligence through data sources and star schema,
+        KPIs in DAX, Tableau and pandas and dashboards with Plotly Dash to a continuous case study and to the question of
+        who owns your data. Every code block runs as it stands; every lab ends with a quiz that explains its answers.</span>
+    </p>
+    <div class="hero-badges">
+      <span class="hero-badge">Power BI · DAX</span>
+      <span class="hero-badge">Tableau</span>
+      <span class="hero-badge">Python · pandas</span>
+      <span class="hero-badge">Plotly Dash</span>
+      <span class="hero-badge">Docker · Superset · Metabase</span>
+      <span class="hero-badge"><span lang="de">Ohne Anmeldung</span><span lang="en">No sign-up</span></span>
+    </div>
+    <div class="cta-row">
+      <a class="btn solid" href="lab-01-grundlagen.html" data-lab-link>
+        <span lang="de">Mit Lab 01 beginnen</span><span lang="en">Start with lab 01</span>
+      </a>
+      <a class="btn" href="#labs">
+        <span lang="de">Alle Labs ansehen</span><span lang="en">See all labs</span>
+      </a>
+    </div>
+  </div>
+</section>
 
-    if (missing.length) {
-      panel(T.head,
-        '<p><strong>' + T.miss + '</strong> ' + missing.join(', ') + '</p>' +
-        '<p>' + T.why + '</p>' +
-        '<p><strong>' + T.what + '</strong></p>' +
-        '<ol style="padding-left:1.25rem"><li>' + T.s1 + '</li><li>' + T.s2 +
-        '</li><li>' + T.s3 + '</li><li>' + T.s4 + '</li></ol>');
-      return;
-    }
+<div class="stats-bar">
+  <div class="stats-grid">
+    <div class="stat-item"><div class="stat-value" data-stat="labs">6</div><div class="stat-label">Labs</div></div>
+    <div class="stat-item"><div class="stat-value">1</div><div class="stat-label"><span lang="de">Fallstudie</span><span lang="en">Case study</span></div></div>
+    <div class="stat-item"><div class="stat-value" data-stat="fragen">37</div><div class="stat-label"><span lang="de">Quizfragen</span><span lang="en">Quiz questions</span></div></div>
+    <div class="stat-item"><div class="stat-value">4</div><div class="stat-label"><span lang="de">Starterpakete</span><span lang="en">Starter packs</span></div></div>
+  </div>
+</div>
 
-    // Bibliotheken da, aber die App mountet nicht -> Skriptfehler.
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        panel(T.head, '<p>' + T.slow + '</p>');
-      }
-    }, 5000);
-  })();
-  </script>
+<section class="zitat" aria-label="Zitat">
+  <div class="zitat-inner">
+    <p class="zitat-text"><span>In God we trust.</span><span>All others must bring data.</span></p>
+    <div class="zitat-autor">
+      <img class="deming-portrait" src="deming.jpg" alt="Porträt von William Edwards Deming" data-alt-en="Portrait of William Edwards Deming" width="96" height="96" />
+      <div>
+        <span class="zitat-name">William Edwards Deming</span>
+        <span class="zitat-rolle"><span lang="de">Statistiker und Pionier des Qualitätsmanagements</span><span lang="en">Statistician and pioneer of quality management</span></span>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+<main>
 
-    const translations = {
-      de: {
-        navSub: 'Modul Business Intelligence',
-        heroTag: 'THWS BUSINESS SCHOOL',
-        heroTitle: 'BINT-Lab',
-        heroEyebrow: '',
-        heroSubtitle: 'Power BI \u00B7 Python \u00B7 Plotly Dash',
-        heroDesc: 'Die Companion-Site zum Kurs \u201CBusiness Intelligence\u201D',
+<section class="section" id="labs">
+  <div class="section-head">
+    <span class="badge"><span lang="de">Die sechs Labs</span><span lang="en">The six labs</span></span>
+    <div class="accent-line"></div>
+    <h2>
+      <span lang="de">Von der ersten Kennzahl zum eigenen BI-Stack</span>
+      <span lang="en">From the first KPI to your own BI stack</span>
+    </h2>
+    <p>
+      <span lang="de">Die Labs folgen dem Modul Business Intelligence im Bachelor Business Analytics und lassen sich der
+        Reihe nach durcharbeiten; wer ein Thema schon kennt, steigt später ein. Alle Übungen arbeiten mit demselben
+        Datensatz, dem Superstore-Datensatz mit 9.800 Bestellpositionen, so dass sich Zahlen aus Power BI, Tableau,
+        pandas und PostgreSQL gegenseitig bestätigen.</span>
+      <span lang="en">The labs follow the business intelligence module of the Bachelor in Business Analytics and can be
+        worked through in sequence; if you already know a topic, start later. All exercises use the same dataset, the
+        Superstore dataset with 9,800 order lines, so that figures from Power BI, Tableau, pandas and PostgreSQL confirm
+        each other.</span>
+    </p>
+  </div>
+  <div data-fortschritt></div>
+  <div class="labs-grid">
+    <article class="lab-card" data-lab="lab-01">
+      <a class="lab-card-link" href="lab-01-grundlagen.html" data-lab-link>
+      <div class="lab-num">01</div>
+      <h3><span lang="de">Grundlagen Business Intelligence</span><span lang="en">BI foundations</span></h3>
+      <div class="sub">BI, analytics, architecture, KPIs, tools</div>
+      <div class="desc"><span lang="de">Was Business Intelligence ist und was nicht, wie eine BI-Architektur von der Quelle bis zum Dashboard aufgebaut ist, was einen guten KPI ausmacht und welche Werkzeuge der Markt bietet.</span><span lang="en">What business intelligence is and is not, how a BI architecture is built from source to dashboard, what makes a good KPI and which tools the market offers.</span></div>
+      <div class="meta"><span lang="de">45–60 Minuten</span><span lang="en">45–60 minutes</span><small><span lang="de">Voraussetzung: keine</span><span lang="en">Prerequisite: none</span></small></div>
+    </a>
+    </article>
+    <article class="lab-card" data-lab="lab-02">
+      <a class="lab-card-link" href="lab-02-daten.html" data-lab-link>
+      <div class="lab-num">02</div>
+      <h3><span lang="de">Daten: Quellen, Modelle, Qualität</span><span lang="en">Data: sources, models, quality</span></h3>
+      <div class="sub">Sources, star schema, Power Query, pandas</div>
+      <div class="desc"><span lang="de">Datenquellen anbinden, Star- und Snowflake-Schema verstehen und Qualitätsprobleme erkennen und beheben – mit pandas in Python und mit Power Query in Power BI.</span><span lang="en">Connecting data sources, understanding star and snowflake schema and detecting and fixing quality problems – with pandas in Python and with Power Query in Power BI.</span></div>
+      <div class="meta"><span lang="de">60–75 Minuten</span><span lang="en">60–75 minutes</span><small><span lang="de">Voraussetzung: Lab 01</span><span lang="en">Prerequisite: lab 01</span></small></div>
+    </a>
+    </article>
+    <article class="lab-card" data-lab="lab-03">
+      <a class="lab-card-link" href="lab-03-kpis.html" data-lab-link>
+      <div class="lab-num">03</div>
+      <h3><span lang="de">KPIs mit DAX, Tableau und Python</span><span lang="en">KPIs with DAX, Tableau and Python</span></h3>
+      <div class="sub">Measures, filter context, calculated fields, pandas</div>
+      <div class="desc"><span lang="de">Kennzahlen als DAX-Measures, als berechnete Felder in Tableau und in pandas definieren; Filterkontext, CALCULATE und LOD-Ausdrücke verstehen.</span><span lang="en">Defining KPIs as DAX measures, as calculated fields in Tableau and in pandas; understanding filter context, CALCULATE and LOD expressions.</span></div>
+      <div class="meta"><span lang="de">60–90 Minuten</span><span lang="en">60–90 minutes</span><small><span lang="de">Voraussetzung: Lab 02, Python mit pandas</span><span lang="en">Prerequisite: lab 02, Python with pandas</span></small></div>
+    </a>
+    </article>
+    <article class="lab-card" data-lab="lab-04">
+      <a class="lab-card-link" href="lab-04-dashboards.html" data-lab-link>
+      <div class="lab-num">04</div>
+      <h3><span lang="de">Dashboard-Design und Plotly Dash</span><span lang="en">Dashboard design and Plotly Dash</span></h3>
+      <div class="sub">Design principles, Plotly Express, callbacks, deployment</div>
+      <div class="desc"><span lang="de">Gestaltungsprinzipien für Dashboards, Diagramme mit Plotly Express und eine Dash-App mit Callbacks, die sich mit Gunicorn und Docker deployen lässt.</span><span lang="en">Design principles for dashboards, charts with Plotly Express and a Dash app with callbacks that can be deployed with Gunicorn and Docker.</span></div>
+      <div class="meta"><span lang="de">90–120 Minuten</span><span lang="en">90–120 minutes</span><small><span lang="de">Voraussetzung: Lab 03, pip install dash plotly pandas</span><span lang="en">Prerequisite: lab 03, pip install dash plotly pandas</span></small></div>
+    </a>
+    </article>
+    <article class="lab-card" data-lab="lab-05">
+      <a class="lab-card-link" href="lab-05-fallstudie.html" data-lab-link>
+      <div class="lab-num">05</div>
+      <h3><span lang="de">Fallstudie: Retail Analytics</span><span lang="en">Case study: retail analytics</span></h3>
+      <div class="sub">Superstore, Power BI, Tableau, Dash</div>
+      <div class="desc"><span lang="de">Der vollständige BI-Workflow von der Rohdatei bis zum Dashboard – dreimal parallel in Power BI, Tableau und Python, mit denselben Sollwerten zur Kontrolle.</span><span lang="en">The complete BI workflow from raw file to dashboard – three times in parallel in Power BI, Tableau and Python, with the same expected values for checking.</span></div>
+      <div class="meta"><span lang="de">150–210 Minuten</span><span lang="en">150–210 minutes</span><small><span lang="de">Voraussetzung: Lab 04, Power BI Desktop oder Tableau</span><span lang="en">Prerequisite: lab 04, Power BI Desktop or Tableau</span></small></div>
+    </a>
+    </article>
+    <article class="lab-card" data-lab="lab-06">
+      <a class="lab-card-link" href="lab-06-souveraenitaet.html" data-lab-link>
+      <div class="lab-num">06</div>
+      <h3><span lang="de">Digitale Souveränität und Open-Source-BI</span><span lang="en">Digital sovereignty and open-source BI</span></h3>
+      <div class="sub">Lock-in, Superset, Metabase, Docker, GDPR</div>
+      <div class="desc"><span lang="de">Lock-in-Risiken benennen, einen Open-Source-BI-Stack mit Docker Compose und PostgreSQL in Betrieb nehmen und eine Werkzeugwahl datenschutzrechtlich begründen.</span><span lang="en">Naming lock-in risks, putting an open-source BI stack into operation with Docker Compose and PostgreSQL and justifying a tool choice in terms of data protection.</span></div>
+      <div class="meta"><span lang="de">120–180 Minuten</span><span lang="en">120–180 minutes</span><small><span lang="de">Voraussetzung: Lab 05, Docker Desktop</span><span lang="en">Prerequisite: lab 05, Docker Desktop</span></small></div>
+    </a>
+    </article>
 
-        badge3: 'Prof. Dr. Robert Butscher',
-        ctaLabs: 'Zu den Labs \u2192',
-        ctaGithub: 'GitHub \u2192',
-        statLabs: 'Labs',
-        statFallstudie: 'Fallstudie',
-        statTech: 'Power BI & Python',
-        statTechLabel: 'Tech Stack',
-        statOpenSource: 'Open Source BI',
-        statOpenSourceLabel: 'Digitale Souver\u00E4nit\u00E4t',
-        sectionLabs: 'Die Labs',
-        labLink: 'Zum Lab',
-        footerTagline: 'Business Intelligence \u00B7 THWS',
-        footerNavLabel: 'Labs',
-        footerText: 'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher',
-        labTime: 'Zeitbedarf',
-        labPrereq: 'Voraussetzung',
-        progressTitle: 'Dein Fortschritt',
-        progressText: 'Als erledigt markierte Labs werden lokal in diesem Browser gespeichert – kein Konto, kein Server, keine personenbezogenen Daten.',
-        progressDone: 'erledigt',
-        progressOf: 'von',
-        progressReset: 'Fortschritt zurücksetzen',
-        progressMark: 'Als erledigt markieren',
-        progressMarked: 'Erledigt',
-        labs: [
-          {
-            num: '01',
-            time: '45–60 Min.',
-            prereq: 'keine',
-            title: 'Grundlagen Business Intelligence',
-            subtitle: 'BI Foundations',
-            desc: 'Was ist BI? Architektur, KPIs, Tool-\u00DCberblick.',
-            link: 'lab-01-grundlagen.html',
-          },
-          {
-            num: '02',
-            time: '60–75 Min.',
-            prereq: 'Lab 01',
-            title: 'Daten: Quellen, Modelle, Qualit\u00E4t',
-            subtitle: 'Data: Sources, Models, Quality',
-            desc: 'Star Schema, Power Query, Pandas Datentransformation.',
-            link: 'lab-02-daten.html',
-          },
-          {
-            num: '03',
-            time: '60–90 Min.',
-            prereq: 'Lab 02, Python mit pandas',
-            title: 'KPIs mit DAX & Python',
-            subtitle: 'KPIs with DAX & Python',
-            desc: 'DAX Measures, Calculated Columns, Filter-Kontext.',
-            link: 'lab-03-kpis.html',
-          },
-          {
-            num: '04',
-            time: '90–120 Min.',
-            prereq: 'Lab 03, pip install dash plotly pandas',
-            title: 'Dashboard-Design & Plotly Dash',
-            subtitle: 'Dashboard Design & Plotly Dash',
-            desc: 'Design-Prinzipien, Plotly Express, Dash Callbacks.',
-            link: 'lab-04-dashboards.html',
-          },
-          {
-            num: '05',
-            time: '150–210 Min.',
-            prereq: 'Lab 04, Power BI Desktop',
-            title: 'Fallstudie: Retail Analytics',
-            subtitle: 'Case Study: Retail Analytics',
-            desc: 'Superstore Dataset \u2013 Power BI & Dash im Vergleich.',
-            link: 'lab-05-fallstudie.html',
-          },
-          {
-            num: '06',
-            time: '120–180 Min.',
-            prereq: 'Lab 05, Docker Desktop',
-            title: 'Digitale Souver\u00E4nit\u00E4t & Open-Source BI',
-            subtitle: 'Digital Sovereignty & Open-Source BI',
-            desc: 'Apache Superset, Metabase, Docker, DSGVO.',
-            link: 'lab-06-souveraenitaet.html',
-          },
-        ],
-        bonusBadge: 'BONUS-PROJEKT',
-        bonusTitle: 'Data Sovereignty Stack',
-        bonusSubtitle: 'Self-Hosted BI f\u00FCr DSGVO-konforme Unternehmen',
-        bonusWhy: 'Self-hosted Open-Source-BI kann die Kontrolle \u00FCber Daten und Infrastruktur erh\u00F6hen und Drittland\u00FCbermittlungen vermeiden \u2014 wenn Hosting, Backups, Telemetrie und Administration entsprechend gestaltet sind. DSGVO-Konformit\u00E4t entsteht dadurch nicht automatisch, und statt Lizenzgeb\u00FChren fallen Kosten f\u00FCr Infrastruktur, Betrieb und Personal an.',
-        bonusLink: 'Zum Lab \u2192',
-        sectionDashboards: 'Implementierte Dashboards',
-        dashboardsDesc: 'Diese Dashboards laufen produktiv \u2013 gebaut mit dem Stack aus diesem Kurs.',
-        dashboards: [
-          { name: 'WHI Dashboard', url: 'https://whi-dashboard.butscher.cloud', desc: 'World Happiness Index \u2013 L\u00E4ndervergleich', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
-          { name: 'Alkohol Dashboard', url: 'https://alc-dashboard.butscher.cloud', desc: 'Alkoholkonsum-Analyse nach L\u00E4ndern und Jahren', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
-          { name: 'Rainforest Dashboard', url: 'https://rainforest.butscher.cloud', desc: 'Amazonas-Abholzung und Klimadaten interaktiv', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
-          { name: 'Rechnungsanalyse', url: 'https://invoices.butscher.cloud', desc: 'KI-gest\u00FCtzte Rechnungsanalyse mit n8n-Automatisierung', tech: 'Chart.js \u00B7 Supabase \u00B7 n8n' },
-        ],
-      },
-      en: {
-        navSub: 'Module Business Intelligence',
-        heroTag: 'THWS BUSINESS SCHOOL',
-        heroTitle: 'BINT-Lab',
-        heroEyebrow: '',
-        heroSubtitle: 'Power BI \u00B7 Python \u00B7 Plotly Dash',
-        heroDesc: 'Companion site for the course \u201CBusiness Intelligence\u201D',
-
-        badge3: 'Prof. Dr. Robert Butscher',
-        ctaLabs: 'To the Labs \u2192',
-        ctaGithub: 'GitHub \u2192',
-        statLabs: 'Labs',
-        statFallstudie: 'Case Study',
-        statTech: 'Power BI & Python',
-        statTechLabel: 'Tech Stack',
-        statOpenSource: 'Open Source BI',
-        statOpenSourceLabel: 'Digital Sovereignty',
-        sectionLabs: 'The Labs',
-        labLink: 'Go to Lab',
-        footerTagline: 'Business Intelligence \u00B7 THWS',
-        footerNavLabel: 'Labs',
-        footerText: 'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher',
-        labTime: 'Time needed',
-        labPrereq: 'Prerequisite',
-        progressTitle: 'Your progress',
-        progressText: 'Labs you mark as done are stored locally in this browser – no account, no server, no personal data.',
-        progressDone: 'done',
-        progressOf: 'of',
-        progressReset: 'Reset progress',
-        progressMark: 'Mark as done',
-        progressMarked: 'Done',
-        labs: [
-          {
-            num: '01',
-            time: '45–60 min',
-            prereq: 'none',
-            title: 'BI Foundations',
-            subtitle: 'Grundlagen Business Intelligence',
-            desc: 'What is BI? Architecture, KPIs, tool overview.',
-            link: 'lab-01-grundlagen.html',
-          },
-          {
-            num: '02',
-            time: '60–75 min',
-            prereq: 'Lab 01',
-            title: 'Data: Sources, Models, Quality',
-            subtitle: 'Daten: Quellen, Modelle, Qualit\u00E4t',
-            desc: 'Star Schema, Power Query, Pandas data transformation.',
-            link: 'lab-02-daten.html',
-          },
-          {
-            num: '03',
-            time: '60–90 min',
-            prereq: 'Lab 02, Python with pandas',
-            title: 'KPIs with DAX & Python',
-            subtitle: 'KPIs mit DAX & Python',
-            desc: 'DAX Measures, Calculated Columns, Filter Context.',
-            link: 'lab-03-kpis.html',
-          },
-          {
-            num: '04',
-            time: '90–120 min',
-            prereq: 'Lab 03, pip install dash plotly pandas',
-            title: 'Dashboard Design & Plotly Dash',
-            subtitle: 'Dashboard-Design & Plotly Dash',
-            desc: 'Design principles, Plotly Express, Dash Callbacks.',
-            link: 'lab-04-dashboards.html',
-          },
-          {
-            num: '05',
-            time: '150–210 min',
-            prereq: 'Lab 04, Power BI Desktop',
-            title: 'Case Study: Retail Analytics',
-            subtitle: 'Fallstudie: Retail Analytics',
-            desc: 'Superstore Dataset \u2013 Power BI & Dash compared.',
-            link: 'lab-05-fallstudie.html',
-          },
-          {
-            num: '06',
-            time: '120–180 min',
-            prereq: 'Lab 05, Docker Desktop',
-            title: 'Digital Sovereignty & Open-Source BI',
-            subtitle: 'Digitale Souver\u00E4nit\u00E4t & Open-Source BI',
-            desc: 'Apache Superset, Metabase, Docker, GDPR.',
-            link: 'lab-06-souveraenitaet.html',
-          },
-        ],
-        bonusBadge: 'BONUS PROJECT',
-        bonusTitle: 'Data Sovereignty Stack',
-        bonusSubtitle: 'Self-Hosted BI for GDPR-Compliant Organizations',
-        bonusWhy: 'Self-hosted open-source BI can increase control over data and infrastructure and avoid third-country transfers \u2014 provided hosting, backups, telemetry and administration are designed accordingly. It does not create GDPR compliance by itself, and instead of licence fees you pay for infrastructure, operations and staff.',
-        bonusLink: 'Go to Lab \u2192',
-        sectionDashboards: 'Live Dashboards',
-        dashboardsDesc: 'These dashboards run in production \u2013 built with the stack from this course.',
-        dashboards: [
-          { name: 'WHI Dashboard', url: 'https://whi-dashboard.butscher.cloud', desc: 'World Happiness Index \u2013 Country comparison', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
-          { name: 'Alcohol Dashboard', url: 'https://alc-dashboard.butscher.cloud', desc: 'Alcohol consumption analysis by country and year', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
-          { name: 'Rainforest Dashboard', url: 'https://rainforest.butscher.cloud', desc: 'Amazon deforestation and climate data interactive', tech: 'Python \u00B7 Plotly Dash \u00B7 Docker' },
-          { name: 'Invoice Analysis', url: 'https://invoices.butscher.cloud', desc: 'AI-powered invoice analysis with n8n automation', tech: 'Chart.js \u00B7 Supabase \u00B7 n8n' },
-        ],
-      },
-    };
-
-    var bonusCriteria = [
-      { titleDe: 'Datensouver\u00E4nit\u00E4t', titleEn: 'Data Sovereignty', descDe: 'Speicherort und Zugriff selbst bestimmen', descEn: 'Decide storage location and access yourself' },
-      { titleDe: 'Weniger Lock-in', titleEn: 'Less Lock-in', descDe: 'Offene Formate, wechselbare Anbieter', descEn: 'Open formats, replaceable vendors' },
-      { titleDe: 'Kontrollierbarer Datenstandort', titleEn: 'Controllable Data Location', descDe: 'EU/EWR-Hosting bewusst konfigurieren und nachweisen', descEn: 'Deliberately configure and demonstrate EU/EEA hosting' },
-      { titleDe: 'Andere Kostenstruktur', titleEn: 'Different Cost Structure', descDe: 'Keine unmittelbaren Lizenzkosten, daf\u00FCr Infrastruktur, Betrieb und Personal', descEn: 'No direct licence fees, but infrastructure, operations and staff' },
-      { titleDe: 'Eigene Infrastruktur', titleEn: 'Your Own Infrastructure', descDe: 'Eigene Regeln \u2013 und eigener Betriebsaufwand', descEn: 'Your rules \u2013 and your operational effort' },
-    ];
-
-    function App() {
-
-      const [lang, setLang] = useState(BINTLab.getLanguage);
-      const toggleLang = (l) => { setLang(l); BINTLab.setLanguage(l); };
-
-      // Fortschritt je Lab. Bewusst nur localStorage: kein Konto, kein Server,
-      // keine personenbezogenen Daten - fuer eine Hochschule die unkomplizierteste
-      // Variante. Ein defekter Eintrag setzt sauber zurueck statt zu werfen.
-      const [done, setDone] = useState(() => {
-        try {
-          const saved = JSON.parse(localStorage.getItem('bi-lab-progress') || '[]');
-          return Array.isArray(saved) ? [...new Set(saved.filter((x) => /^(0[1-6])$/.test(x) && typeof x === 'string'))] : [];
-        } catch (e) { return []; }
-      });
-      useEffect(() => {
-        try { localStorage.setItem('bi-lab-progress', JSON.stringify(done)); } catch (e) { /* Speicher voll oder gesperrt */ }
-      }, [done]);
-      const toggleDone = (num) =>
-        setDone((prev) => (prev.includes(num) ? prev.filter((n) => n !== num) : [...prev, num]));
-
-      useEffect(() => {
-        const textBlock = document.querySelector('.quote-text-block');
-        if (!textBlock) return;
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              textBlock.classList.add('q-visible');
-              observer.disconnect();
-            }
-          });
-        }, { threshold: 0.25 });
-        observer.observe(textBlock);
-        return () => observer.disconnect();
-      }, []);
-
-      const t = translations[lang];
-
-      // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
-      useEffect(() => {
-        document.title = lang === 'en' ? 'BINT-Lab \u00B7 Module Business Intelligence \u00B7 THWS Business School' : 'BINT-Lab \u00B7 Modul Business Intelligence \u00B7 THWS Business School';
-        document.documentElement.lang = lang;
-        BINTLab.setLanguage(lang);
-      }, [lang]);
-      const heroColor = lang === 'en' ? '#0D9488' : '#1E3A8A';
-      const geoCircleColor = lang === 'en' ? '#0F766E' : '#1E40AF';
-      const geoSquareColor = lang === 'en' ? '#14B8A6' : '#2563EB';
-
-      return (
-        <div data-lang={lang}>
-
-          {/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */}
-          <a className="skip-link" href="#labs">
-            {lang === 'en' ? 'Skip to content' : 'Zum Inhalt springen'}
-          </a>
-
-          {/* Navbar */}
-          <nav className="navbar">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: lang === 'en' ? '#0D9488' : '#1E3A8A',
-                letterSpacing: '-0.01em'
-              }}>
-                {'BINT-Lab'}
-              </span>
-              <span style={{
-                color: '#9CA3AF',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                borderLeft: '2px solid #E5E7EB',
-                paddingLeft: '0.75rem'
-              }}>
-                {t.navSub}
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: '0.35rem' }}>
-              <button
-                className={`lang-btn${lang === 'de' ? ' active' : ''}`}
-                onClick={() => toggleLang('de')}
-                aria-pressed={lang === 'de'}
-                aria-label="Deutsch"
-              >
-                DE
-              </button>
-              <button
-                className={`lang-btn${lang === 'en' ? ' active' : ''}`}
-                onClick={() => toggleLang('en')}
-                aria-pressed={lang === 'en'}
-                aria-label="English"
-              >
-                EN
-              </button>
-            </div>
-          </nav>
-
-          {/* Hero + Stats wrapper */}
-          <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)' }}>
-
-            {/* Hero */}
-            <section
-              className="hero"
-              style={{ background: heroColor, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <div className="geo-circle" style={{ background: geoCircleColor }}></div>
-              <div className="geo-square" style={{ background: geoSquareColor }}></div>
-
-              <div className="hero-content">
-                <span className="hero-tag">
-                  {t.heroTag}
-                </span>
-                <div className="hero-eyebrow">
-                  {t.heroEyebrow}
-                </div>
-                <h1 className="hero-title">
-                  {t.heroTitle}
-                </h1>
-                <div className="hero-subtitle">
-                  {t.heroSubtitle}
-                </div>
-                <p className="hero-desc">
-                  {t.heroDesc}
-                </p>
-                <div className="course-badges">
-
-                  <span className="course-badge">{t.badge3}</span>
-                </div>
-                <div className="cta-row">
-                  <a href="#labs" className="btn-primary" style={{ background: 'white', color: heroColor, border: '2px solid white' }}>
-                    {t.ctaLabs}
-                  </a>
-                  <a
-                    href="https://github.com/swrobuts/BINT-Lab"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-outline-white"
-                  >
-                    {t.ctaGithub}
-                  </a>
-                </div>
-              </div>
-            </section>
-
-            {/* Stats Bar */}
-            <div className="stats-bar">
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <div className="stat-value">{'6'}</div>
-                  <div className="stat-label">{t.statLabs}</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">{'1'}</div>
-                  <div className="stat-label">{t.statFallstudie}</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value" style={{ fontSize: '1rem', letterSpacing: '0.02em', fontWeight: 900 }}>
-                    {t.statTech}
-                  </div>
-                  <div className="stat-label">{t.statTechLabel}</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value" style={{ fontSize: '0.95rem', letterSpacing: '0.01em', fontWeight: 900 }}>
-                    {t.statOpenSource}
-                  </div>
-                  <div className="stat-label">{t.statOpenSourceLabel}</div>
-                </div>
-              </div>
-            </div>
-
-          </div>{/* end viewport wrapper */}
-
-          {/* Quote Strip */}
-          <section className="quote-section">
-            <div className="quote-inner">
-              <div className="quote-text-block">
-                <p className="quote-body">
-                  <span style={{ display: 'block' }}>In God we trust.</span>
-                  <span style={{ display: 'block' }}>All others must bring data.</span>
-                </p>
-              </div>
-              <div className="quote-author-row">
-                <img
-                  src="deming.jpg"
-                  alt="William Edwards Deming"
-                  className="deming-portrait"
-                />
-                <div className="quote-attribution">
-                  <span className="quote-name">
-                    {'- William Edwards Deming'}
-                  </span>
-                  <span className="quote-role">
-                    {lang === 'de'
-                      ? 'Statistiker & Qualit\u00E4tsmanagement-Pionier'
-                      : 'Statistician & Quality Management Pioneer'
-                    }
-                  </span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Labs Grid */}
-          <section className="labs-section" id="labs">
-            <div className="section-header">
-              <h2 style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>{t.sectionLabs}</h2>
-              <div className="bauhaus-accent-line"></div>
-            </div>
-            <div className="progress-panel">
-              <div className="progress-head">
-                <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{t.progressTitle}</h3>
-                <span className="progress-count">
-                  {done.length} {t.progressOf} {t.labs.length} {t.progressDone}
-                </span>
-              </div>
-              <div className="progress-track" role="progressbar"
-                   aria-valuenow={done.length} aria-valuemin={0} aria-valuemax={t.labs.length}>
-                <div className="progress-fill"
-                     style={{ width: (done.length / t.labs.length * 100) + '%' }} />
-              </div>
-              <p className="progress-note">{t.progressText}</p>
-              {done.length > 0 && (
-                <button type="button" className="progress-reset" onClick={() => setDone([])}>
-                  {t.progressReset}
-                </button>
-              )}
-            </div>
-
-            <div className="labs-grid">
-              {t.labs.map((lab) => (
-                <div key={lab.num} className={'lab-card' + (done.includes(lab.num) ? ' lab-card-done' : '')}>
-                  <span className="lab-num-badge">{lab.num}</span>
-                  <div>
-                    <div className="lab-title">{lab.title}</div>
-                    <div className="lab-subtitle">{lab.subtitle}</div>
-                  </div>
-                  <p className="lab-desc">{lab.desc}</p>
-                  <dl className="lab-meta">
-                    <dt>{t.labTime}</dt><dd>{lab.time}</dd>
-                    <dt>{t.labPrereq}</dt><dd>{lab.prereq}</dd>
-                  </dl>
-                  <a
-                    href={`${lab.link}${'?lang=' + lang}`}
-                    className="btn-lab-link"
-                  >
-                    {t.labLink}
-                  </a>
-                  <button
-                    type="button"
-                    className={'lab-done-btn' + (done.includes(lab.num) ? ' is-done' : '')}
-                    aria-pressed={done.includes(lab.num)}
-                    onClick={() => toggleDone(lab.num)}
-                  >
-                    {done.includes(lab.num) ? '\u2713 ' + t.progressMarked : t.progressMark}
-                  </button>
-                </div>
-              ))}
-
-              {/* Bonus Card */}
-              <div className="bonus-card">
-                <span className="bonus-badge">{t.bonusBadge}</span>
-                <div className="bonus-title">{t.bonusTitle}</div>
-                <div className="bonus-subtitle">{t.bonusSubtitle}</div>
-                <div className="bonus-highlights">
-                  <span className="bonus-chip">Apache Superset</span>
-                  <span className="bonus-chip">Metabase</span>
-                  <span className="bonus-chip">Docker</span>
-                  <span className="bonus-chip">PostgreSQL</span>
-                  <span className="bonus-chip">DSGVO</span>
-                  <span className="bonus-chip">Self-Hosted</span>
-                </div>
-                <div className="bonus-inner">
-                  <div>
-                    <p className="bonus-why">{t.bonusWhy}</p>
-                  </div>
-                  <div className="bonus-divider" />
-                  <ul className="bonus-criteria">
-                    {bonusCriteria.map((c, i) => (
-                      <li key={i}>
-                        <div className="bonus-crit-num">{i + 1}</div>
-                        <div className="bonus-crit-text">
-                          <strong>{lang === 'en' ? c.titleEn : c.titleDe}</strong>
-                          <span>{lang === 'en' ? c.descEn : c.descDe}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <a
-                  href={`lab-06-souveraenitaet.html${'?lang=' + lang}`}
-                  className="btn-bonus-link"
-                >
-                  <span>{t.bonusLink}</span>
-                </a>
-              </div>
-            </div>
-          </section>
-
-          {/* Implementierte Dashboards */}
-          <section className="dashboards-section">
-            <div className="section-header">
-              <h2 style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>{t.sectionDashboards}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p style={{ color: '#6B7280', maxWidth: '640px', marginBottom: '2rem' }}>{t.dashboardsDesc}</p>
-            </div>
-            <div className="dashboards-grid">
-              {t.dashboards.map((d, i) => (
-                <a
-                  key={i}
-                  href={d.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="dashboard-card"
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <span className="dashboard-card-name">{d.name}</span>
-                    <span className="live-badge">{'LIVE'}</span>
-                  </div>
-                  <p className="dashboard-card-desc">{d.desc}</p>
-                  <span className="dashboard-card-tech">{d.tech}</span>
-                </a>
-              ))}
-            </div>
-          </section>
-
-          {/* Footer */}
-          <footer className="footer">
-            <div className="footer-inner">
-              <div>
-                <div className="footer-sep"></div>
-                <div className="footer-logo">{'BINT-Lab'}</div>
-                <div className="footer-tagline">{t.footerTagline}</div>
-              </div>
-              <div>
-                <div className="footer-nav-label">{t.footerNavLabel}</div>
-                <nav className="footer-nav-links">
-                  {t.labs.map((lab) => (
-                    <a
-                      key={lab.num}
-                      href={`${lab.link}${'?lang=' + lang}`}
-                    >
-                      {`${lab.num} - ${lab.title}`}
-                    </a>
-                  ))}
-                </nav>
-              </div>
-            </div>
-            <div className="footer-bottom">
-              {t.footerText}
-            </div>
-          </footer>
-
+    <div class="bonus">
+      <div class="bonus-kopf">
+        <span class="badge"><span lang="de">Bonusprojekt</span><span lang="en">Bonus project</span></span>
+        <h3>Data Sovereignty Stack</h3>
+        <div class="sub"><span lang="de">Self-Hosted BI für DSGVO-konforme Unternehmen</span><span lang="en">Self-hosted BI for GDPR-compliant organisations</span></div>
+        <div class="chips">
+          <span class="chip">Apache Superset</span><span class="chip">Metabase</span><span class="chip">Docker</span><span class="chip">PostgreSQL</span><span class="chip">DSGVO</span><span class="chip">Self-Hosted</span>
         </div>
-      );
-    }
+      </div>
+      <p>
+        <span lang="de">Self-hosted Open-Source-BI kann die Kontrolle über Daten und Infrastruktur erhöhen und Drittlandübermittlungen vermeiden – wenn Hosting, Backups, Telemetrie und Administration entsprechend gestaltet sind. DSGVO-Konformität entsteht dadurch nicht automatisch, und statt Lizenzgebühren fallen Kosten für Infrastruktur, Betrieb und Personal an.</span>
+        <span lang="en">Self-hosted open-source BI can increase control over data and infrastructure and avoid third-country transfers – provided hosting, backups, telemetry and administration are designed accordingly. It does not create GDPR compliance by itself, and instead of licence fees you pay for infrastructure, operations and staff.</span>
+      </p>
+      <ol>
+        <li><div><strong><span lang="de">Datensouveränität</span><span lang="en">Data sovereignty</span></strong><span><span lang="de">Speicherort und Zugriff selbst bestimmen</span><span lang="en">Decide storage location and access yourself</span></span></div></li>
+        <li><div><strong><span lang="de">Weniger Lock-in</span><span lang="en">Less lock-in</span></strong><span><span lang="de">Offene Formate, wechselbare Anbieter</span><span lang="en">Open formats, replaceable vendors</span></span></div></li>
+        <li><div><strong><span lang="de">Kontrollierbarer Datenstandort</span><span lang="en">Controllable data location</span></strong><span><span lang="de">EU/EWR-Hosting bewusst konfigurieren und nachweisen</span><span lang="en">Deliberately configure and demonstrate EU/EEA hosting</span></span></div></li>
+        <li><div><strong><span lang="de">Andere Kostenstruktur</span><span lang="en">Different cost structure</span></strong><span><span lang="de">Keine unmittelbaren Lizenzkosten, dafür Infrastruktur, Betrieb und Personal</span><span lang="en">No direct licence fees, but infrastructure, operations and staff</span></span></div></li>
+        <li><div><strong><span lang="de">Eigene Infrastruktur</span><span lang="en">Your own infrastructure</span></strong><span><span lang="de">Eigene Regeln – und eigener Betriebsaufwand</span><span lang="en">Your rules – and your operational effort</span></span></div></li>
+      </ol>
+      <div class="cta-row">
+        <a class="btn" href="lab-06-souveraenitaet.html#docker" data-lab-link><span lang="de">Zum Stack in Lab 06 →</span><span lang="en">To the stack in lab 06 →</span></a>
+      </div>
+    </div>
+  </div>
+</section>
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+<section class="section soft">
+  <div class="inner">
+    <div class="section-head">
+      <span class="badge dark"><span lang="de">Wie das hier funktioniert</span><span lang="en">How this works</span></span>
+      <div class="accent-line"></div>
+      <h2><span lang="de">Echte Werkzeuge, ein Datensatz, dieselben Zahlen</span><span lang="en">Real tools, one dataset, the same figures</span></h2>
+    </div>
+    <div class="labs-grid">
+      <div class="concept-box">
+        <h3><span lang="de">Code, der läuft</span><span lang="en">Code that runs</span></h3>
+        <p><span lang="de">Jeder Codeblock ist gekennzeichnet: „Läuft unverändert“ heißt, dass er in einer frischen
+          Python-Umgebung mit dem Datensatz daneben durchläuft – das wird vor jeder Veröffentlichung geprüft.
+          „Konzept“ markiert Schnipsel mit Platzhalternamen, die das Prinzip zeigen.</span>
+        <span lang="en">Every code block is labelled: “Runnable as-is” means it runs in a fresh Python environment with
+          the dataset next to it – this is checked before every release. “Concept” marks snippets with placeholder names
+          that show the principle.</span></p>
+      </div>
+      <div class="concept-box">
+        <h3><span lang="de">Sollwerte zum Gegenprüfen</span><span lang="en">Expected values to check against</span></h3>
+        <p><span lang="de">Gesamtumsatz 2.261.536,78, 4.922 Bestellungen, 9.800 Positionen: Diese Zahlen liefern
+          pandas, die DAX-Measures in Power BI, die berechneten Felder in Tableau und die SQL-Abfrage in PostgreSQL
+          gleichermaßen. Weicht Ihr Ergebnis ab, sagt das Lab, woran es meist liegt.</span>
+        <span lang="en">Total revenue 2,261,536.78, 4,922 orders, 9,800 line items: pandas, the DAX measures in Power BI,
+          the calculated fields in Tableau and the SQL query in PostgreSQL all deliver these figures. If your result
+          differs, the lab tells you the usual cause.</span></p>
+      </div>
+      <div class="concept-box">
+        <h3><span lang="de">Starterpakete und Quiz</span><span lang="en">Starter packs and quiz</span></h3>
+        <p><span lang="de">Langer Code muss nicht aus der Seite kopiert werden: Zu den Labs 04, 05 und 06 gibt es
+          Starterpakete, zu Lab 05 zusätzlich eine gepackte Tableau-Arbeitsmappe. Jedes Lab schließt mit einem Quiz,
+          das jede Antwort begründet und einen zweiten Versuch erlaubt.</span>
+        <span lang="en">Long code need not be copied from the page: labs 04, 05 and 06 come with starter packs, lab 05
+          additionally with a packaged Tableau workbook. Every lab closes with a quiz that explains every answer and
+          allows a second attempt.</span></p>
+      </div>
+    </div>
+    <div class="tip-box">
+      <p><strong><span lang="de">Ihr Fortschritt bleibt lokal.</span><span lang="en">Your progress stays local.</span></strong>
+        <span lang="de">Gelöste Quizfragen, als erledigt markierte Labs und die Checkliste in Lab 06 werden im Speicher
+          Ihres Browsers vermerkt. Diese Angaben verlassen Ihr Gerät nicht; es gibt keine Auswertung und keine
+          Übermittlung an die Hochschule. Oben bei den Kacheln sehen Sie Ihren Stand und können ihn löschen, um von
+          vorn zu beginnen.</span>
+        <span lang="en">Solved quiz questions, labs marked as done and the checklist in lab 06 are noted in your
+          browser's local storage. This information never leaves your device; there is no evaluation and no
+          transmission to the university. Above the tiles you see your progress and can delete it to start over.</span></p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="dashboards">
+  <div class="section-head">
+    <span class="badge"><span lang="de">Aus dem Kurs heraus</span><span lang="en">Built from the course</span></span>
+    <div class="accent-line"></div>
+    <h2><span lang="de">Implementierte Dashboards</span><span lang="en">Live dashboards</span></h2>
+    <p><span lang="de">Diese Dashboards laufen produktiv – gebaut mit dem Stack aus diesem Kurs: Python, Plotly Dash und
+      Docker auf eigener Infrastruktur.</span><span lang="en">These dashboards run in production – built with the stack
+      from this course: Python, Plotly Dash and Docker on self-managed infrastructure.</span></p>
+  </div>
+  <div class="dashboards">
+    <a class="dashboard-card" href="https://whi-dashboard.butscher.cloud" target="_blank" rel="noopener noreferrer">
+      <div class="kopf"><span class="name">WHI Dashboard</span><span class="live-badge">Live</span></div>
+      <p><span lang="de">World Happiness Index – Ländervergleich</span><span lang="en">World Happiness Index – country comparison</span></p>
+      <span class="tech">Python · Plotly Dash · Docker</span>
+    </a>
+    <a class="dashboard-card" href="https://alc-dashboard.butscher.cloud" target="_blank" rel="noopener noreferrer">
+      <div class="kopf"><span class="name"><span lang="de">Alkohol-Dashboard</span><span lang="en">Alcohol dashboard</span></span><span class="live-badge">Live</span></div>
+      <p><span lang="de">Alkoholkonsum-Analyse nach Ländern und Jahren</span><span lang="en">Alcohol consumption analysis by country and year</span></p>
+      <span class="tech">Python · Plotly Dash · Docker</span>
+    </a>
+    <a class="dashboard-card" href="https://rainforest.butscher.cloud" target="_blank" rel="noopener noreferrer">
+      <div class="kopf"><span class="name">Rainforest Dashboard</span><span class="live-badge">Live</span></div>
+      <p><span lang="de">Amazonas-Abholzung und Klimadaten interaktiv</span><span lang="en">Amazon deforestation and climate data, interactive</span></p>
+      <span class="tech">Python · Plotly Dash · Docker</span>
+    </a>
+    <a class="dashboard-card" href="https://invoices.butscher.cloud" target="_blank" rel="noopener noreferrer">
+      <div class="kopf"><span class="name"><span lang="de">Rechnungsanalyse</span><span lang="en">Invoice analysis</span></span><span class="live-badge">Live</span></div>
+      <p><span lang="de">KI-gestützte Rechnungsanalyse mit n8n-Automatisierung</span><span lang="en">AI-powered invoice analysis with n8n automation</span></p>
+      <span class="tech">Chart.js · Supabase · n8n</span>
+    </a>
+  </div>
+</section>
+
+<section class="section soft">
+  <div class="inner">
+    <div class="section-head">
+      <span class="badge"><span lang="de">Erster Schritt</span><span lang="en">First step</span></span>
+      <div class="accent-line"></div>
+      <h2><span lang="de">Wenn Sie noch nie ein Dashboard gebaut haben</span><span lang="en">If you have never built a dashboard</span></h2>
+      <p>
+        <span lang="de">Fangen Sie mit Lab 01 an. Es klärt, was Business Intelligence von Data Science unterscheidet,
+          wie die Daten vom Quellsystem ins Dashboard kommen und woran man einen brauchbaren KPI erkennt. Wer das schon
+          kennt, steigt bei Lab 02 ein – oder direkt bei der Fallstudie in Lab 05.</span>
+        <span lang="en">Start with lab 01. It clarifies what distinguishes business intelligence from data science, how
+          the data gets from the source system into the dashboard and how to recognise a usable KPI. If you already know
+          that, start at lab 02 – or straight at the case study in lab 05.</span>
+      </p>
+    </div>
+    <div class="cta-row" style="justify-content:flex-start">
+      <a class="btn solid" href="lab-01-grundlagen.html" data-lab-link><span lang="de">Lab 01 öffnen</span><span lang="en">Open lab 01</span></a>
+      <a class="btn" href="lab-05-fallstudie.html" data-lab-link><span lang="de">Direkt zur Fallstudie</span><span lang="en">Straight to the case study</span></a>
+      <a class="btn" href="https://github.com/swrobuts/BINT-Lab" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <span lang="de">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher · Datensatz: <a href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting" rel="noopener">Superstore Sales (Kaggle)</a></span>
+  <span lang="en">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher · Dataset: <a href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting" rel="noopener">Superstore Sales (Kaggle)</a></span>
+</footer>
+
+<script type="module">
+  import { starteUebersicht } from './assets/bint.js'
+  starteUebersicht({ basis: '.' })
+</script>
 </body>
 </html>

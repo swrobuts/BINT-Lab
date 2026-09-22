@@ -1,1254 +1,772 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 06 – Digitale Souveränität &amp; Open-Source BI · THWS BINT-Lab</title>
+  <title>Lab 06 · Digitale Souveränität &amp; Open-Source BI · BINT-Lab</title>
+  <meta name="bint:titel-en" content="Lab 06 · Digital Sovereignty &amp; Open-Source BI · BINT-Lab" />
+  <meta name="description" content="Cloud Lock-in verstehen, Open-Source-Alternativen bewerten, Total Cost of Ownership analysieren und einen Self-Hosted BI-Stack mit Docker aufbauen." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
-       die dieses build-freie Setup (Transpilierung per text/babel im Browser) voraussetzt. -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-          integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-          integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-  <!-- Babel bewusst auf 7.x gepinnt: Babel 8 stellt auf den automatic JSX runtime um
-       und bricht damit text/babel ohne Bundler. 7.29.8 = letzter 7.x-Stand. -->
-  <script src="https://unpkg.com/@babel/standalone@7.29.8/babel.min.js"
-          integrity="sha384-Ux6uBqExf/7ahsSNrA9VI7vuaw6sKjDoVdjdUxmIoL2qdlzFVZ157sTi6JK3Z9Q8" crossorigin="anonymous"></script>
-  <style>
-    :root {
-      --col-primary: #1E3A8A;
-      --col-accent: #2563EB;
-      --col-primary-light: rgba(30,58,138,0.08);
-    }
-    [data-lang="en"] {
-      --col-primary: #0D9488;
-      --col-accent: #0D9488;
-      --col-primary-light: rgba(13,148,136,0.08);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background: #FAFAFA; font-family: 'Space Grotesk', -apple-system, sans-serif; margin: 0; color: #1A1A1A; }
-    h2 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-top: 0; }
-    h1 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-top: 0; }
-    h3 { color: #1E3A8A; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; margin: 0.5rem 0; }
-    p { line-height: 1.7; }
-    .lab-num { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 3.5rem; color: #1E3A8A; opacity: 0.12; position: absolute; right: 0; top: -0.75rem; }
-    .bauhaus-accent-line { width: 48px; height: 4px; background: #2563EB; margin: 0.5rem 0 1rem 0; }
-    .bauhaus-badge { background: #2563EB; color: white; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; display: inline-block; }
-    .code-block { background: #F3F4F6; color: #1A1A1A; border-left: 4px solid #D1D5DB; font-family: 'Courier New', monospace; font-size: 0.82rem; padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; white-space: pre; overflow-x: auto; position: relative; margin: 1rem 0; }
-    .tip-box { border-left: 4px solid #2563EB; background: #EFF6FF; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .info-box { border-left: 4px solid #3b82f6; background: #eff6ff; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .concept-box { border-left: 4px solid #1E3A8A; background: rgba(30,58,138,0.06); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .challenge-box { border-left: 4px solid #22c55e; background: #f0fdf4; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .youtube-box { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; }
-    .youtube-box h4 { color: #EA580C; margin-top: 0; }
-    .youtube-link { color: #EA580C; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
-    .youtube-link:hover { text-decoration: underline; }
-    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #1E3A8A; color: white; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1rem; flex-shrink: 0; margin-right: 0.75rem; }
-    .step-block { display: flex; align-items: flex-start; margin-bottom: 1.5rem; }
-    .step-content { flex: 1; }
-    .header { position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 100; background: white; border-bottom: 1px solid #E5E7EB; box-shadow: 0 1px 8px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
-    .header-left { display: flex; align-items: center; gap: 1.5rem; }
-    .header-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: #1E3A8A; text-decoration: none; }
-    .header-back { font-size: 0.85rem; color: #555; text-decoration: none; font-weight: 500; }
-    .header-back:hover { color: #1E3A8A; }
-    .lang-btn { border: 2px solid #1A1A1A; background: white; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; letter-spacing: 0.05em; font-family: 'Space Grotesk', sans-serif; }
-    .lang-btn.active { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .lang-btn:hover:not(.active) { background: #f5f5f5; }
-    .sidebar { position: fixed; top: 56px; left: 0; width: 260px; height: calc(100vh - 56px); overflow-y: auto; border-right: 1px solid #E5E7EB; background: white; padding: 1.5rem 0; }
-    .sidebar-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #888; padding: 0 1.25rem; margin-bottom: 0.75rem; }
-    .sidebar-link { display: block; padding: 0.55rem 1.25rem; font-size: 0.88rem; color: #444; text-decoration: none; border-left: 3px solid transparent; transition: background 0.12s, color 0.12s, border-color 0.12s; font-weight: 500; }
-    .sidebar-link:hover { color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .sidebar-link.active { color: #1E3A8A; border-left-color: #2563EB; background: rgba(30,58,138,0.06); font-weight: 700; }
-    .main-content { margin-left: 260px; padding-top: 72px; padding-bottom: 4rem; padding-left: 3rem; padding-right: 3rem; max-width: 960px; }
-    .section-block { margin-bottom: 4rem; }
-    .lernziele-box { background: #EFF6FF; border-left: 4px solid #2563EB; padding: 1.25rem 1.5rem; margin-top: 1.5rem; }
-    .lernziele-heading { color: #1E3A8A; margin: 0 0 0.75rem; font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
-    .lernziel-chip { display: inline-block; background: rgba(30,58,138,0.08); color: #1E3A8A; border: 1px solid rgba(30,58,138,0.2); padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.82rem; font-weight: 500; margin: 0.2rem; }
-    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-    /* ── Kennzeichnung kopierbarer Codebloecke ───────────────────────────────
-       Jeder Block sagt, ob er in einer frischen Umgebung so laeuft ("run")
-       oder ob er ein Konzeptsnippet mit Platzhalternamen ist ("concept"). */
-    .code-tag { display: inline-block; font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 5px 5px 0 0; }
-    .code-tag-run { background: #065F46; color: #fff; }
-    .code-tag-concept { background: #92400E; color: #fff; }
-    .code-tag + .code-block { border-radius: 0 8px 8px 0; margin-top: 0; }
-    .code-note { font-size: 0.78rem; color: #4B5563; margin: 0.35rem 0 0; line-height: 1.55; }
-    /* ── Quiz: zweiter Versuch statt Einmal-Sperre ───────────────────────────
-       Eine falsche Antwort sperrt die Frage nicht mehr. Die Loesung wird erst
-       gezeigt, wenn sie getroffen oder ausdruecklich angefordert wurde. */
-    .quiz-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    .quiz-retry-btn { font-family: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1.5px solid var(--col-primary, #1E3A8A); background: white; color: var(--col-primary, #1E3A8A); cursor: pointer; }
-    .quiz-retry-btn:hover { background: rgba(30,58,138,0.06); }
-    .quiz-retry-btn.secondary { border-color: #9CA3AF; color: #4B5563; }
-    .quiz-retry-btn.secondary:hover { background: #F3F4F6; }
-    .quiz-hint { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: #92400E; background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 0.55rem 0.9rem; border-radius: 0 6px 6px 0; }
-    .quiz-attempts { font-size: 0.78rem; color: #6B7280; align-self: center; }
-    /* ── Responsive Guards (Mobilnutzung) ────────────────────────────────────
-       Tabellen und Codebloecke duerfen breiter sein als der Viewport, aber sie
-       scrollen dann in ihrem eigenen Container. Die Seite selbst scrollt nie
-       horizontal. Pruefwert: document.scrollWidth <= window.innerWidth bei
-       320 / 390 / 768 / 1024 / 1440 px. */
-    .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1rem 0; }
-    .table-wrap > table { margin: 0; }
-    /* Flex- und Grid-Kinder duerfen unter ihre Inhaltsbreite schrumpfen,
-       sonst sprengt ein <pre> den Elternteil (min-width:auto ist der Default). */
-    .step-content, .step-block > * { min-width: 0; }
-    .section-block, .content, main { min-width: 0; }
-    .code-block { max-width: 100%; }
-    /* Lange Bezeichner ohne Leerzeichen (Spaltennamen, URLs) umbrechen lassen. */
-    p, li, td, th, h1, h2, h3, h4 { overflow-wrap: break-word; }
-    code { overflow-wrap: anywhere; word-break: break-word; }
-    .tip-box, .info-box, .concept-box, .challenge-box, .youtube-box { max-width: 100%; overflow-wrap: break-word; }
-    th { background: #1E3A8A; color: white; padding: 0.65rem 1rem; text-align: left; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.05em; }
-    td { padding: 0.6rem 1rem; border-bottom: 1px solid #e5e7eb; }
-    tr:nth-child(even) td { background: #f9fafb; }
-    .nav-bottom { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 0; margin-top: 2rem; border-top: 1px solid #e5e7eb; }
-    .nav-btn { border: 2px solid #1A1A1A; background: white; padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; color: #1A1A1A; font-family: 'Space Grotesk', sans-serif; display: inline-block; }
-    .nav-btn:hover { background: #2563EB; color: white; border-color: #2563EB; }
-    .nav-btn.primary { background: #1E3A8A; border-color: #1E3A8A; color: white; }
-    .nav-btn.primary:hover { background: #1e40af; border-color: #1e40af; }
-    .footer { background: #1A1A1A; padding: 2rem 3rem 2rem calc(260px + 3rem); }
-    .footer-text { color: #6B7280; font-size: 0.875rem; }
-    .checklist-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #F3F4F6; }
-    .checklist-check { width: 20px; height: 20px; border: 2px solid #D1D5DB; border-radius: 4px; flex-shrink: 0; margin-top: 2px; cursor: pointer; transition: background 0.15s, border-color 0.15s; display: flex; align-items: center; justify-content: center; }
-    .checklist-check.checked { background: #2563EB; border-color: #2563EB; }
-    .checklist-text { font-size: 0.95rem; color: #374151; padding-top: 1px; }
-    .checklist-text.done { text-decoration: line-through; color: #9CA3AF; }
-    .quiz-option { display: block; width: 100%; text-align: left; padding: 0.75rem 1rem; margin: 0.4rem 0; border: 2px solid #E5E7EB; border-radius: 8px; background: white; font-size: 0.92rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: border-color 0.15s, background 0.15s; }
-    .quiz-option:hover:not(:disabled) { border-color: #2563EB; background: rgba(37,99,235,0.04); }
-    @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; } .footer { padding: 2rem 1.25rem; } }
-    [data-lang="en"] h2, [data-lang="en"] h3 { color: #0D9488; }
-    [data-lang="en"] h4 { color: #0D9488; }
-    [data-lang="en"] .bauhaus-accent-line { background: #14B8A6; }
-    [data-lang="en"] .bauhaus-badge { background: #0D9488; }
-    [data-lang="en"] .header-logo { color: #0D9488; }
-    [data-lang="en"] .header-back:hover { color: #0D9488; }
-    [data-lang="en"] .lang-btn.active { background: #0D9488; border-color: #0D9488; color: white; }
-    [data-lang="en"] .sidebar-link:hover { color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .sidebar-link.active { color: #0D9488; border-left-color: #0D9488; background: rgba(13,148,136,0.06); font-weight: 700; }
-    [data-lang="en"] .lernziele-box { border-left-color: #14B8A6; background: #F0FDFA; }
-    [data-lang="en"] .lernziele-heading { color: #0D9488; }
-    [data-lang="en"] .lernziel-chip { background: rgba(13,148,136,0.1); color: #0D9488; border-color: rgba(13,148,136,0.25); }
-    [data-lang="en"] .lab-num { color: #0D9488; }
-    [data-lang="en"] th { background: #0D9488; }
-    [data-lang="en"] .tip-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .concept-box { border-left-color: #0D9488; background: rgba(13,148,136,0.08); }
-    [data-lang="en"] .info-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .step-number { background: #0D9488; }
-    [data-lang="en"] .checklist-check.checked { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .nav-btn:hover { background: #0D9488; border-color: #0D9488; color: white; }
-    [data-lang="en"] .nav-btn.primary { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary:hover { background: #0f766e; border-color: #0f766e; }
-    [data-lang="en"] .quiz-option:hover:not(:disabled) { border-color: #0D9488; background: rgba(13,148,136,0.04); }
-  
-    /* ── Barrierefreiheit ────────────────────────────────────────────────────
-       sr-only blendet Text visuell aus, laesst ihn aber vorlesbar. Wird fuer
-       die Antwortzustaende im Quiz und den Sprunglink gebraucht. */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .quiz-mark { font-weight: 800; margin-right: 0.4rem; }
-    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--col-primary, #1E3A8A); color: #fff; padding: 0.6rem 1rem; border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 0; }
-    /* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
-    a:focus-visible, button:focus-visible { outline: 3px solid #F59E0B; outline-offset: 2px; }
-  </style>
+  <link rel="stylesheet" href="assets/bint.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231E3A8A'/><text x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' text-anchor='middle' fill='%2338BDF8'>B</text></svg>" />
 </head>
-<body>
-<div id="root"></div>
+<body class="lab-page" data-lab="lab-06">
 
-  <!-- Ausfallsicherung fuer die CDN-Abhaengigkeiten.
-       React, ReactDOM und Babel kommen von unpkg.com. Faellt der Dienst aus
-       oder sperrt ein Hochschulnetz die Domain, blieb die Seite bisher weiss
-       und der Lernende sah keinen Hinweis, woran es liegt. Dieses Skript
-       laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
-       wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
-       hat (faengt Transpilierungsfehler ab). -->
-  <script src="assets/site.js"></script>
-  <script>
-  (function () {
-    var isEn = BINTLab.getLanguage() === 'en';
-    var T = isEn ? {
-      head: 'This page could not load',
-      miss: 'The following libraries were not delivered:',
-      why: 'The page loads React and Babel from unpkg.com at runtime. If your network blocks that host, or the service is unavailable, nothing can be rendered.',
-      what: 'What you can do:',
-      s1: 'Reload the page - the CDN is often only briefly unavailable.',
-      s2: 'Try a different network (mobile hotspot instead of campus Wi-Fi).',
-      s3: 'Check whether a proxy, VPN or content blocker is blocking unpkg.com.',
-      s4: 'If it persists, report it - the lab content itself is fine, only the delivery failed.',
-      slow: 'The libraries loaded, but the page did not render. That points to a script error rather than the network. Please report it with the browser console output.'
-    } : {
-      head: 'Diese Seite konnte nicht geladen werden',
-      miss: 'Folgende Bibliotheken wurden nicht ausgeliefert:',
-      why: 'Die Seite laedt React und Babel zur Laufzeit von unpkg.com. Sperrt das Netz diesen Host oder ist der Dienst gestoert, kann nichts dargestellt werden.',
-      what: 'Was du tun kannst:',
-      s1: 'Seite neu laden - das CDN ist oft nur kurz nicht erreichbar.',
-      s2: 'Ein anderes Netz probieren (Mobilfunk statt Campus-WLAN).',
-      s3: 'Pruefen, ob ein Proxy, VPN oder Contentblocker unpkg.com blockiert.',
-      s4: 'Bleibt es dabei: melden - die Lab-Inhalte sind in Ordnung, nur die Auslieferung ist gescheitert.',
-      slow: 'Die Bibliotheken sind geladen, die Seite hat aber nicht gerendert. Das deutet auf einen Skriptfehler hin, nicht auf das Netz. Bitte mit der Ausgabe der Browser-Konsole melden.'
-    };
+<a class="skip-link" href="#main"><span lang="de">Zum Inhalt springen</span><span lang="en">Skip to content</span></a>
 
-    function panel(title, body) {
-      var root = document.getElementById('root') || document.body;
-      root.innerHTML =
-        '<div style="max-width:44rem;margin:4rem auto;padding:1.75rem;font-family:' +
-        "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" +
-        ';line-height:1.65;color:#1A1A1A;background:#fff;border:1px solid #E5E7EB;' +
-        'border-left:5px solid #DC2626;border-radius:0 10px 10px 0">' +
-        '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
-        body +
-        '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
-        '</div>';
-    }
+<header class="header">
+  <div class="header-left">
+    <a class="header-logo" href="index.html" data-lab-link><span class="mark">BINT</span>-Lab</a>
+    <a class="header-back" href="index.html" data-lab-link>
+      <span lang="de">← Zur Übersicht</span><span lang="en">← Back to overview</span>
+    </a>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" data-lang-btn="de" aria-pressed="true" aria-label="Deutsch">DE</button>
+    <button class="lang-btn" data-lang-btn="en" aria-pressed="false" aria-label="English">EN</button>
+  </div>
+</header>
 
-    var missing = [];
-    if (typeof window.React === 'undefined') missing.push('React');
-    if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
-    if (typeof window.Babel === 'undefined') missing.push('Babel');
+<nav class="sidebar" aria-label="Lab-Navigation">
+  <div class="sidebar-title"><span lang="de">Abschnitte</span><span lang="en">Sections</span></div>
+  <a class="sidebar-link" href="#souveraenitaet"><span lang="de">Digitale Souveränität</span><span lang="en">Digital Sovereignty</span></a>
+  <a class="sidebar-link" href="#lock-in">Cloud Lock-in</a>
+  <a class="sidebar-link" href="#opensource">Open-Source BI</a>
+  <a class="sidebar-link" href="#docker">Docker Setup</a>
+  <a class="sidebar-link" href="#dsgvo"><span lang="de">DSGVO Checkliste</span><span lang="en">GDPR Checklist</span></a>
+  <a class="sidebar-link" href="#entscheidung"><span lang="de">Entscheidungsmatrix</span><span lang="en">Decision Matrix</span></a>
+  <a class="sidebar-link" href="#abschlussprojekt"><span lang="de">Abschlussprojekt</span><span lang="en">Final Project</span></a>
+  <a class="sidebar-link" href="#youtube"><span lang="de">YouTube-Ressourcen</span><span lang="en">YouTube Resources</span></a>
+  <a class="sidebar-link" href="#quiz">Quiz</a>
+  <a class="sidebar-link" href="#zusammenfassung"><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></a>
+</nav>
 
-    if (missing.length) {
-      panel(T.head,
-        '<p><strong>' + T.miss + '</strong> ' + missing.join(', ') + '</p>' +
-        '<p>' + T.why + '</p>' +
-        '<p><strong>' + T.what + '</strong></p>' +
-        '<ol style="padding-left:1.25rem"><li>' + T.s1 + '</li><li>' + T.s2 +
-        '</li><li>' + T.s3 + '</li><li>' + T.s4 + '</li></ol>');
-      return;
-    }
+<div class="lab-header">
+  <div class="lab-num-big">06</div>
+  <h1 class="lab-title"><span lang="de">Digitale Souveränität &amp; Open-Source BI</span><span lang="en">Digital Sovereignty &amp; Open-Source BI</span></h1>
+  <p class="lab-intro"><span lang="de">Cloud Lock-in verstehen, Open-Source-Alternativen bewerten, Total Cost of Ownership analysieren und einen Self-Hosted BI-Stack mit Docker aufbauen.</span><span lang="en">Understand cloud lock-in, evaluate open-source alternatives, analyze total cost of ownership, and build a self-hosted BI stack with Docker.</span></p>
+  <div class="lernziele">
+    <span class="lernziel-chip"><span lang="de">Begriff „Digitale Souveränität“ definieren und im EU-Kontext einordnen</span><span lang="en">Define "Digital Sovereignty" and contextualize it within the EU framework</span></span>
+    <span class="lernziel-chip"><span lang="de">Cloud Lock-in-Risiken und TCO-Faktoren erkennen</span><span lang="en">Recognize cloud lock-in risks and TCO factors</span></span>
+    <span class="lernziel-chip"><span lang="de">Open-Source BI-Tools kennen, einordnen und Lizenzmodelle unterscheiden</span><span lang="en">Know and categorize open-source BI tools, distinguishing license models</span></span>
+    <span class="lernziel-chip"><span lang="de">Self-Hosted BI-Stack mit Docker Compose aufsetzen können</span><span lang="en">Set up a self-hosted BI stack with Docker Compose</span></span>
+    <span class="lernziel-chip"><span lang="de">DSGVO-Anforderungen für BI-Systeme prüfen und dokumentieren</span><span lang="en">Verify and document GDPR requirements for BI systems</span></span>
+    <span class="lernziel-chip"><span lang="de">Begründete Tool-Empfehlungen für verschiedene Szenarien geben</span><span lang="en">Provide justified tool recommendations for various scenarios</span></span>
+  </div>
+</div>
 
-    // Bibliotheken da, aber die App mountet nicht -> Skriptfehler.
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        panel(T.head, '<p>' + T.slow + '</p>');
-      }
-    }, 5000);
-  })();
-  </script>
-<script type="text/babel">
-  function CodeBlock({ code, lang, kind, note }) {
-    const [copied, setCopied] = React.useState(false);
-    const [copyFailed, setCopyFailed] = React.useState(false);
-    const copyLabel = lang === 'en' ? 'Copy' : 'Kopieren';
-    const copiedLabel = lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert';
-    const copy = async () => {
-      const ok = await BINTLab.copyText(code);
-      setCopied(ok);
-      setCopyFailed(!ok);
-      if (ok) setTimeout(() => setCopied(false), 1500);
-    };
-    return (
-      <div style={{ position: 'relative', marginBottom: '1rem' }}>
-        {kind && (
-          <div className={'code-tag ' + (kind === 'run' ? 'code-tag-run' : 'code-tag-concept')}>
-            {kind === 'run'
-              ? (lang === 'en' ? 'Runnable as-is' : 'L\u00E4uft unver\u00E4ndert')
-              : kind === 'diagram'
-                ? (lang === 'en' ? 'Schema \u2013 not code' : 'Schema \u2013 kein Code')
-                : (lang === 'en' ? 'Concept \u2013 placeholder names' : 'Konzept \u2013 Platzhalternamen')}
-          </div>
-        )}
-        <pre className="code-block">{code}</pre>
-          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
-        {note && <p className="code-note">{note}</p>}
-        <button onClick={copy} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: copied ? '#059669' : '#E5E7EB', color: copied ? 'white' : '#374151', border: 'none', padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif' }}>{copied ? copiedLabel : copyLabel}</button>
+<main class="main-content" id="main">
+
+  <section class="section-block" id="souveraenitaet">
+    <h2><span lang="de">Was ist Digitale Souveränität?</span><span lang="en">What is Digital Sovereignty?</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Digitale Souveränität bezeichnet die Fähigkeit von Organisationen und Staaten, ihre digitale Infrastruktur selbst zu kontrollieren – von Hardware und Software bis hin zu Daten, Algorithmen und Plattformen (Floridi, 2020).</span><span lang="en">Digital sovereignty refers to the ability of organizations and states to control their own digital infrastructure – from hardware and software to data, algorithms, and platforms (Floridi, 2020).</span></p>
+    <div class="concept-box">
+      <h3><span lang="de">Die drei Säulen digitaler Souveränität</span><span lang="en">Three Pillars of Digital Sovereignty</span></h3>
+      <ul>
+        <li><span lang="de">Datensouveränität: Kontrolle über Speicherort, Zugriff und Verarbeitung eigener Daten</span><span lang="en">Data sovereignty: Control over storage location, access, and processing of own data</span></li>
+        <li><span lang="de">Technologische Souveränität: Unabhängigkeit von einzelnen Anbietern für kritische Infrastruktur</span><span lang="en">Technological sovereignty: Independence from single vendors for critical infrastructure</span></li>
+        <li><span lang="de">Regulatorische Souveränität: Fähigkeit, eigene rechtliche Standards (DSGVO, Data Act) durchzusetzen</span><span lang="en">Regulatory sovereignty: Ability to enforce own legal standards (GDPR, Data Act)</span></li>
+      </ul>
+    </div>
+    <p><span lang="de">Auf EU-Ebene werden Initiativen wie GAIA-X, die European Cloud Initiative und der EU Data Act – Verordnung (EU) 2023/2854 – vorangetrieben, um europäische Datensouveränität gegenüber US-amerikanischen Hyperscalern (AWS, Azure, GCP) zu stärken. Auch der EU AI Act (2024) berührt die Souveränitätsfrage, indem er Transparenzpflichten für KI-Systeme fordert.</span><span lang="en">At the EU level, initiatives such as GAIA-X, the European Cloud Initiative, and the EU Data Act – Regulation (EU) 2023/2854 – aim to strengthen European data sovereignty against US hyperscalers (AWS, Azure, GCP). The EU AI Act (2024) also touches on sovereignty by requiring transparency obligations for AI systems.</span></p>
+    <p><span lang="de">Für Business Intelligence stellen sich folgende Kernfragen:</span><span lang="en">For Business Intelligence, the core questions are:</span></p>
+    <ul>
+      <li><span lang="de">Wo liegen meine Daten – auf welchem Server, in welchem Land?</span><span lang="en">Where is my data stored – on which server, in which country?</span></li>
+      <li><span lang="de">Wer kann theoretisch darauf zugreifen (Anbieter, Behörden, Dritte)?</span><span lang="en">Who can theoretically access it (provider, authorities, third parties)?</span></li>
+      <li><span lang="de">Bin ich bei einem Anbieter gesperrt (Lock-in)?</span><span lang="en">Am I locked into a single vendor?</span></li>
+      <li><span lang="de">Was passiert, wenn der Anbieter den Dienst einstellt oder die Preise erhöht?</span><span lang="en">What happens if the provider discontinues the service or raises prices?</span></li>
+      <li><span lang="de">Kann ich meine Daten und Dashboards vollständig exportieren?</span><span lang="en">Can I fully export my data and dashboards?</span></li>
+    </ul>
+    <div class="info-box">
+      <p><strong>Schrems II &amp; EU-US Data Privacy Framework:</strong> <span lang="de">Nach Schrems II (EuGH, 2020) ist der Transfer personenbezogener Daten in die USA ohne spezielle Schutzmaßnahmen rechtswidrig. Für Übermittlungen an US-Unternehmen, die am EU-US Data Privacy Framework (Angemessenheitsbeschluss 2023) teilnehmen, kann dieser Beschluss die Transfergrundlage bilden – ein zusätzliches Instrument ist dann nicht erforderlich. Bei nicht teilnehmenden Empfängern braucht es andere Instrumente, etwa Standardvertragsklauseln oder Binding Corporate Rules, je nach Konstellation ergänzt um eine Transferprüfung. Der Angemessenheitsbeschluss bleibt politisch und gerichtlich umstritten; welcher Pfad gilt, ist im Einzelfall und je Dienst zu klären.</span><span lang="en">After Schrems II (CJEU, 2020), the transfer of personal data to the USA without special safeguards is unlawful. For transfers to US companies participating in the EU-US Data Privacy Framework (adequacy decision 2023), that decision can serve as the transfer basis – no additional instrument is then required. For non-participating recipients other instruments are needed, such as Standard Contractual Clauses or Binding Corporate Rules, complemented by a transfer assessment depending on the constellation. The adequacy decision remains politically and legally contested; which path applies has to be settled case by case and per service.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="lock-in">
+    <h2><span lang="de">SaaS BI-Tools: Cloud Lock-in</span><span lang="en">SaaS BI Tools: Cloud Lock-in</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Cloud Lock-in entsteht, wenn der Wechsel zu einem alternativen Anbieter technisch oder wirtschaftlich prohibitiv wird. Im BI-Kontext sind proprietäre Datenmodelle, DAX/M-Formeln, Berechtigungsstrukturen und API-Abhängigkeiten die Haupttreiber. Plattformen wie Microsoft Fabric verstärken diesen Effekt: Wenn Ingestion, Transformation, Warehouse und Reporting gemeinsam auf OneLake liegen, wächst die Wechselhürde mit jedem zusätzlichen Workload.</span><span lang="en">Cloud lock-in occurs when switching to an alternative provider becomes technically or economically prohibitive. In the BI context, proprietary data models, DAX/M formulas, permission structures, and API dependencies are the main drivers. Platforms such as Microsoft Fabric amplify this: once ingestion, transformation, warehousing and reporting all sit on OneLake, the switching barrier grows with every additional workload.</span></p>
+    <div class="concept-box">
+      <h3><span lang="de">Total Cost of Ownership (TCO) bei BI-Tools</span><span lang="en">Total Cost of Ownership (TCO) for BI Tools</span></h3>
+      <ul>
+        <li><span lang="de">Direkte Kosten: Lizenzgebühren pro Nutzer oder Kapazität. Preise, Abrechnungsmodell und enthaltene Funktionen beim jeweiligen Anbieter prüfen.</span><span lang="en">Direct costs: licence fees per user or capacity. Check pricing, billing models and included features with each vendor.</span></li>
+        <li><span lang="de">Migrationskosten: Aufwand für Datenexport, Dashboard-Neubau, Schulung bei Anbieterwechsel</span><span lang="en">Migration costs: Effort for data export, dashboard rebuilding, training when switching providers</span></li>
+        <li><span lang="de">Opportunitätskosten: Funktionen, die nur im Ökosystem des Anbieters verfügbar sind (z.B. Copilot in Power BI)</span><span lang="en">Opportunity costs: Features only available within the vendor ecosystem (e.g., Copilot in Power BI)</span></li>
+        <li><span lang="de">Risikokosten: Preiserhöhungen, Service-Einstellungen, regulatorische Konflikte (CLOUD Act)</span><span lang="en">Risk costs: Price increases, service discontinuation, regulatory conflicts (CLOUD Act)</span></li>
+        <li><span lang="de">Betriebskosten Self-Hosted: Server, Wartung, Updates, Monitoring – personelle Kapazität erforderlich</span><span lang="en">Self-hosted operations costs: Servers, maintenance, updates, monitoring – requires personnel capacity</span></li>
+      </ul>
+    </div>
+    <div class="tip-box">
+      <p><strong><span lang="de">Lock-in-Risiken:</span><span lang="en">Lock-in risks:</span></strong></p>
+      <ul>
+        <li><span lang="de">Plattform-Gravitation: Microsoft Fabric bündelt Data Factory, Warehouse, Spark und Power BI auf OneLake – ein Wechsel bedeutet dann nicht mehr nur Dashboards, sondern die gesamte Datenplattform zu migrieren</span><span lang="en">Platform gravity: Microsoft Fabric bundles Data Factory, Warehouse, Spark and Power BI on OneLake – switching then means migrating an entire data platform, not just dashboards</span></li>
+        <li><span lang="de">Daten liegen beim Anbieter – US-amerikanische Anbieter wie Microsoft (Power BI), Google (Looker), Salesforce (Tableau). Datenregion, Subprozessoren, Supportzugriffe, Verschlüsselung und Transfermechanismus sind getrennt zu prüfen; eine EU-Region reduziert Risiken, beantwortet aber nicht alle Fragen</span><span lang="en">Data stored with the provider – US-based vendors such as Microsoft (Power BI), Google (Looker), Salesforce (Tableau). Data region, subprocessors, support access, encryption and transfer mechanism must be checked separately; an EU region reduces risk but does not answer every question</span></li>
+        <li><span lang="de">Proprietäre Formate: DAX (Power BI), VizQL (Tableau), LookML (Looker) – nicht portabel</span><span lang="en">Proprietary formats: DAX (Power BI), VizQL (Tableau), LookML (Looker) – not portable</span></li>
+        <li><span lang="de">Behördlicher Zugriff nach US-Recht (CLOUD Act, FISA 702) ist bei US-Anbietern zu prüfen – wie stark er wirkt, hängt von Anbieter, Dienst, Region und Vertragsgestaltung ab und trifft nicht alle gleichermaßen</span><span lang="en">Government access under US law (CLOUD Act, FISA 702) has to be assessed for US vendors – how far it reaches depends on vendor, service, region and contract, and does not affect all of them equally</span></li>
+        <li><span lang="de">On-Premises-Optionen existieren: Power BI Report Server, Tableau Server, Qlik Sense Enterprise</span><span lang="en">On-premises options exist: Power BI Report Server, Tableau Server, Qlik Sense Enterprise</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-block" id="opensource">
+    <h2><span lang="de">Open-Source BI im Überblick</span><span lang="en">Open-Source BI Overview</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Open-Source-BI-Tools verlagern die Kontrolle über Daten und Infrastruktur zu Ihnen – zusammen mit der Verantwortung für Betrieb, Updates und Sicherung. Entscheidend ist dabei das Lizenzmodell: Apache 2.0 erlaubt kommerzielle Nutzung und proprietäre Weiterentwicklung, sofern die Lizenz- und Hinweispflichten eingehalten werden. AGPL verpflichtet Betreiber einer veränderten, über ein Netzwerk angebotenen Fassung, den Nutzern dieser Fassung den korrespondierenden Quellcode zugänglich zu machen. MIT ist ähnlich permissiv wie Apache 2.0.</span><span lang="en">Open-source BI tools shift control over data and infrastructure to you – together with the responsibility for operations, updates and backups. The license model is decisive: Apache 2.0 allows commercial use and proprietary derivative development, provided the licence and attribution obligations are met. AGPL requires operators of a modified version offered over a network to make the corresponding source code available to that version's users. MIT is similarly permissive to Apache 2.0.</span></p>
+    <h3><span lang="de">Open-Source Alternativen im Vergleich</span><span lang="en">Open-Source Alternatives Compared</span></h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th><span lang="de">Lizenz</span><span lang="en">License</span></th>
+            <th>Docker</th>
+            <th><span lang="de">Stärken</span><span lang="en">Strengths</span></th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="kopf">Apache Superset</td>
+            <td>Apache 2.0</td>
+            <td>✓</td>
+            <td><span lang="de">SQL-first, große Community, Enterprise-ready</span><span lang="en">SQL-first, large community, enterprise-ready</span></td>
+            <td><span lang="de">✅ Aktiv</span><span lang="en">✅ Active</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Metabase</td>
+            <td>AGPL 3.0</td>
+            <td>✓</td>
+            <td><span lang="de">Intuitiv, ideal für Non-Techniker, eingebettete Analytik</span><span lang="en">Intuitive, great for non-technical users, embedded analytics</span></td>
+            <td><span lang="de">✅ Aktiv</span><span lang="en">✅ Active</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Grafana</td>
+            <td>AGPL 3.0</td>
+            <td>✓</td>
+            <td><span lang="de">Metriken &amp; Monitoring, große Plugin-Bibliothek</span><span lang="en">Metrics &amp; monitoring, large plugin library</span></td>
+            <td><span lang="de">✅ Aktiv</span><span lang="en">✅ Active</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Plotly Dash</td>
+            <td>MIT</td>
+            <td>✓</td>
+            <td><span lang="de">Maximale Flexibilität, Python-native, volle Kontrolle</span><span lang="en">Maximum flexibility, Python-native, full control</span></td>
+            <td><span lang="de">✅ Aktiv</span><span lang="en">✅ Active</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Lightdash</td>
+            <td>MIT</td>
+            <td>✓</td>
+            <td><span lang="de">dbt-nativ, Metrics Layer, modernes Data Stack</span><span lang="en">dbt-native, metrics layer, modern data stack</span></td>
+            <td><span lang="de">✅ Aktiv</span><span lang="en">✅ Active</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Evidence</td>
+            <td>MIT</td>
+            <td>✓</td>
+            <td><span lang="de">Code-as-BI: Markdown + SQL, Git-versioniert</span><span lang="en">Code-as-BI: Markdown + SQL, Git-versioned</span></td>
+            <td><span lang="de">✅ Aktiv</span><span lang="en">✅ Active</span></td>
+          </tr>
+          <tr>
+            <td class="kopf">Redash</td>
+            <td>BSD</td>
+            <td>✓</td>
+            <td><span lang="de">SQL-fokussiert, API-Zugriff, leichtgewichtig</span><span lang="en">SQL-focused, API access, lightweight</span></td>
+            <td><span lang="de">⚠️ Wartung</span><span lang="en">⚠️ Maintenance</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-box">
+      <p><span lang="de">Hinweis: Redash wurde 2020 von Databricks übernommen. Die gehostete Version wurde eingestellt; das Open-Source-Projekt wird von der Community weiter gepflegt, aber die Entwicklung hat sich deutlich verlangsamt.</span><span lang="en">Note: Redash was acquired by Databricks in 2020. The hosted version was discontinued; the open-source project is community-maintained, but development has slowed significantly.</span></p>
+    </div>
+    <div class="tip-box">
+      <p><strong><span lang="de">Lizenz-Tipp: Der unveränderte Betrieb einer AGPL-3.0-Anwendung (Metabase, Grafana) löst keine Pflicht aus. Wer die Anwendung ändert und über ein Netzwerk anbietet, muss deren Nutzern den korrespondierenden Quellcode zugänglich machen – das ist keine allgemeine Veröffentlichungspflicht gegenüber der Öffentlichkeit. Wer Anpassungen intern halten will, fährt mit Apache-2.0 oder MIT oft einfacher. Im Zweifel die Lizenz juristisch prüfen lassen.</span><span lang="en">License tip: running an unmodified AGPL-3.0 application (Metabase, Grafana) triggers no obligation. If you modify it and offer it over a network, you must make the corresponding source available to those users – this is not a general duty to publish to the world. If you want to keep customisations internal, Apache-2.0 or MIT is usually simpler. When in doubt, have the licence reviewed.</span></strong></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="docker">
+    <h2>Docker Setup: Self-Hosted Metabase</h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Mit Docker Compose lässt sich ein vollständiger Self-Hosted BI-Stack in wenigen Minuten aufsetzen. Das folgende Beispiel zeigt Metabase mit PostgreSQL als Metadatenbank.</span><span lang="en">With Docker Compose, a complete self-hosted BI stack can be set up in minutes. The following example shows Metabase with PostgreSQL as the metadata database.</span></p>
+    <div class="download-box">
+      <h3><span lang="de">Starterpaket herunterladen</span><span lang="en">Download the starter package</span></h3>
+      <p><span lang="de">Enthält die docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example und eine README mit Sollwerten und Fehlerbildern. Der Stack importiert 9.800 Zeilen und liefert dieselben Zahlen wie pandas.</span><span lang="en">Contains docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example and a README with expected values and failure symptoms. The stack imports 9,800 rows and produces the same numbers as pandas.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="starter/lab-06-stack.zip" download>lab-06-stack.zip</a>
       </div>
-    );
-  }
+    </div>
+    <div class="codeblock" data-kind="run" data-name="codeDockerCompose" data-title="docker-compose.yml">
+<pre class="code-block" lang="de"># docker-compose.yml - Self-Hosted BI-Stack fuer Lab 06
+# Compose Spec (v2) - der 'version'-Schluessel ist abgekuendigt.
+#
+# Drei Dienste, und die Trennung ist Absicht:
+#   metabase   - die Anwendung
+#   postgres   - Metabases EIGENE Metadaten (Fragen, Dashboards, Nutzer)
+#   warehouse  - die Analysedatenbank mit den Superstore-Daten. Nur dieser
+#                Dienst ist nach aussen veroeffentlicht (Port 5433), damit
+#                psql, DBeaver oder pgAdmin hineinschauen koennen.
+services:
+  metabase:
+    image: metabase/metabase:v0.63.13   # auf Patchstand pinnen, nie auf :latest
+    # Fuer echte Reproduzierbarkeit zusaetzlich den Digest festhalten:
+    #   image: metabase/metabase@sha256:&lt;digest&gt;
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_HOST: postgres
+      MB_DB_USER: metabase
+      MB_DB_PASS: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      warehouse:
+        condition: service_healthy
+    restart: unless-stopped
 
-  function ChecklistItem({ text, checked, onToggle }) {
-    return (
-      <div className="checklist-item">
-        <div
-          className={'checklist-check' + (checked ? ' checked' : '')}
-          onClick={onToggle}
-          role="checkbox"
-          aria-checked={checked}
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onToggle(); } }}
-        >
-          {checked && (
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )}
-        </div>
-        <span className={'checklist-text' + (checked ? ' done' : '')}>{text}</span>
+  postgres:
+    image: postgres:17.8-alpine
+    environment:
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: metabase
+    volumes:
+      - metabase_meta:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  warehouse:
+    image: postgres:17.8-alpine
+    ports:
+      - "5433:5432"          # aussen 5433, damit ein lokales Postgres nicht kollidiert
+    environment:
+      POSTGRES_USER: superstore
+      POSTGRES_PASSWORD: ${WAREHOUSE_PASSWORD}
+      POSTGRES_DB: superstore
+    volumes:
+      - warehouse_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro   # laeuft einmalig beim ersten Start
+      - ./train.csv:/data/train.csv:ro          # damit COPY die Datei sieht
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superstore -d superstore"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  metabase_meta:
+  warehouse_data:</pre>
+<pre class="code-block" lang="en"># docker-compose.yml - self-hosted BI stack for Lab 06
+# Compose Spec (v2) - the 'version' key is deprecated.
+#
+# Three services, and the split is deliberate:
+#   metabase   - the application
+#   postgres   - Metabase's OWN metadata (questions, dashboards, users)
+#   warehouse  - the analytical database holding the Superstore data. Only
+#                this service is published (port 5433) so that psql, DBeaver
+#                or pgAdmin can look inside.
+services:
+  metabase:
+    image: metabase/metabase:v0.63.13   # pin to a patch version, never :latest
+    # For real reproducibility pin the digest as well:
+    #   image: metabase/metabase@sha256:&lt;digest&gt;
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_HOST: postgres
+      MB_DB_USER: metabase
+      MB_DB_PASS: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      warehouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17.8-alpine
+    environment:
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: metabase
+    volumes:
+      - metabase_meta:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  warehouse:
+    image: postgres:17.8-alpine
+    ports:
+      - "5433:5432"          # 5433 outside, so a local Postgres does not clash
+    environment:
+      POSTGRES_USER: superstore
+      POSTGRES_PASSWORD: ${WAREHOUSE_PASSWORD}
+      POSTGRES_DB: superstore
+    volumes:
+      - warehouse_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro   # runs once on first start
+      - ./train.csv:/data/train.csv:ro          # so that COPY can see the file
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superstore -d superstore"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  metabase_meta:
+  warehouse_data:</pre>
+    </div>
+    <h3>.env</h3>
+    <div class="codeblock" data-kind="run" data-name="codeEnvFile" data-title=".env">
+<pre class="code-block" lang="de"># .env (im selben Verzeichnis wie docker-compose.yml)
+# Diese Datei NIE ins Git-Repo committen -&gt; in .gitignore aufnehmen!
+POSTGRES_PASSWORD=BitteAendern_Metabase123!
+WAREHOUSE_PASSWORD=BitteAendern_Warehouse123!</pre>
+<pre class="code-block" lang="en"># .env (in the same directory as docker-compose.yml)
+# NEVER commit this file to the Git repo -&gt; add it to .gitignore!
+POSTGRES_PASSWORD=ChangeMe_Metabase123!
+WAREHOUSE_PASSWORD=ChangeMe_Warehouse123!</pre>
+    </div>
+    <div class="tip-box">
+      <p><strong><span lang="de">Tipp:</span><span lang="en">Tip:</span></strong> <span lang="de">Voraussetzungen: Docker Desktop installiert. Download: https://www.docker.com/products/docker-desktop</span><span lang="en">Prerequisites: Docker Desktop installed. Download: https://www.docker.com/products/docker-desktop</span></p>
+    </div>
+    <p><span lang="de">Stack starten und prüfen:</span><span lang="en">Start and verify the stack:</span></p>
+    <div class="codeblock terminal" data-kind="run" data-name="codeBashDocker" data-title="Terminal">
+<pre class="code-block" lang="de"># .env-Datei aus dem Block oben anlegen (Passwort anpassen!):
+nano .env      # oder: notepad .env / code .env
+
+# Stack starten:
+docker compose up -d
+
+# Status prüfen:
+docker compose ps
+
+# Logs anzeigen:
+docker compose logs -f metabase
+
+# Zugriff: http://localhost:3000
+# Erster Start: Einrichtungsassistent öffnet sich</pre>
+<pre class="code-block" lang="en"># Create the .env file from the block above (change the password!):
+nano .env      # or: notepad .env / code .env
+
+# Start the stack:
+docker compose up -d
+
+# Check status:
+docker compose ps
+
+# View logs:
+docker compose logs -f metabase
+
+# Access: http://localhost:3000
+# First start: the setup wizard opens</pre>
+    </div>
+    <!-- SCREENSHOT: metabase-setup-wizard · http://localhost:3000 nach dem ersten Start · Einrichtungsassistent von Metabase -->
+
+    <h3><span lang="de">Kursdatensatz in PostgreSQL importieren</span><span lang="en">Import the course dataset into PostgreSQL</span></h3>
+    <p><span lang="de">Metabase braucht Daten, an die es sich anschließen kann. Der Stack bringt dafür einen zweiten PostgreSQL-Dienst mit: warehouse. Die Trennung ist Absicht – postgres hält Metabases eigene Metadaten (Fragen, Dashboards, Nutzer), warehouse hält die Analysedaten. Analysedaten gehören nicht in die Metadatenbank des Werkzeugs.</span><span lang="en">Metabase needs data to connect to. The stack ships a second PostgreSQL service for that: warehouse. The split is deliberate - postgres holds Metabase’s own metadata (questions, dashboards, users), warehouse holds the analytical data. Analytical data does not belong in the tool’s metadata database.</span></p>
+    <div class="download-box">
+      <h4><span lang="de">Daten für den Import</span><span lang="en">Data for the import</span></h4>
+      <p><span lang="de">Der warehouse-Dienst importiert train.csv beim ersten Start. Die Datei muss dazu neben der docker-compose.yml liegen – der Mount erwartet sie dort. Es ist derselbe Kursdatensatz wie in Lab 04 und 05: 9.800 Zeilen, TT/MM/JJJJ, Encoding latin-1.</span><span lang="en">The warehouse service imports train.csv on first start. The file must sit next to docker-compose.yml – that is where the mount expects it. It is the same course dataset as in Labs 04 and 05: 9,800 rows, DD/MM/YYYY, encoding latin-1.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="data/train.csv" download><span lang="de">train.csv herunterladen</span><span lang="en">Download train.csv</span></a>
+        <a class="btn-download sekundaer" href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting" target="_blank" rel="noopener noreferrer"><span lang="de">Originalquelle bei Kaggle</span><span lang="en">Original source on Kaggle</span></a>
       </div>
-    );
-  }
+      <p class="lizenz"><span lang="de">Quelle: Superstore Sales Dataset von Rohit Sahoo (Kaggle), Lizenz GPL 2. Das Starterpaket enthält die CSV bewusst nicht – sie liegt einmal unter data/ und wird von dort kopiert.</span><span lang="en">Source: Superstore Sales Dataset by Rohit Sahoo (Kaggle), licensed GPL 2. The starter package deliberately does not bundle the CSV – it lives once under data/ and is copied from there.</span></p>
+    </div>
+    <h4><span lang="de">Vorbereiten und starten</span><span lang="en">Prepare and start</span></h4>
+    <ol class="schritte">
+      <li><span lang="de">Starterpaket lab-06-stack.zip herunterladen und entpacken.</span><span lang="en">Download and unpack the starter package lab-06-stack.zip.</span></li>
+      <li><span lang="de">.env.example nach .env kopieren und beide Passwörter ändern.</span><span lang="en">Copy .env.example to .env and change both passwords.</span></li>
+      <li><span lang="de">train.csv (Download oben) neben die docker-compose.yml legen – der Mount erwartet sie dort.</span><span lang="en">Place train.csv (download above) next to docker-compose.yml – the mount expects it there.</span></li>
+      <li><span lang="de">docker compose up -d ausfuehren. Der Dienst warehouse legt die Tabelle an und importiert die CSV beim ersten Start von selbst.</span><span lang="en">Run docker compose up -d. The warehouse service creates the table and imports the CSV by itself on first start.</span></li>
+    </ol>
+    <h4><span lang="de">Tabelle: init/01_schema.sql</span><span lang="en">Table: init/01_schema.sql</span></h4>
+    <div class="codeblock" data-kind="run" data-name="codeSchemaSql" data-title="init/01_schema.sql">
+<pre class="code-block" lang="de">-- init/01_schema.sql - laeuft beim ersten Start automatisch
+CREATE TABLE IF NOT EXISTS orders (
+    row_id        integer PRIMARY KEY,
+    order_id      text NOT NULL,
+    order_date    date NOT NULL,
+    ship_date     date NOT NULL,
+    ship_mode     text NOT NULL,
+    customer_id   text NOT NULL,
+    customer_name text NOT NULL,
+    segment       text NOT NULL,
+    country       text NOT NULL,
+    city          text NOT NULL,
+    state         text NOT NULL,
+    postal_code   text,            -- NULL-faehig: elf Werte fehlen
+    region        text NOT NULL,
+    product_id    text NOT NULL,
+    category      text NOT NULL,
+    sub_category  text NOT NULL,
+    product_name  text NOT NULL,
+    sales         numeric(12,4) NOT NULL
+);
 
-  function QuizQuestion({ question, index, lang }) {
-    // Mastery statt One-shot: falsche Antwort sperrt die Frage nicht mehr.
-    const [selected, setSelected] = React.useState(null);
-    const [revealed, setRevealed] = React.useState(false);
-    const [attempts, setAttempts] = React.useState(0);
-    const solved = selected === question.correct;
-    const wrongPick = selected !== null && !solved;
+-- Zwei Entscheidungen, die man begruenden koennen sollte:
+--   postal_code ist text, nicht integer. US-PLZ haben fuehrende Nullen
+--   ("01013"); als Zahl gespeichert gingen sie verloren.
+--   sales ist numeric(12,4), nicht float und nicht numeric(12,2). Die CSV
+--   enthaelt Werte wie 957,5775. Mit zwei Nachkommastellen rundet Postgres
+--   schon beim Import, und die Gesamtsumme weicht um rund 20 Cent von der
+--   pandas- und der Power-BI-Zahl ab.
 
-    const handleClick = (i) => {
-      if (revealed) return;
-      setSelected(i);
-      setAttempts((n) => n + 1);
-      if (i === question.correct) setRevealed(true);
-    };
+CREATE INDEX IF NOT EXISTS orders_order_date_idx   ON orders (order_date);
+CREATE INDEX IF NOT EXISTS orders_category_idx     ON orders (category, sub_category);
+CREATE INDEX IF NOT EXISTS orders_region_state_idx ON orders (region, state);</pre>
+<pre class="code-block" lang="en">-- init/01_schema.sql - runs automatically on first start
+CREATE TABLE IF NOT EXISTS orders (
+    row_id        integer PRIMARY KEY,
+    order_id      text NOT NULL,
+    order_date    date NOT NULL,
+    ship_date     date NOT NULL,
+    ship_mode     text NOT NULL,
+    customer_id   text NOT NULL,
+    customer_name text NOT NULL,
+    segment       text NOT NULL,
+    country       text NOT NULL,
+    city          text NOT NULL,
+    state         text NOT NULL,
+    postal_code   text,            -- nullable: eleven values are missing
+    region        text NOT NULL,
+    product_id    text NOT NULL,
+    category      text NOT NULL,
+    sub_category  text NOT NULL,
+    product_name  text NOT NULL,
+    sales         numeric(12,4) NOT NULL
+);
 
-    return (
-      <div style={{ marginBottom: '1.75rem' }}>
-        <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{index}. {question.q}</p>
-        {question.options.map((opt, i) => {
-          let style = {}; let mark = null;
-          // Zustand nie nur ueber Farbe - das Zeichen steht im DOM.
-          if (revealed && i === question.correct) { style = { borderColor: '#059669', background: '#F0FDF4', color: '#065F46' }; mark = '\u2713'; }
-          else if (i === selected && i !== question.correct) { style = { borderColor: '#DC2626', background: '#FEF2F2', color: '#991B1B' }; mark = '\u2717'; }
-          return (
-            <button key={i} className="quiz-option" disabled={revealed} onClick={() => handleClick(i)} style={style}>
-              {mark && <span className="quiz-mark" aria-hidden="true">{mark}</span>}
-              {mark && <span className="sr-only">
-                {mark === '\u2713'
-                  ? (lang === 'en' ? 'Correct answer: ' : 'Richtige Antwort: ')
-                  : (lang === 'en' ? 'Your wrong answer: ' : 'Deine falsche Antwort: ')}
-              </span>}
-              {String.fromCharCode(65 + i)}) {opt}
-            </button>
-          );
-        })}
+-- Two decisions you should be able to justify:
+--   postal_code is text, not integer. US ZIP codes have leading zeros
+--   ("01013"); stored as a number they would be lost.
+--   sales is numeric(12,4), not float and not numeric(12,2). The CSV
+--   contains values such as 957.5775. With two decimal places Postgres
+--   rounds during import, and the total then differs by about 20 cents
+--   from the pandas and Power BI figures.
 
-        {wrongPick && !revealed && (
-          <div className="quiz-hint" role="status" aria-live="polite">
-            {lang === 'en'
-              ? '\u2717 Not quite. Re-read the question and try again \u2013 or reveal the answer.'
-              : '\u2717 Noch nicht richtig. Lies die Frage noch einmal und versuche es erneut \u2013 oder lass dir die L\u00F6sung zeigen.'}
-          </div>
-        )}
+CREATE INDEX IF NOT EXISTS orders_order_date_idx   ON orders (order_date);
+CREATE INDEX IF NOT EXISTS orders_category_idx     ON orders (category, sub_category);
+CREATE INDEX IF NOT EXISTS orders_region_state_idx ON orders (region, state);</pre>
+    </div>
+    <h4>Import: init/02_import.sql</h4>
+    <div class="codeblock" data-kind="run" data-name="codeImportSql" data-title="init/02_import.sql">
+<pre class="code-block" lang="de">-- init/02_import.sql - laeuft direkt nach dem Schema
+--
+-- COPY liest serverseitig, die Datei muss also IM Container liegen. Dafuer
+-- ist der Mount ./train.csv -&gt; /data/train.csv in der Compose-Datei da.
+-- Wer keine Datei in den Container legen kann, nimmt \copy in psql; dann
+-- liest der Client.
+--
+-- Das Datumsformat ist TT/MM/JJJJ. Ohne DateStyle bricht Postgres bei jedem
+-- Tag &gt; 12 ab - dieselbe Falle wie dayfirst=True in pandas.
+SET datestyle = 'ISO, DMY';
 
-        {wrongPick && !revealed && (
-          <div className="quiz-actions">
-            <button type="button" className="quiz-retry-btn" onClick={() => setSelected(null)}>
-              {lang === 'en' ? 'Try again' : 'Nochmal versuchen'}
-            </button>
-            <button type="button" className="quiz-retry-btn secondary" onClick={() => setRevealed(true)}>
-              {lang === 'en' ? 'Show answer' : 'L\u00F6sung anzeigen'}
-            </button>
-            <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-          </div>
-        )}
+COPY orders (
+    row_id, order_id, order_date, ship_date, ship_mode,
+    customer_id, customer_name, segment, country, city, state,
+    postal_code, region, product_id, category, sub_category,
+    product_name, sales
+)
+FROM '/data/train.csv'
+WITH (FORMAT csv, HEADER true, ENCODING 'LATIN1');
 
-        {revealed && (
-          <div style={{ marginTop: '0.5rem', padding: '0.75rem 1rem', background: solved ? '#F0FDF4' : '#FFFBEB', borderRadius: '8px', fontSize: '0.88rem', color: solved ? '#065F46' : '#92400E' }} role="status" aria-live="polite">
-            {!solved && (lang === 'en' ? 'Answer shown. ' : 'L\u00F6sung eingeblendet. ')}{question.explanation}
-          </div>
-        )}
-        {revealed && (
-          <div className="quiz-actions">
-            <button type="button" className="quiz-retry-btn secondary"
-              onClick={() => { setSelected(null); setRevealed(false); setAttempts(0); }}>
-              {lang === 'en' ? 'Reset question' : 'Frage zur\u00FCcksetzen'}
-            </button>
-            {attempts > 1 && (
-              <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-            )}
-          </div>
-        )}
+-- Erfolgskontrolle: bricht ab, wenn die Zeilenzahl nicht stimmt.
+DO $$
+DECLARE n bigint;
+BEGIN
+    SELECT count(*) INTO n FROM orders;
+    IF n &lt;&gt; 9800 THEN
+        RAISE EXCEPTION 'Import fehlgeschlagen: % Zeilen statt 9800', n;
+    END IF;
+    RAISE NOTICE 'Import ok: % Zeilen', n;
+END $$;</pre>
+<pre class="code-block" lang="en">-- init/02_import.sql - runs right after the schema
+--
+-- COPY reads server-side, so the file has to be INSIDE the container. That
+-- is what the mount ./train.csv -&gt; /data/train.csv in the compose file is
+-- for. If you cannot place a file in the container, use \copy in psql;
+-- then the client reads it.
+--
+-- The date format is DD/MM/YYYY. Without DateStyle, Postgres fails on every
+-- day &gt; 12 - the same trap as dayfirst=True in pandas.
+SET datestyle = 'ISO, DMY';
+
+COPY orders (
+    row_id, order_id, order_date, ship_date, ship_mode,
+    customer_id, customer_name, segment, country, city, state,
+    postal_code, region, product_id, category, sub_category,
+    product_name, sales
+)
+FROM '/data/train.csv'
+WITH (FORMAT csv, HEADER true, ENCODING 'LATIN1');
+
+-- Success check: aborts if the row count is wrong.
+DO $$
+DECLARE n bigint;
+BEGIN
+    SELECT count(*) INTO n FROM orders;
+    IF n &lt;&gt; 9800 THEN
+        RAISE EXCEPTION 'Import failed: % rows instead of 9800', n;
+    END IF;
+    RAISE NOTICE 'Import ok: % rows', n;
+END $$;</pre>
+    <p class="code-note"><span lang="de">Alles unter init/ läuft genau einmal – nämlich solange das Volume leer ist. Ein zweites docker compose up importiert nicht doppelt. Wer die Skripte ändert, braucht deshalb docker compose down -v, sonst wirkt die Änderung nicht.</span><span lang="en">Everything under init/ runs exactly once - namely while the volume is still empty. A second docker compose up does not import twice. If you change the scripts you therefore need docker compose down -v, otherwise the change has no effect.</span></p>
+    </div>
+    <h4><span lang="de">Erfolgskontrolle und Aufräumen</span><span lang="en">Success check and cleanup</span></h4>
+    <div class="codeblock terminal" data-kind="run" data-name="codeVerifyBash" data-title="Terminal">
+<pre class="code-block" lang="de"># Erfolgskontrolle - laeuft gegen den warehouse-Container
+docker compose logs warehouse | grep "Import ok"
+# -&gt; NOTICE:  Import ok: 9800 Zeilen
+
+docker compose exec -T warehouse \
+  psql -U superstore -d superstore -f - &lt; verify.sql
+
+# Sollausgabe:
+#   zeilen        9800
+#   bestellungen  4922
+#   gesamtumsatz  2261536.78
+#   fehlende_plz  11
+#   Zeitraum      2015-01-03 bis 2018-12-30
+#   2015 479856.21 | 2016 459436.01 | 2017 600192.55 | 2018 722052.02
+#
+# Dieselben Zahlen liefern der pandas-Block aus Lab 05 und die DAX-Measures
+# in Power BI. Weichen sie ab: Datumsformat oder Encoding pruefen.
+
+# Aufraeumen
+docker compose down       # Container weg, Daten bleiben
+docker compose down -v    # auch die Volumes - der Import laeuft dann neu</pre>
+<pre class="code-block" lang="en"># Success check - runs against the warehouse container
+docker compose logs warehouse | grep "Import ok"
+# -&gt; NOTICE:  Import ok: 9800 rows
+
+docker compose exec -T warehouse \
+  psql -U superstore -d superstore -f - &lt; verify.sql
+
+# Expected output:
+#   rows          9800
+#   orders        4922
+#   total_sales   2261536.78
+#   missing_zip   11
+#   period        2015-01-03 to 2018-12-30
+#   2015 479856.21 | 2016 459436.01 | 2017 600192.55 | 2018 722052.02
+#
+# The pandas block from Lab 05 and the DAX measures in Power BI produce the
+# same numbers. If they differ: check the date format or the encoding.
+
+# Cleanup
+docker compose down       # containers gone, data stays
+docker compose down -v    # volumes too - the import then runs again</pre>
+    </div>
+    <div class="tip-box">
+      <p><strong><span lang="de">Datenbank in Metabase eintragen</span><span lang="en">Register the database in Metabase</span>:</strong> <span lang="de">Einstellungen → Datenbanken → Datenbank hinzufügen: Typ PostgreSQL, Host warehouse, Port 5432, Datenbank superstore, Benutzer superstore, Passwort aus der .env. Host ist warehouse, nicht localhost: Metabase läuft in einem eigenen Container, dort wäre localhost Metabase selbst. Im Compose-Netzwerk erreichen sich die Dienste über ihren Dienstnamen und den Container-Port 5432 – nicht über den nach außen veröffentlichten Port 5433. Vom eigenen Rechner aus gilt umgekehrt localhost:5433.</span><span lang="en">Settings → Databases → Add database: type PostgreSQL, host warehouse, port 5432, database superstore, user superstore, password from .env. The host is warehouse, not localhost: Metabase runs in its own container, where localhost would be Metabase itself. Inside the compose network the services reach each other by service name and container port 5432 - not via the published port 5433. From your own machine it is the other way round: localhost:5433.</span></p>
+    </div>
+    <!-- SCREENSHOT: metabase-add-database · Einstellungen → Datenbanken → Datenbank hinzufügen · Typ PostgreSQL, Host warehouse, Port 5432, Datenbank superstore -->
+    <p><span lang="de">Zeitbedarf: 10-20 Minuten, bis der Stack steht (davon der größte Teil Image-Download), danach 45-90 Minuten für Onboarding und Dashboards.</span><span lang="en">Time needed: 10-20 minutes until the stack is up (mostly image download), then 45-90 minutes for onboarding and dashboards.</span></p>
+    <div class="challenge-box">
+      <h4><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h4>
+      <ul>
+        <li><span lang="de">docker compose ps zeigt metabase, postgres und warehouse als running.</span><span lang="en">docker compose ps shows metabase, postgres and warehouse as running.</span></li>
+        <li><span lang="de">postgres und warehouse stehen auf healthy – sonst startet Metabase gar nicht erst.</span><span lang="en">postgres and warehouse are healthy – otherwise Metabase will not start at all.</span></li>
+        <li><span lang="de">Die Logs von warehouse enthalten „Import ok: 9800 Zeilen“.</span><span lang="en">The warehouse logs contain “Import ok: 9800 rows”.</span></li>
+        <li><span lang="de">verify.sql liefert 9800 Zeilen, 4922 Bestellungen und Gesamtumsatz 2261536.78.</span><span lang="en">verify.sql returns 9800 rows, 4922 orders and total revenue 2261536.78.</span></li>
+        <li><span lang="de">http://localhost:3000 zeigt den Einrichtungsassistenten.</span><span lang="en">http://localhost:3000 shows the setup wizard.</span></li>
+        <li><span lang="de">Typischer Fehler: in Metabase localhost statt warehouse als Host – damit sucht Metabase in sich selbst.</span><span lang="en">Common error: using localhost instead of warehouse as the host in Metabase – it then looks inside itself.</span></li>
+        <li><span lang="de">Aufräumen: docker compose down beendet den Stack, down -v entfernt auch die Daten.</span><span lang="en">Cleanup: docker compose down stops the stack, down -v also removes the data.</span></li>
+      </ul>
+    </div>
+    <div class="concept-box">
+      <h4><span lang="de">Sicherheit im Self-Hosted Setup</span><span lang="en">Security for Self-Hosted Setups</span></h4>
+      <ul>
+        <li><span lang="de">HTTPS via Reverse Proxy (Traefik, Caddy oder nginx) – niemals Metabase direkt ohne TLS exponieren</span><span lang="en">HTTPS via reverse proxy (Traefik, Caddy, or nginx) – never expose Metabase directly without TLS</span></li>
+        <li><span lang="de">Starke Passwörter und .env-Dateien statt Klartext in docker-compose.yml</span><span lang="en">Strong passwords and .env files instead of plaintext in docker-compose.yml</span></li>
+        <li><span lang="de">Regelmäßige Updates: Metabase-Image auf dieselbe Version pinnen wie im Compose-Beispiel (v0.63.13), aber Security-Patches zeitnah einspielen</span><span lang="en">Regular updates: pin the Metabase image to the same version as the compose example (v0.63.13), but apply security patches promptly</span></li>
+        <li><span lang="de">Backup-Strategie: PostgreSQL-Daten regelmäßig sichern (pg_dump)</span><span lang="en">Backup strategy: Regularly back up PostgreSQL data (pg_dump)</span></li>
+        <li><span lang="de">Netzwerk-Isolation: Docker-Netzwerke nutzen, nur Port 443 (HTTPS) nach außen öffnen</span><span lang="en">Network isolation: Use Docker networks, only expose port 443 (HTTPS) externally</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-block" id="dsgvo">
+    <h2><span lang="de">DSGVO Checkliste</span><span lang="en">GDPR Checklist</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Vor dem Einsatz von BI-Tools mit personenbezogenen Daten müssen folgende Punkte geprüft und dokumentiert werden (gemäß DSGVO und EU Data Act):</span><span lang="en">Before using BI tools with personal data, the following points must be checked and documented (per GDPR and EU Data Act):</span></p>
+    <div class="checkliste" data-checkliste="bi-lab06-dsgvo">
+      <ul>
+        <li><span lang="de">Verarbeitungsverzeichnis angelegt (Art. 30 DSGVO)</span><span lang="en">Record of processing activities created (Art. 30 GDPR)</span></li>
+        <li><span lang="de">Auftragsverarbeitungsvertrag (AVV) mit Cloud-Anbieter geschlossen</span><span lang="en">Data processing agreement (DPA) signed with cloud provider</span></li>
+        <li><span lang="de">Datentransfer in Drittländer dokumentiert und gerechtfertigt (SCCs + TIA)</span><span lang="en">Data transfers to third countries documented and justified (SCCs + TIA)</span></li>
+        <li><span lang="de">Datenschutzfolgenabschätzung (DSFA) bei sensiblen Daten durchgeführt</span><span lang="en">Data protection impact assessment (DPIA) for sensitive data completed</span></li>
+        <li><span lang="de">Löschkonzept und Aufbewahrungsfristen für alle gespeicherten Daten dokumentiert</span><span lang="en">Deletion concept and retention periods for all stored data documented</span></li>
+        <li><span lang="de">Datenschutzbeauftragter informiert (falls erforderlich, Art. 37 DSGVO)</span><span lang="en">Data protection officer informed (if required, Art. 37 GDPR)</span></li>
+        <li><span lang="de">Technische und organisatorische Maßnahmen (TOMs) dokumentiert (Art. 32 DSGVO)</span><span lang="en">Technical and organizational measures (TOMs) documented (Art. 32 GDPR)</span></li>
+        <li><span lang="de">Betroffenenrechte sichergestellt: Auskunft, Berichtigung, Löschung, Datenportabilität</span><span lang="en">Data subject rights ensured: Access, rectification, erasure, portability</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-block" id="entscheidung">
+    <h2><span lang="de">Entscheidungsmatrix: Welches Tool wann?</span><span lang="en">Decision Matrix: Which Tool When?</span></h2>
+    <div class="accent-line"></div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th><span lang="de">Szenario</span><span lang="en">Scenario</span></th>
+            <th><span lang="de">Empfehlung</span><span lang="en">Recommendation</span></th>
+            <th><span lang="de">Begründung</span><span lang="en">Rationale</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span lang="de">Kleines Team, keine IT-Abteilung</span><span lang="en">Small team, no IT department</span></td>
+            <td><strong>SaaS (Power BI, Tableau Cloud)</strong></td>
+            <td><span lang="de">Geringster Betriebsaufwand, schnell produktiv</span><span lang="en">Lowest operational overhead, quickly productive</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Personenbezogene Daten (HR, Kunden)</span><span lang="en">Personal data (HR, customers)</span></td>
+            <td><strong>Metabase / Superset self-hosted</strong></td>
+            <td><span lang="de">EU/EWR-Hosting vereinfacht die Risikolage; Drittlandtransfer nur mit zulässigem Transfermechanismus</span><span lang="en">EU/EEA hosting simplifies the risk picture; third-country transfer only with a valid transfer mechanism</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Komplexe Custom-Dashboards</span><span lang="en">Complex custom dashboards</span></td>
+            <td><strong>Plotly Dash</strong></td>
+            <td><span lang="de">Python-native, volle Kontrolle über Design und Logik</span><span lang="en">Python-native, full control over design and logic</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Öffentlicher Sektor / Behörden</span><span lang="en">Public sector / government</span></td>
+            <td><strong><span lang="de">Open Source (häufig bevorzugt)</span><span lang="en">Open Source (often preferred)</span></strong></td>
+            <td><span lang="de">Interoperable Europe Act: bei objektiver Gleichwertigkeit offene Lösungen priorisieren – keine pauschale Pflicht</span><span lang="en">Interoperable Europe Act: prioritise open solutions where objectively equivalent – not a blanket obligation</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Moderner dbt-basierter Data Stack</span><span lang="en">Modern dbt-based data stack</span></td>
+            <td><strong>Lightdash / Evidence</strong></td>
+            <td><span lang="de">Nahtlose dbt-Integration, Metrics Layer, Git-Workflows</span><span lang="en">Seamless dbt integration, metrics layer, Git workflows</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Startup, schnelles Deployment</span><span lang="en">Startup, fast deployment</span></td>
+            <td><strong>Metabase + Docker</strong></td>
+            <td><span lang="de">Stack läuft in 5–15 Min. bei vorbereiteter Umgebung, große Community</span><span lang="en">Stack runs in 5–15 min. with a prepared environment, large community</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Konzern mit Microsoft-Ökosystem</span><span lang="en">Enterprise with Microsoft ecosystem</span></td>
+            <td><strong>Power BI (+ Report Server)</strong></td>
+            <td><span lang="de">Beste Integration, Copilot, Enterprise-Support</span><span lang="en">Best integration, Copilot, enterprise support</span></td>
+          </tr>
+          <tr>
+            <td><span lang="de">Monitoring &amp; DevOps-Metriken</span><span lang="en">Monitoring &amp; DevOps metrics</span></td>
+            <td><strong>Grafana</strong></td>
+            <td><span lang="de">Standard für Infrastruktur-Monitoring, Alerting</span><span lang="en">Standard for infrastructure monitoring, alerting</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section-block" id="abschlussprojekt">
+    <h2><span lang="de">Abschlussprojekt</span><span lang="en">Final Project</span></h2>
+    <div class="accent-line"></div>
+    <div class="challenge-box">
+      <h3><span lang="de">Bonus-Projekt: Self-Hosted BI-Stack</span><span lang="en">Bonus Project: Self-Hosted BI Stack</span></h3>
+      <p><span lang="de">Bauen Sie einen vollständigen Self-Hosted BI-Stack auf Ihrem lokalen Rechner:</span><span lang="en">Build a complete self-hosted BI stack on your local machine:</span></p>
+      <ol>
+        <li><span lang="de">Docker Desktop installieren und grundlegende Docker-Befehle testen</span><span lang="en">Install Docker Desktop and test basic Docker commands</span></li>
+        <li><span lang="de">docker-compose.yml für Metabase + PostgreSQL erstellen</span><span lang="en">Create docker-compose.yml for Metabase + PostgreSQL</span></li>
+        <li><span lang="de">Stack starten und Metabase-Einrichtungsassistenten durchlaufen</span><span lang="en">Start the stack and complete the Metabase setup wizard</span></li>
+        <li><span lang="de">Superstore-Daten (train.csv, Download oben) als CSV in PostgreSQL importieren (z.B. via pgAdmin oder psql)</span><span lang="en">Import Superstore data (train.csv, download above) as CSV into PostgreSQL (e.g., via pgAdmin or psql)</span></li>
+        <li><span lang="de">3 aussagekräftige Dashboards in Metabase erstellen (Umsatzentwicklung, Kategorien/Sub-Kategorien, Regionen) – der Datensatz enthält keine Gewinnspalte, Kennzahl ist Sales</span><span lang="en">Create 3 meaningful dashboards in Metabase (revenue over time, categories/sub-categories, regions) – the dataset has no profit column, the measure is Sales</span></li>
+        <li><span lang="de">DSGVO-Checkliste für das Setup ausfüllen und dokumentieren</span><span lang="en">Complete the GDPR checklist for your setup and document it</span></li>
+        <li><span lang="de">Ergebnis: Screenshot + kurze Reflexion zu Vor-/Nachteilen vs. Power BI</span><span lang="en">Deliverable: Screenshot + brief reflection on pros/cons vs. Power BI</span></li>
+      </ol>
+    </div>
+    <!-- SCREENSHOT: metabase-dashboard-superstore · Fertiges Metabase-Dashboard mit Umsatzentwicklung, Kategorien und Regionen -->
+  </section>
+
+  <section class="section-block" id="youtube">
+    <h2><span lang="de">YouTube-Ressourcen</span><span lang="en">YouTube Resources</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Empfohlene Video-Ressourcen zu Open-Source BI, Docker und Datensouveränität:</span><span lang="en">Recommended video resources on open-source BI, Docker, and data sovereignty:</span></p>
+    <div class="youtube-box">
+      <h3>YouTube</h3>
+      <p class="hinweis-klein"><span lang="de">Externe Ziele: Die Links führen auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kanäle bieten eine zentrale Anlaufstelle.</span><span lang="en">External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.</span></p>
+      <div class="ressource">
+        <h4>Metabase – Official Getting Started</h4>
+        <p><span lang="de">Offizieller Metabase-Kanal mit Tutorials zu Installation, Fragen-Editor, Dashboards und Einbettung für Entwickler.</span><span lang="en">Official Metabase channel with tutorials on installation, the question editor, dashboards, and embedding for developers.</span></p>
+        <span lang="de"><a class="youtube-link" href="https://www.youtube.com/@metabasedata" target="_blank" rel="noopener noreferrer">Metabase auf YouTube →</a></span><span lang="en"><a class="youtube-link" href="https://www.youtube.com/@metabasedata" target="_blank" rel="noopener noreferrer">Metabase on YouTube →</a></span>
       </div>
-    );
-  }
-
-  function App() {
-
-    const [lang, setLang] = React.useState(BINTLab.getLanguage);
-    const toggleLang = (l) => { setLang(l); BINTLab.setLanguage(l); };
-
-    const [activeSection, setActiveSection] = React.useState('ueberblick');
-
-    const checklistCount = 8;
-    // Fortschritt in localStorage sichern - ein Reload darf die Checkliste nicht zuruecksetzen.
-    const [checkedItems, setCheckedItems] = React.useState(() => {
-      try {
-        const saved = JSON.parse(localStorage.getItem('bi-lab06-dsgvo') || 'null');
-        if (Array.isArray(saved) && saved.length === checklistCount) return saved.map(Boolean);
-      } catch (e) { /* defekter Eintrag -> sauber neu anfangen */ }
-      return new Array(checklistCount).fill(false);
-    });
-    React.useEffect(() => {
-      try { localStorage.setItem('bi-lab06-dsgvo', JSON.stringify(checkedItems)); } catch (e) {}
-    }, [checkedItems]);
-    const toggleCheck = (i) => {
-      setCheckedItems((prev) => {
-        const next = prev.slice();
-        next[i] = !next[i];
-        return next;
-      });
-    };
-    const resetChecklist = () => setCheckedItems(new Array(checklistCount).fill(false));
-
-    React.useEffect(() => {
-      document.documentElement.setAttribute('data-lang', lang);
-    }, [lang]);
-
-    React.useEffect(() => {
-      const sections = ['ueberblick', 'souveraenitaet', 'lock-in', 'opensource', 'docker', 'dsgvo', 'entscheidung', 'abschlussprojekt', 'youtube', 'quiz', 'zusammenfassung'];
-      const handleScroll = () => {
-        let current = 'ueberblick';
-        for (let i = 0; i < sections.length; i++) {
-          const el = document.getElementById(sections[i]);
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            if (rect.top <= 100) current = sections[i];
-          }
-        }
-        setActiveSection(current);
-      };
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const t = {
-      de: {
-        logo: 'THWS BINT-Lab',
-        back: '\u2190 Zur Kurs\u00fcbersicht',
-        backHref: 'index.html',
-        badge: 'Lab 06',
-        pageTitle: 'Digitale Souver\u00e4nit\u00e4t & Open-Source BI',
-        pageSubtitle: 'Cloud Lock-in verstehen, Open-Source-Alternativen bewerten, Total Cost of Ownership analysieren und einen Self-Hosted BI-Stack mit Docker aufbauen.',
-        nav: [
-          { id: 'ueberblick', label: '\u00dcberblick' },
-          { id: 'souveraenitaet', label: 'Digitale Souver\u00e4nit\u00e4t' },
-          { id: 'lock-in', label: 'Cloud Lock-in' },
-          { id: 'opensource', label: 'Open-Source BI' },
-          { id: 'docker', label: 'Docker Setup' },
-          { id: 'dsgvo', label: 'DSGVO Checkliste' },
-          { id: 'entscheidung', label: 'Entscheidungsmatrix' },
-          { id: 'abschlussprojekt', label: 'Abschlussprojekt' },
-          { id: 'youtube', label: 'YouTube-Ressourcen' },
-          { id: 'quiz', label: 'Quiz' },
-          { id: 'zusammenfassung', label: 'Zusammenfassung' },
-        ],
-        s1Title: '\u00dcberblick',
-        s1Lernziele: 'Lernziele',
-        s1Goals: [
-          'Begriff \u201eDigitale Souver\u00e4nit\u00e4t\u201c definieren und im EU-Kontext einordnen',
-          'Cloud Lock-in-Risiken und TCO-Faktoren erkennen',
-          'Open-Source BI-Tools kennen, einordnen und Lizenzmodelle unterscheiden',
-          'Self-Hosted BI-Stack mit Docker Compose aufsetzen k\u00f6nnen',
-          'DSGVO-Anforderungen f\u00fcr BI-Systeme pr\u00fcfen und dokumentieren',
-          'Begr\u00fcndete Tool-Empfehlungen f\u00fcr verschiedene Szenarien geben',
-        ],
-        s2Title: 'Was ist Digitale Souver\u00e4nit\u00e4t?',
-        s2P1: 'Digitale Souver\u00e4nit\u00e4t bezeichnet die F\u00e4higkeit von Organisationen und Staaten, ihre digitale Infrastruktur selbst zu kontrollieren \u2013 von Hardware und Software bis hin zu Daten, Algorithmen und Plattformen (Floridi, 2020).',
-        s2P2: 'Auf EU-Ebene werden Initiativen wie GAIA-X, die European Cloud Initiative und der EU Data Act \u2013 Verordnung (EU) 2023/2854 \u2013 vorangetrieben, um europ\u00e4ische Datensouver\u00e4nit\u00e4t gegen\u00fcber US-amerikanischen Hyperscalern (AWS, Azure, GCP) zu st\u00e4rken. Auch der EU AI Act (2024) ber\u00fchrt die Souver\u00e4nitätsfrage, indem er Transparenzpflichten f\u00fcr KI-Systeme fordert.',
-        s2P3: 'F\u00fcr Business Intelligence stellen sich folgende Kernfragen:',
-        s2Bullets: [
-          'Wo liegen meine Daten \u2013 auf welchem Server, in welchem Land?',
-          'Wer kann theoretisch darauf zugreifen (Anbieter, Beh\u00f6rden, Dritte)?',
-          'Bin ich bei einem Anbieter gesperrt (Lock-in)?',
-          'Was passiert, wenn der Anbieter den Dienst einstellt oder die Preise erh\u00f6ht?',
-          'Kann ich meine Daten und Dashboards vollst\u00e4ndig exportieren?',
-        ],
-        s2ConceptTitle: 'Die drei S\u00e4ulen digitaler Souver\u00e4nit\u00e4t',
-        s2ConceptItems: [
-          'Datensouver\u00e4nit\u00e4t: Kontrolle \u00fcber Speicherort, Zugriff und Verarbeitung eigener Daten',
-          'Technologische Souver\u00e4nit\u00e4t: Unabh\u00e4ngigkeit von einzelnen Anbietern f\u00fcr kritische Infrastruktur',
-          'Regulatorische Souver\u00e4nit\u00e4t: F\u00e4higkeit, eigene rechtliche Standards (DSGVO, Data Act) durchzusetzen',
-        ],
-        s2InfoTitle: 'Schrems II & EU-US Data Privacy Framework',
-        s2InfoText: 'Nach Schrems II (EuGH, 2020) ist der Transfer personenbezogener Daten in die USA ohne spezielle Schutzma\u00dfnahmen rechtswidrig. F\u00fcr \u00dcbermittlungen an US-Unternehmen, die am EU-US Data Privacy Framework (Angemessenheitsbeschluss 2023) teilnehmen, kann dieser Beschluss die Transfergrundlage bilden \u2013 ein zus\u00e4tzliches Instrument ist dann nicht erforderlich. Bei nicht teilnehmenden Empf\u00e4ngern braucht es andere Instrumente, etwa Standardvertragsklauseln oder Binding Corporate Rules, je nach Konstellation erg\u00e4nzt um eine Transferpr\u00fcfung. Der Angemessenheitsbeschluss bleibt politisch und gerichtlich umstritten; welcher Pfad gilt, ist im Einzelfall und je Dienst zu kl\u00e4ren.',
-        s3Title: 'SaaS BI-Tools: Cloud Lock-in',
-        s3P1: 'Cloud Lock-in entsteht, wenn der Wechsel zu einem alternativen Anbieter technisch oder wirtschaftlich prohibitiv wird. Im BI-Kontext sind propriet\u00e4re Datenmodelle, DAX/M-Formeln, Berechtigungsstrukturen und API-Abh\u00e4ngigkeiten die Haupttreiber. Plattformen wie Microsoft Fabric verst\u00e4rken diesen Effekt: Wenn Ingestion, Transformation, Warehouse und Reporting gemeinsam auf OneLake liegen, w\u00e4chst die Wechselh\u00fcrde mit jedem zus\u00e4tzlichen Workload.',
-        s3ConceptTitle: 'Total Cost of Ownership (TCO) bei BI-Tools',
-        s3ConceptItems: [
-          'Direkte Kosten: Lizenzgebuehren pro Nutzer oder Kapazitaet. Preise, Abrechnungsmodell und enthaltene Funktionen beim jeweiligen Anbieter pruefen.',
-          'Migrationskosten: Aufwand f\u00fcr Datenexport, Dashboard-Neubau, Schulung bei Anbieterwechsel',
-          'Opportunit\u00e4tskosten: Funktionen, die nur im \u00d6kosystem des Anbieters verf\u00fcgbar sind (z.B. Copilot in Power BI)',
-          'Risikokosten: Preiserh\u00f6hungen, Service-Einstellungen, regulatorische Konflikte (CLOUD Act)',
-          'Betriebskosten Self-Hosted: Server, Wartung, Updates, Monitoring \u2013 personelle Kapazit\u00e4t erforderlich',
-        ],
-        s3LockInTitle: 'Lock-in-Risiken:',
-        s3LockInItems: [
-          'Plattform-Gravitation: Microsoft Fabric b\u00fcndelt Data Factory, Warehouse, Spark und Power BI auf OneLake \u2013 ein Wechsel bedeutet dann nicht mehr nur Dashboards, sondern die gesamte Datenplattform zu migrieren',
-          'Daten liegen beim Anbieter \u2013 US-amerikanische Anbieter wie Microsoft (Power BI), Google (Looker), Salesforce (Tableau). Datenregion, Subprozessoren, Supportzugriffe, Verschl\u00fcsselung und Transfermechanismus sind getrennt zu pr\u00fcfen; eine EU-Region reduziert Risiken, beantwortet aber nicht alle Fragen',
-          'Propriet\u00e4re Formate: DAX (Power BI), VizQL (Tableau), LookML (Looker) \u2013 nicht portabel',
-          'Beh\u00f6rdlicher Zugriff nach US-Recht (CLOUD Act, FISA 702) ist bei US-Anbietern zu pr\u00fcfen \u2013 wie stark er wirkt, h\u00e4ngt von Anbieter, Dienst, Region und Vertragsgestaltung ab und trifft nicht alle gleicherma\u00dfen',
-          'On-Premises-Optionen existieren: Power BI Report Server, Tableau Server, Qlik Sense Enterprise',
-        ],
-        s4Title: 'Open-Source BI im \u00dcberblick',
-        s4P1: 'Open-Source-BI-Tools verlagern die Kontrolle \u00fcber Daten und Infrastruktur zu dir \u2013 zusammen mit der Verantwortung f\u00fcr Betrieb, Updates und Sicherung. Entscheidend ist dabei das Lizenzmodell: Apache 2.0 erlaubt kommerzielle Nutzung und propriet\u00e4re Weiterentwicklung, sofern die Lizenz- und Hinweispflichten eingehalten werden. AGPL verpflichtet Betreiber einer ver\u00e4nderten, \u00fcber ein Netzwerk angebotenen Fassung, den Nutzern dieser Fassung den korrespondierenden Quellcode zug\u00e4nglich zu machen. MIT ist \u00e4hnlich permissiv wie Apache 2.0.',
-        s4TableTitle: 'Open-Source Alternativen im Vergleich',
-        s4ThTool: 'Tool',
-        s4ThLicense: 'Lizenz',
-        s4ThDocker: 'Docker',
-        s4ThStrengths: 'St\u00e4rken',
-        s4ThStatus: 'Status',
-        s4Rows: [
-          { tool: 'Apache Superset', license: 'Apache 2.0', docker: '\u2713', strengths: 'SQL-first, gro\u00dfe Community, Enterprise-ready', status: '\u2705 Aktiv' },
-          { tool: 'Metabase', license: 'AGPL 3.0', docker: '\u2713', strengths: 'Intuitiv, ideal f\u00fcr Non-Techniker, eingebettete Analytik', status: '\u2705 Aktiv' },
-          { tool: 'Grafana', license: 'AGPL 3.0', docker: '\u2713', strengths: 'Metriken & Monitoring, gro\u00dfe Plugin-Bibliothek', status: '\u2705 Aktiv' },
-          { tool: 'Plotly Dash', license: 'MIT', docker: '\u2713', strengths: 'Maximale Flexibilit\u00e4t, Python-native, volle Kontrolle', status: '\u2705 Aktiv' },
-          { tool: 'Lightdash', license: 'MIT', docker: '\u2713', strengths: 'dbt-nativ, Metrics Layer, modernes Data Stack', status: '\u2705 Aktiv' },
-          { tool: 'Evidence', license: 'MIT', docker: '\u2713', strengths: 'Code-as-BI: Markdown + SQL, Git-versioniert', status: '\u2705 Aktiv' },
-          { tool: 'Redash', license: 'BSD', docker: '\u2713', strengths: 'SQL-fokussiert, API-Zugriff, leichtgewichtig', status: '\u26a0\ufe0f Wartung' },
-        ],
-        s4RedashNote: 'Hinweis: Redash wurde 2020 von Databricks \u00fcbernommen. Die gehostete Version wurde eingestellt; das Open-Source-Projekt wird von der Community weiter gepflegt, aber die Entwicklung hat sich deutlich verlangsamt.',
-        s4LicenseTip: 'Lizenz-Tipp: Der unver\u00e4nderte Betrieb einer AGPL-3.0-Anwendung (Metabase, Grafana) l\u00f6st keine Pflicht aus. Wer die Anwendung \u00e4ndert und \u00fcber ein Netzwerk anbietet, muss deren Nutzern den korrespondierenden Quellcode zug\u00e4nglich machen \u2013 das ist keine allgemeine Ver\u00f6ffentlichungspflicht gegen\u00fcber der \u00d6ffentlichkeit. Wer Anpassungen intern halten will, f\u00e4hrt mit Apache-2.0 oder MIT oft einfacher. Im Zweifel die Lizenz juristisch pr\u00fcfen lassen.',
-        s5Title: 'Docker Setup: Self-Hosted Metabase',
-        s5Intro: 'Mit Docker Compose l\u00e4sst sich ein vollst\u00e4ndiger Self-Hosted BI-Stack in wenigen Minuten aufsetzen. Das folgende Beispiel zeigt Metabase mit PostgreSQL als Metadatenbank.',
-        starterTitle: 'Starterpaket herunterladen',
-        starterText: 'Enth\u00e4lt die docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example und eine README mit Sollwerten und Fehlerbildern. Der Stack importiert 9.800 Zeilen und liefert dieselben Zahlen wie pandas.',
-        starterBtn: 'lab-06-stack.zip',
-        s5TipText: 'Voraussetzungen: Docker Desktop installiert. Download: https://www.docker.com/products/docker-desktop',
-        s5BashIntro: 'Stack starten und pr\u00fcfen:',
-        s5ImportTitle: 'Kursdatensatz in PostgreSQL importieren',
-        s5ImportIntro: 'Metabase braucht Daten, an die es sich anschliessen kann. Der Stack bringt dafuer einen zweiten PostgreSQL-Dienst mit: warehouse. Die Trennung ist Absicht - postgres haelt Metabases eigene Metadaten (Fragen, Dashboards, Nutzer), warehouse haelt die Analysedaten. Analysedaten gehoeren nicht in die Metadatenbank des Werkzeugs.',
-        s5ImportStepsTitle: 'Vorbereiten und starten',
-        dataTitle: 'Daten f\u00fcr den Import',
-        dataText: 'Der warehouse-Dienst importiert train.csv beim ersten Start. Die Datei muss dazu neben der docker-compose.yml liegen \u2013 der Mount erwartet sie dort. Es ist derselbe Kursdatensatz wie in Lab\u00a004 und 05: 9.800 Zeilen, TT/MM/JJJJ, Encoding latin-1.',
-        dataLicense: 'Quelle: Superstore Sales Dataset von Rohit Sahoo (Kaggle), Lizenz GPL\u00a02. Das Starterpaket enth\u00e4lt die CSV bewusst nicht \u2013 sie liegt einmal unter data/ und wird von dort kopiert.',
-        dataDirect: 'train.csv herunterladen',
-        dataKaggle: 'Originalquelle bei Kaggle',
-        s5ImportSteps: [
-          'Starterpaket lab-06-stack.zip herunterladen und entpacken.',
-          '.env.example nach .env kopieren und beide Passwoerter aendern.',
-          'train.csv aus Lab 04 neben die docker-compose.yml legen - der Mount erwartet sie dort.',
-          'docker compose up -d ausfuehren. Der Dienst warehouse legt die Tabelle an und importiert die CSV beim ersten Start von selbst.',
-        ],
-        s5ImportDdlTitle: 'Tabelle: init/01_schema.sql',
-        s5ImportCopyTitle: 'Import: init/02_import.sql',
-        s5ImportInitNote: 'Alles unter init/ laeuft genau einmal - naemlich solange das Volume leer ist. Ein zweites docker compose up importiert nicht doppelt. Wer die Skripte aendert, braucht deshalb docker compose down -v, sonst wirkt die Aenderung nicht.',
-        s5ImportVerifyTitle: 'Erfolgskontrolle und Aufraeumen',
-        s5ImportMbTitle: 'Datenbank in Metabase eintragen',
-        s5ImportMbText: 'Einstellungen -> Datenbanken -> Datenbank hinzufuegen: Typ PostgreSQL, Host warehouse, Port 5432, Datenbank superstore, Benutzer superstore, Passwort aus der .env. Host ist warehouse, nicht localhost: Metabase laeuft in einem eigenen Container, dort waere localhost Metabase selbst. Im Compose-Netzwerk erreichen sich die Dienste ueber ihren Dienstnamen und den Container-Port 5432 - nicht ueber den nach aussen veroeffentlichten Port 5433. Vom eigenen Rechner aus gilt umgekehrt localhost:5433.',
-        s5ImportTimeNote: 'Zeitbedarf: 10-20 Minuten, bis der Stack steht (davon der groesste Teil Image-Download), danach 45-90 Minuten fuer Onboarding und Dashboards.',
-        selfCheckTitle: 'Selbstcheck (1 Minute)',
-        selfCheckItems: [
-          'docker compose ps zeigt metabase, postgres und warehouse als running.',
-          'postgres und warehouse stehen auf healthy \u2013 sonst startet Metabase gar nicht erst.',
-          'Die Logs von warehouse enthalten \u201EImport ok: 9800 Zeilen\u201C.',
-          'verify.sql liefert 9800 Zeilen, 4922 Bestellungen und Gesamtumsatz 2261536.78.',
-          'http://localhost:3000 zeigt den Einrichtungsassistenten.',
-          'Typischer Fehler: in Metabase localhost statt warehouse als Host \u2013 damit sucht Metabase in sich selbst.',
-          'Aufr\u00E4umen: docker compose down beendet den Stack, down -v entfernt auch die Daten.',
-        ],
-        s5SecurityTitle: 'Sicherheit im Self-Hosted Setup',
-        s5SecurityItems: [
-          'HTTPS via Reverse Proxy (Traefik, Caddy oder nginx) \u2013 niemals Metabase direkt ohne TLS exponieren',
-          'Starke Passw\u00f6rter und .env-Dateien statt Klartext in docker-compose.yml',
-          'Regelm\u00e4\u00dfige Updates: Metabase-Image auf dieselbe Version pinnen wie im Compose-Beispiel (v0.63.13), aber Security-Patches zeitnah einspielen',
-          'Backup-Strategie: PostgreSQL-Daten regelm\u00e4\u00dfig sichern (pg_dump)',
-          'Netzwerk-Isolation: Docker-Netzwerke nutzen, nur Port 443 (HTTPS) nach au\u00dfen \u00f6ffnen',
-        ],
-        s6Title: 'DSGVO Checkliste',
-        s6Intro: 'Vor dem Einsatz von BI-Tools mit personenbezogenen Daten m\u00fcssen folgende Punkte gepr\u00fcft und dokumentiert werden (gem\u00e4\u00df DSGVO und EU Data Act):',
-        s6ChecklistItems: [
-          'Verarbeitungsverzeichnis angelegt (Art. 30 DSGVO)',
-          'Auftragsverarbeitungsvertrag (AVV) mit Cloud-Anbieter geschlossen',
-          'Datentransfer in Drittl\u00e4nder dokumentiert und gerechtfertigt (SCCs + TIA)',
-          'Datenschutzfolgenabsch\u00e4tzung (DSFA) bei sensiblen Daten durchgef\u00fchrt',
-          'L\u00f6schkonzept und Aufbewahrungsfristen f\u00fcr alle gespeicherten Daten dokumentiert',
-          'Datenschutzbeauftragter informiert (falls erforderlich, Art. 37 DSGVO)',
-          'Technische und organisatorische Ma\u00dfnahmen (TOMs) dokumentiert (Art. 32 DSGVO)',
-          'Betroffenenrechte sichergestellt: Auskunft, Berichtigung, L\u00f6schung, Datenportabilit\u00e4t',
-        ],
-        s6ProgressLabel: 'Erledigt',
-        s6Of: 'von',
-        s6Reset: 'Checkliste zur\u00fccksetzen',
-        s7Title: 'Entscheidungsmatrix: Welches Tool wann?',
-        s7ThScenario: 'Szenario',
-        s7ThRec: 'Empfehlung',
-        s7ThReason: 'Begr\u00fcndung',
-        s7Rows: [
-          { scenario: 'Kleines Team, keine IT-Abteilung', rec: 'SaaS (Power BI, Tableau Cloud)', reason: 'Geringster Betriebsaufwand, schnell produktiv' },
-          { scenario: 'Personenbezogene Daten (HR, Kunden)', rec: 'Metabase / Superset self-hosted', reason: 'EU/EWR-Hosting vereinfacht die Risikolage; Drittlandtransfer nur mit zul\u00e4ssigem Transfermechanismus' },
-          { scenario: 'Komplexe Custom-Dashboards', rec: 'Plotly Dash', reason: 'Python-native, volle Kontrolle \u00fcber Design und Logik' },
-          { scenario: '\u00d6ffentlicher Sektor / Beh\u00f6rden', rec: 'Open Source (h\u00e4ufig bevorzugt)', reason: 'Interoperable Europe Act: bei objektiver Gleichwertigkeit offene L\u00f6sungen priorisieren \u2013 keine pauschale Pflicht' },
-          { scenario: 'Moderner dbt-basierter Data Stack', rec: 'Lightdash / Evidence', reason: 'Nahtlose dbt-Integration, Metrics Layer, Git-Workflows' },
-          { scenario: 'Startup, schnelles Deployment', rec: 'Metabase + Docker', reason: 'Stack l\u00e4uft in 5\u201315 Min. bei vorbereiteter Umgebung, gro\u00dfe Community' },
-          { scenario: 'Konzern mit Microsoft-\u00d6kosystem', rec: 'Power BI (+ Report Server)', reason: 'Beste Integration, Copilot, Enterprise-Support' },
-          { scenario: 'Monitoring & DevOps-Metriken', rec: 'Grafana', reason: 'Standard f\u00fcr Infrastruktur-Monitoring, Alerting' },
-        ],
-        s8Title: 'Abschlussprojekt',
-        s8ChallengeTitle: 'Bonus-Projekt: Self-Hosted BI-Stack',
-        s8ChallengeDesc: 'Baue einen vollst\u00e4ndigen Self-Hosted BI-Stack auf deinem lokalen Rechner:',
-        s8Steps: [
-          'Docker Desktop installieren und grundlegende Docker-Befehle testen',
-          'docker-compose.yml f\u00fcr Metabase + PostgreSQL erstellen',
-          'Stack starten und Metabase-Einrichtungsassistenten durchlaufen',
-          'Superstore-Daten (train.csv aus Lab\u00A005) als CSV in PostgreSQL importieren (z.B. via pgAdmin oder psql)',
-          '3 aussagekr\u00e4ftige Dashboards in Metabase erstellen (Umsatzentwicklung, Kategorien/Sub-Kategorien, Regionen) \u2013 der Datensatz enth\u00e4lt keine Gewinnspalte, Kennzahl ist Sales',
-          'DSGVO-Checkliste f\u00fcr das Setup ausf\u00fcllen und dokumentieren',
-          'Ergebnis: Screenshot + kurze Reflexion zu Vor-/Nachteilen vs. Power BI',
-        ],
-        s9Title: 'YouTube-Ressourcen',
-        s9Intro: 'Empfohlene Video-Ressourcen zu Open-Source BI, Docker und Datensouver\u00e4nit\u00e4t:',
-        ytNote: 'Externe Ziele: Die Links f\u00fchren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00e4le bieten eine zentrale Anlaufstelle.',
-        s9Resources: [
-          {
-            title: 'Metabase \u2013 Official Getting Started',
-            desc: 'Offizieller Metabase-Kanal mit Tutorials zu Installation, Fragen-Editor, Dashboards und Einbettung f\u00fcr Entwickler.',
-            url: 'https://www.youtube.com/@metabasedata',
-            label: 'Metabase auf YouTube \u2192',
-          },
-          {
-            title: 'Apache Superset \u2013 Preset Channel',
-            desc: 'Preset (das Unternehmen hinter Superset) bietet Demos, Feature-Walkthroughs und Best Practices f\u00fcr SQL-basierte Analytik.',
-            url: 'https://www.youtube.com/@preset-io',
-            label: 'Preset (Superset) auf YouTube \u2192',
-          },
-          {
-            title: 'TechWorld with Nana \u2013 Docker',
-            desc: 'Nana erkl\u00e4rt Docker von Grund auf: Container, Images, Docker Compose und praktische Anwendungsf\u00e4lle \u2013 ideal als Vorbereitung f\u00fcr das Bonus-Projekt.',
-            url: 'https://www.youtube.com/@TechWorldwithNana',
-            label: 'TechWorld with Nana auf YouTube \u2192',
-          },
-          {
-            title: 'NetworkChuck \u2013 Docker & Self-Hosting',
-            desc: 'Eing\u00e4ngige Erkl\u00e4rungen zu Docker, Portainer, Self-Hosting und Netzwerk-Grundlagen \u2013 unterhaltsam und praxisnah.',
-            url: 'https://www.youtube.com/@NetworkChuck',
-            label: 'NetworkChuck auf YouTube \u2192',
-          },
-        ],
-        s9BookRef: 'Literatur: Floridi, L. (2020). \u201eThe Fight for Digital Sovereignty: What It Is, and Why It Matters, Especially for the EU.\u201c Philosophy & Technology, 33(3). | Bitkom (2023). \u201eLeitfaden Cloud-Souver\u00e4nit\u00e4t.\u201c',
-        quizTitle: 'Quiz',
-        quizIntro: 'Teste dein Wissen zu Digitaler Souver\u00e4nit\u00e4t und Open-Source BI:',
-        quizQuestions: [
-          { q: 'Was ist der Haupttreiber f\u00fcr Cloud Lock-in bei BI-Tools?', options: ['Zu hohe Lizenzkosten', 'Propriet\u00e4re Datenformate und API-Abh\u00e4ngigkeiten', 'Fehlende Internet-Anbindung', 'Zu viele Nutzer im Team'], correct: 1, explanation: 'Lock-in entsteht prim\u00e4r durch propriet\u00e4re Formate (DAX, VizQL, LookML) und API-Abh\u00e4ngigkeiten, die einen Wechsel technisch aufwendig machen.' },
-          { q: 'Welches EU-Gesetz regelt den Zugang zu und die Nutzung von Daten?', options: ['DSGVO', 'EU AI Act', 'EU Data Act', 'ePrivacy-Verordnung'], correct: 2, explanation: 'Der EU Data Act (Verordnung (EU) 2023/2854). Er regelt den fairen Zugang zu und die Nutzung von Daten, insbesondere IoT-Daten und Cloud-Wechsel-Rechte.' },
-          { q: 'Welche Lizenz verlangt, den Quellcode einer ge\u00e4nderten Anwendung auch dann herauszugeben, wenn sie nur \u00fcber das Netzwerk angeboten wird?', options: ['MIT', 'Apache 2.0', 'AGPL 3.0', 'BSD'], correct: 2, explanation: 'Die AGPL 3.0 (z.B. Metabase, Grafana) schliesst die \u201eASP-L\u00fccke\u201c: Wer eine ge\u00e4nderte Fassung \u00fcber ein Netzwerk bereitstellt, muss deren Nutzern den korrespondierenden Quellcode anbieten. Der unver\u00e4nderte Betrieb l\u00f6st diese Pflicht nicht aus, und eine Ver\u00f6ffentlichung gegen\u00fcber der Allgemeinheit verlangt die Lizenz nicht.' },
-          { q: 'Welches Tool eignet sich am besten f\u00fcr einen dbt-basierten Modern Data Stack?', options: ['Power BI', 'Metabase', 'Lightdash', 'Grafana'], correct: 2, explanation: 'Lightdash ist speziell f\u00fcr dbt-Workflows konzipiert und bietet native Metrics-Layer-Integration.' },
-          { q: 'Was fordert Art. 32 DSGVO von Verantwortlichen?', options: ['Einwilligung der Nutzer', 'Technische und organisatorische Ma\u00dfnahmen (TOMs)', 'Datenschutzfolgenabsch\u00e4tzung', 'Verbot von Cloud-Nutzung'], correct: 1, explanation: 'Art. 32 DSGVO verpflichtet zur Umsetzung geeigneter technischer und organisatorischer Ma\u00dfnahmen (TOMs) zur Sicherheit der Datenverarbeitung.' },
-          { q: 'Warum ist HTTPS via Reverse Proxy f\u00fcr Self-Hosted BI essentiell?', options: ['Schnellere Datenbank-Abfragen', 'Sch\u00f6nere Dashboard-URLs', 'Verschl\u00fcsselter Datenverkehr und Schutz vor Man-in-the-Middle-Angriffen', 'Bessere Kompatibilit\u00e4t mit Docker'], correct: 2, explanation: 'HTTPS verschl\u00fcsselt den gesamten Datenverkehr zwischen Browser und Server und sch\u00fctzt vor Abh\u00f6ren und Manipulation (Man-in-the-Middle).' },
-        ],
-        sumTitle: 'Zusammenfassung',
-        sumItems: [
-          'Digitale Souver\u00e4nit\u00e4t umfasst Daten-, Technologie- und regulatorische Souver\u00e4nit\u00e4t (Floridi, 2020).',
-          'Cloud Lock-in entsteht durch propriet\u00e4re Formate, APIs und \u00d6kosystem-Abh\u00e4ngigkeiten \u2013 TCO-Analyse hilft bei der Bewertung.',
-          'Der EU Data Act \u2013 VO (EU) 2023/2854 \u2013 und der AI Act st\u00e4rken europ\u00e4ische Datensouver\u00e4nit\u00e4t und Cloud-Wechselrechte.',
-          'Open-Source BI (Superset, Metabase, Grafana, Dash, Lightdash, Evidence) verlagert Kontrolle und Betriebsverantwortung zu dir \u2013 Lizenzmodelle beachten.',
-          'Docker Compose erm\u00f6glicht schnelles Self-Hosted-Deployment \u2013 HTTPS und Backup-Strategie nicht vergessen.',
-          'DSGVO-Compliance erfordert systematische Pr\u00fcfung: AVV, SCCs, TIA, TOMs, L\u00f6schkonzept.',
-          'Tool-Wahl h\u00e4ngt vom Szenario ab: Team-Gr\u00f6\u00dfe, Datentyp, regulatorische Anforderungen, vorhandener Tech-Stack.',
-        ],
-        navBack: '\u2190 Lab 05: Fallstudie',
-        navBackHref: 'lab-05-fallstudie.html',
-        footer: '\u00a9 THWS Business School \u00b7 BINT-Lab \u00b7 Alle Rechte vorbehalten',
-      },
-      en: {
-        logo: 'THWS BINT-Lab',
-        back: '\u2190 Back to Course Overview',
-        backHref: 'index.html',
-        badge: 'Lab 06',
-        pageTitle: 'Digital Sovereignty & Open-Source BI',
-        pageSubtitle: 'Understand cloud lock-in, evaluate open-source alternatives, analyze total cost of ownership, and build a self-hosted BI stack with Docker.',
-        nav: [
-          { id: 'ueberblick', label: 'Overview' },
-          { id: 'souveraenitaet', label: 'Digital Sovereignty' },
-          { id: 'lock-in', label: 'Cloud Lock-in' },
-          { id: 'opensource', label: 'Open-Source BI' },
-          { id: 'docker', label: 'Docker Setup' },
-          { id: 'dsgvo', label: 'GDPR Checklist' },
-          { id: 'entscheidung', label: 'Decision Matrix' },
-          { id: 'abschlussprojekt', label: 'Final Project' },
-          { id: 'youtube', label: 'YouTube Resources' },
-          { id: 'quiz', label: 'Quiz' },
-          { id: 'zusammenfassung', label: 'Summary' },
-        ],
-        s1Title: 'Overview',
-        s1Lernziele: 'Learning Objectives',
-        s1Goals: [
-          'Define "Digital Sovereignty" and contextualize it within the EU framework',
-          'Recognize cloud lock-in risks and TCO factors',
-          'Know and categorize open-source BI tools, distinguishing license models',
-          'Set up a self-hosted BI stack with Docker Compose',
-          'Verify and document GDPR requirements for BI systems',
-          'Provide justified tool recommendations for various scenarios',
-        ],
-        s2Title: 'What is Digital Sovereignty?',
-        s2P1: 'Digital sovereignty refers to the ability of organizations and states to control their own digital infrastructure \u2013 from hardware and software to data, algorithms, and platforms (Floridi, 2020).',
-        s2P2: 'At the EU level, initiatives such as GAIA-X, the European Cloud Initiative, and the EU Data Act \u2013 Regulation (EU) 2023/2854 \u2013 aim to strengthen European data sovereignty against US hyperscalers (AWS, Azure, GCP). The EU AI Act (2024) also touches on sovereignty by requiring transparency obligations for AI systems.',
-        s2P3: 'For Business Intelligence, the core questions are:',
-        s2Bullets: [
-          'Where is my data stored \u2013 on which server, in which country?',
-          'Who can theoretically access it (provider, authorities, third parties)?',
-          'Am I locked into a single vendor?',
-          'What happens if the provider discontinues the service or raises prices?',
-          'Can I fully export my data and dashboards?',
-        ],
-        s2ConceptTitle: 'Three Pillars of Digital Sovereignty',
-        s2ConceptItems: [
-          'Data sovereignty: Control over storage location, access, and processing of own data',
-          'Technological sovereignty: Independence from single vendors for critical infrastructure',
-          'Regulatory sovereignty: Ability to enforce own legal standards (GDPR, Data Act)',
-        ],
-        s2InfoTitle: 'Schrems II & EU-US Data Privacy Framework',
-        s2InfoText: 'After Schrems II (CJEU, 2020), the transfer of personal data to the USA without special safeguards is unlawful. For transfers to US companies participating in the EU-US Data Privacy Framework (adequacy decision 2023), that decision can serve as the transfer basis \u2013 no additional instrument is then required. For non-participating recipients other instruments are needed, such as Standard Contractual Clauses or Binding Corporate Rules, complemented by a transfer assessment depending on the constellation. The adequacy decision remains politically and legally contested; which path applies has to be settled case by case and per service.',
-        s3Title: 'SaaS BI Tools: Cloud Lock-in',
-        s3P1: 'Cloud lock-in occurs when switching to an alternative provider becomes technically or economically prohibitive. In the BI context, proprietary data models, DAX/M formulas, permission structures, and API dependencies are the main drivers. Platforms such as Microsoft Fabric amplify this: once ingestion, transformation, warehousing and reporting all sit on OneLake, the switching barrier grows with every additional workload.',
-        s3ConceptTitle: 'Total Cost of Ownership (TCO) for BI Tools',
-        s3ConceptItems: [
-          'Direct costs: licence fees per user or capacity. Check pricing, billing models and included features with each vendor.',
-          'Migration costs: Effort for data export, dashboard rebuilding, training when switching providers',
-          'Opportunity costs: Features only available within the vendor ecosystem (e.g., Copilot in Power BI)',
-          'Risk costs: Price increases, service discontinuation, regulatory conflicts (CLOUD Act)',
-          'Self-hosted operations costs: Servers, maintenance, updates, monitoring \u2013 requires personnel capacity',
-        ],
-        s3LockInTitle: 'Lock-in risks:',
-        s3LockInItems: [
-          'Platform gravity: Microsoft Fabric bundles Data Factory, Warehouse, Spark and Power BI on OneLake \u2013 switching then means migrating an entire data platform, not just dashboards',
-          'Data stored with the provider \u2013 US-based vendors such as Microsoft (Power BI), Google (Looker), Salesforce (Tableau). Data region, subprocessors, support access, encryption and transfer mechanism must be checked separately; an EU region reduces risk but does not answer every question',
-          'Proprietary formats: DAX (Power BI), VizQL (Tableau), LookML (Looker) \u2013 not portable',
-          'Government access under US law (CLOUD Act, FISA 702) has to be assessed for US vendors \u2013 how far it reaches depends on vendor, service, region and contract, and does not affect all of them equally',
-          'On-premises options exist: Power BI Report Server, Tableau Server, Qlik Sense Enterprise',
-        ],
-        s4Title: 'Open-Source BI Overview',
-        s4P1: 'Open-source BI tools shift control over data and infrastructure to you \u2013 together with the responsibility for operations, updates and backups. The license model is decisive: Apache 2.0 allows commercial use and proprietary derivative development, provided the licence and attribution obligations are met. AGPL requires operators of a modified version offered over a network to make the corresponding source code available to that version\'s users. MIT is similarly permissive to Apache 2.0.',
-        s4TableTitle: 'Open-Source Alternatives Compared',
-        s4ThTool: 'Tool',
-        s4ThLicense: 'License',
-        s4ThDocker: 'Docker',
-        s4ThStrengths: 'Strengths',
-        s4ThStatus: 'Status',
-        s4Rows: [
-          { tool: 'Apache Superset', license: 'Apache 2.0', docker: '\u2713', strengths: 'SQL-first, large community, enterprise-ready', status: '\u2705 Active' },
-          { tool: 'Metabase', license: 'AGPL 3.0', docker: '\u2713', strengths: 'Intuitive, great for non-technical users, embedded analytics', status: '\u2705 Active' },
-          { tool: 'Grafana', license: 'AGPL 3.0', docker: '\u2713', strengths: 'Metrics & monitoring, large plugin library', status: '\u2705 Active' },
-          { tool: 'Plotly Dash', license: 'MIT', docker: '\u2713', strengths: 'Maximum flexibility, Python-native, full control', status: '\u2705 Active' },
-          { tool: 'Lightdash', license: 'MIT', docker: '\u2713', strengths: 'dbt-native, metrics layer, modern data stack', status: '\u2705 Active' },
-          { tool: 'Evidence', license: 'MIT', docker: '\u2713', strengths: 'Code-as-BI: Markdown + SQL, Git-versioned', status: '\u2705 Active' },
-          { tool: 'Redash', license: 'BSD', docker: '\u2713', strengths: 'SQL-focused, API access, lightweight', status: '\u26a0\ufe0f Maintenance' },
-        ],
-        s4RedashNote: 'Note: Redash was acquired by Databricks in 2020. The hosted version was discontinued; the open-source project is community-maintained, but development has slowed significantly.',
-        s4LicenseTip: 'License tip: running an unmodified AGPL-3.0 application (Metabase, Grafana) triggers no obligation. If you modify it and offer it over a network, you must make the corresponding source available to those users \u2013 this is not a general duty to publish to the world. If you want to keep customisations internal, Apache-2.0 or MIT is usually simpler. When in doubt, have the licence reviewed.',
-        s5Title: 'Docker Setup: Self-Hosted Metabase',
-        s5Intro: 'With Docker Compose, a complete self-hosted BI stack can be set up in minutes. The following example shows Metabase with PostgreSQL as the metadata database.',
-        starterTitle: 'Download the starter package',
-        starterText: 'Contains docker-compose.yml, init/01_schema.sql, init/02_import.sql, verify.sql, .env.example and a README with expected values and failure symptoms. The stack imports 9,800 rows and produces the same numbers as pandas.',
-        starterBtn: 'lab-06-stack.zip',
-        s5TipText: 'Prerequisites: Docker Desktop installed. Download: https://www.docker.com/products/docker-desktop',
-        s5BashIntro: 'Start and verify the stack:',
-        s5ImportTitle: 'Import the course dataset into PostgreSQL',
-        s5ImportIntro: 'Metabase needs data to connect to. The stack ships a second PostgreSQL service for that: warehouse. The split is deliberate - postgres holds Metabase\u2019s own metadata (questions, dashboards, users), warehouse holds the analytical data. Analytical data does not belong in the tool\u2019s metadata database.',
-        s5ImportStepsTitle: 'Prepare and start',
-        dataTitle: 'Data for the import',
-        dataText: 'The warehouse service imports train.csv on first start. The file must sit next to docker-compose.yml \u2013 that is where the mount expects it. It is the same course dataset as in Labs\u00a004 and 05: 9,800 rows, DD/MM/YYYY, encoding latin-1.',
-        dataLicense: 'Source: Superstore Sales Dataset by Rohit Sahoo (Kaggle), licensed GPL\u00a02. The starter package deliberately does not bundle the CSV \u2013 it lives once under data/ and is copied from there.',
-        dataDirect: 'Download train.csv',
-        dataKaggle: 'Original source on Kaggle',
-        s5ImportSteps: [
-          'Download and unpack the starter package lab-06-stack.zip.',
-          'Copy .env.example to .env and change both passwords.',
-          'Place train.csv from Lab 04 next to docker-compose.yml - the mount expects it there.',
-          'Run docker compose up -d. The warehouse service creates the table and imports the CSV by itself on first start.',
-        ],
-        s5ImportDdlTitle: 'Table: init/01_schema.sql',
-        s5ImportCopyTitle: 'Import: init/02_import.sql',
-        s5ImportInitNote: 'Everything under init/ runs exactly once - namely while the volume is still empty. A second docker compose up does not import twice. If you change the scripts you therefore need docker compose down -v, otherwise the change has no effect.',
-        s5ImportVerifyTitle: 'Success check and cleanup',
-        s5ImportMbTitle: 'Register the database in Metabase',
-        s5ImportMbText: 'Settings -> Databases -> Add database: type PostgreSQL, host warehouse, port 5432, database superstore, user superstore, password from .env. The host is warehouse, not localhost: Metabase runs in its own container, where localhost would be Metabase itself. Inside the compose network the services reach each other by service name and container port 5432 - not via the published port 5433. From your own machine it is the other way round: localhost:5433.',
-        s5ImportTimeNote: 'Time needed: 10-20 minutes until the stack is up (mostly image download), then 45-90 minutes for onboarding and dashboards.',
-        selfCheckTitle: 'Self-check (1 minute)',
-        selfCheckItems: [
-          'docker compose ps shows metabase, postgres and warehouse as running.',
-          'postgres and warehouse are healthy \u2013 otherwise Metabase will not start at all.',
-          'The warehouse logs contain \u201CImport ok: 9800 rows\u201D.',
-          'verify.sql returns 9800 rows, 4922 orders and total revenue 2261536.78.',
-          'http://localhost:3000 shows the setup wizard.',
-          'Common error: using localhost instead of warehouse as the host in Metabase \u2013 it then looks inside itself.',
-          'Cleanup: docker compose down stops the stack, down -v also removes the data.',
-        ],
-        s5SecurityTitle: 'Security for Self-Hosted Setups',
-        s5SecurityItems: [
-          'HTTPS via reverse proxy (Traefik, Caddy, or nginx) \u2013 never expose Metabase directly without TLS',
-          'Strong passwords and .env files instead of plaintext in docker-compose.yml',
-          'Regular updates: pin the Metabase image to the same version as the compose example (v0.63.13), but apply security patches promptly',
-          'Backup strategy: Regularly back up PostgreSQL data (pg_dump)',
-          'Network isolation: Use Docker networks, only expose port 443 (HTTPS) externally',
-        ],
-        s6Title: 'GDPR Checklist',
-        s6Intro: 'Before using BI tools with personal data, the following points must be checked and documented (per GDPR and EU Data Act):',
-        s6ChecklistItems: [
-          'Record of processing activities created (Art. 30 GDPR)',
-          'Data processing agreement (DPA) signed with cloud provider',
-          'Data transfers to third countries documented and justified (SCCs + TIA)',
-          'Data protection impact assessment (DPIA) for sensitive data completed',
-          'Deletion concept and retention periods for all stored data documented',
-          'Data protection officer informed (if required, Art. 37 GDPR)',
-          'Technical and organizational measures (TOMs) documented (Art. 32 GDPR)',
-          'Data subject rights ensured: Access, rectification, erasure, portability',
-        ],
-        s6ProgressLabel: 'Completed',
-        s6Of: 'of',
-        s6Reset: 'Reset checklist',
-        s7Title: 'Decision Matrix: Which Tool When?',
-        s7ThScenario: 'Scenario',
-        s7ThRec: 'Recommendation',
-        s7ThReason: 'Rationale',
-        s7Rows: [
-          { scenario: 'Small team, no IT department', rec: 'SaaS (Power BI, Tableau Cloud)', reason: 'Lowest operational overhead, quickly productive' },
-          { scenario: 'Personal data (HR, customers)', rec: 'Metabase / Superset self-hosted', reason: 'EU/EEA hosting simplifies the risk picture; third-country transfer only with a valid transfer mechanism' },
-          { scenario: 'Complex custom dashboards', rec: 'Plotly Dash', reason: 'Python-native, full control over design and logic' },
-          { scenario: 'Public sector / government', rec: 'Open Source (often preferred)', reason: 'Interoperable Europe Act: prioritise open solutions where objectively equivalent \u2013 not a blanket obligation' },
-          { scenario: 'Modern dbt-based data stack', rec: 'Lightdash / Evidence', reason: 'Seamless dbt integration, metrics layer, Git workflows' },
-          { scenario: 'Startup, fast deployment', rec: 'Metabase + Docker', reason: 'Stack runs in 5\u201315 min. with a prepared environment, large community' },
-          { scenario: 'Enterprise with Microsoft ecosystem', rec: 'Power BI (+ Report Server)', reason: 'Best integration, Copilot, enterprise support' },
-          { scenario: 'Monitoring & DevOps metrics', rec: 'Grafana', reason: 'Standard for infrastructure monitoring, alerting' },
-        ],
-        s8Title: 'Final Project',
-        s8ChallengeTitle: 'Bonus Project: Self-Hosted BI Stack',
-        s8ChallengeDesc: 'Build a complete self-hosted BI stack on your local machine:',
-        s8Steps: [
-          'Install Docker Desktop and test basic Docker commands',
-          'Create docker-compose.yml for Metabase + PostgreSQL',
-          'Start the stack and complete the Metabase setup wizard',
-          'Import Superstore data (train.csv from Lab\u00A005) as CSV into PostgreSQL (e.g., via pgAdmin or psql)',
-          'Create 3 meaningful dashboards in Metabase (revenue over time, categories/sub-categories, regions) \u2013 the dataset has no profit column, the measure is Sales',
-          'Complete the GDPR checklist for your setup and document it',
-          'Deliverable: Screenshot + brief reflection on pros/cons vs. Power BI',
-        ],
-        s9Title: 'YouTube Resources',
-        s9Intro: 'Recommended video resources on open-source BI, Docker, and data sovereignty:',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
-        s9Resources: [
-          {
-            title: 'Metabase \u2013 Official Getting Started',
-            desc: 'Official Metabase channel with tutorials on installation, the question editor, dashboards, and embedding for developers.',
-            url: 'https://www.youtube.com/@Metabase',
-            label: 'Metabase on YouTube \u2192',
-          },
-          {
-            title: 'Apache Superset \u2013 Preset Channel',
-            desc: 'Preset (the company behind Superset) offers demos, feature walkthroughs, and best practices for SQL-based analytics.',
-            url: 'https://www.youtube.com/@preset-io',
-            label: 'Preset (Superset) on YouTube \u2192',
-          },
-          {
-            title: 'TechWorld with Nana \u2013 Docker',
-            desc: 'Nana explains Docker from scratch: containers, images, Docker Compose, and practical use cases \u2013 ideal preparation for the bonus project.',
-            url: 'https://www.youtube.com/@TechWorldwithNana',
-            label: 'TechWorld with Nana on YouTube \u2192',
-          },
-          {
-            title: 'NetworkChuck \u2013 Docker & Self-Hosting',
-            desc: 'Engaging explanations of Docker, Portainer, self-hosting, and networking basics \u2013 entertaining and hands-on.',
-            url: 'https://www.youtube.com/@NetworkChuck',
-            label: 'NetworkChuck on YouTube \u2192',
-          },
-        ],
-        s9BookRef: 'References: Floridi, L. (2020). "The Fight for Digital Sovereignty: What It Is, and Why It Matters, Especially for the EU." Philosophy & Technology, 33(3). | Bitkom (2023). "Cloud Sovereignty Guide."',
-        quizTitle: 'Quiz',
-        quizIntro: 'Test your knowledge on Digital Sovereignty and Open-Source BI:',
-        quizQuestions: [
-          { q: 'What is the main driver of cloud lock-in for BI tools?', options: ['License costs too high', 'Proprietary data formats and API dependencies', 'Lack of internet connectivity', 'Too many users on the team'], correct: 1, explanation: 'Lock-in primarily arises from proprietary formats (DAX, VizQL, LookML) and API dependencies that make switching technically complex.' },
-          { q: 'Which EU law regulates access to and use of data?', options: ['GDPR', 'EU AI Act', 'EU Data Act', 'ePrivacy Regulation'], correct: 2, explanation: 'The EU Data Act (Regulation (EU) 2023/2854). It regulates fair access to and use of data, particularly IoT data and cloud switching rights.' },
-          { q: 'Which license requires releasing the source of a modified application even when it is only offered over a network?', options: ['MIT', 'Apache 2.0', 'AGPL 3.0', 'BSD'], correct: 2, explanation: 'AGPL 3.0 (e.g., Metabase, Grafana) closes the \u201cASP loophole\u201d: whoever offers a modified version over a network must provide its users with the corresponding source. Running it unmodified does not trigger this, and the licence does not require publishing to the general public.' },
-          { q: 'Which tool is best suited for a dbt-based modern data stack?', options: ['Power BI', 'Metabase', 'Lightdash', 'Grafana'], correct: 2, explanation: 'Lightdash is specifically designed for dbt workflows and offers native metrics layer integration.' },
-          { q: 'What does Art. 32 GDPR require from data controllers?', options: ['User consent', 'Technical and organizational measures (TOMs)', 'Data protection impact assessment', 'Prohibition of cloud use'], correct: 1, explanation: 'Art. 32 GDPR requires the implementation of appropriate technical and organizational measures (TOMs) for data processing security.' },
-          { q: 'Why is HTTPS via reverse proxy essential for self-hosted BI?', options: ['Faster database queries', 'Better-looking dashboard URLs', 'Encrypted traffic and protection against man-in-the-middle attacks', 'Better Docker compatibility'], correct: 2, explanation: 'HTTPS encrypts all traffic between browser and server, protecting against eavesdropping and manipulation (man-in-the-middle).' },
-        ],
-        sumTitle: 'Summary',
-        sumItems: [
-          'Digital sovereignty encompasses data, technology, and regulatory sovereignty (Floridi, 2020).',
-          'Cloud lock-in arises from proprietary formats, APIs, and ecosystem dependencies \u2013 TCO analysis helps assess the situation.',
-          'The EU Data Act \u2013 Regulation (EU) 2023/2854 \u2013 and the AI Act strengthen European data sovereignty and cloud switching rights.',
-          'Open-source BI (Superset, Metabase, Grafana, Dash, Lightdash, Evidence) shifts control and operational responsibility to you \u2013 mind the license models.',
-          'Docker Compose enables fast self-hosted deployment \u2013 don\u2019t forget HTTPS and backup strategy.',
-          'GDPR compliance requires systematic checks: DPA, SCCs, TIA, TOMs, deletion concept.',
-          'Tool choice depends on scenario: Team size, data type, regulatory requirements, existing tech stack.',
-        ],
-        navBack: '\u2190 Lab 05: Case Study',
-        navBackHref: 'lab-05-fallstudie.html',
-        footer: '\u00a9 THWS Business School \u00b7 BINT-Lab \u00b7 All rights reserved',
-      },
-    };
-
-    const c = t[lang];
-
-    // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
-    React.useEffect(() => {
-      document.title = 'Lab 06 \u2013 ' + c.pageTitle + ' \u00B7 THWS BINT-Lab';
-      document.documentElement.lang = lang;
-        BINTLab.setLanguage(lang);
-    }, [lang, c.pageTitle]);
-
-    // Code strings as regular strings (safe, no ${} collision risk)
-    const codeDockerCompose = {
-      de: "# docker-compose.yml - Self-Hosted BI-Stack fuer Lab 06\n# Compose Spec (v2) - der 'version'-Schluessel ist abgekuendigt.\n#\n# Drei Dienste, und die Trennung ist Absicht:\n#   metabase   - die Anwendung\n#   postgres   - Metabases EIGENE Metadaten (Fragen, Dashboards, Nutzer)\n#   warehouse  - die Analysedatenbank mit den Superstore-Daten. Nur dieser\n#                Dienst ist nach aussen veroeffentlicht (Port 5433), damit\n#                psql, DBeaver oder pgAdmin hineinschauen koennen.\nservices:\n  metabase:\n    image: metabase/metabase:v0.63.13   # auf Patchstand pinnen, nie auf :latest\n    # Fuer echte Reproduzierbarkeit zusaetzlich den Digest festhalten:\n    #   image: metabase/metabase@sha256:<digest>\n    ports:\n      - \"3000:3000\"\n    environment:\n      MB_DB_TYPE: postgres\n      MB_DB_DBNAME: metabase\n      MB_DB_HOST: postgres\n      MB_DB_USER: metabase\n      MB_DB_PASS: ${POSTGRES_PASSWORD}\n    depends_on:\n      postgres:\n        condition: service_healthy\n      warehouse:\n        condition: service_healthy\n    restart: unless-stopped\n\n  postgres:\n    image: postgres:17.8-alpine\n    environment:\n      POSTGRES_USER: metabase\n      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}\n      POSTGRES_DB: metabase\n    volumes:\n      - metabase_meta:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U metabase\"]\n      interval: 5s\n      timeout: 5s\n      retries: 10\n    restart: unless-stopped\n\n  warehouse:\n    image: postgres:17.8-alpine\n    ports:\n      - \"5433:5432\"          # aussen 5433, damit ein lokales Postgres nicht kollidiert\n    environment:\n      POSTGRES_USER: superstore\n      POSTGRES_PASSWORD: ${WAREHOUSE_PASSWORD}\n      POSTGRES_DB: superstore\n    volumes:\n      - warehouse_data:/var/lib/postgresql/data\n      - ./init:/docker-entrypoint-initdb.d:ro   # laeuft einmalig beim ersten Start\n      - ./train.csv:/data/train.csv:ro          # damit COPY die Datei sieht\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U superstore -d superstore\"]\n      interval: 5s\n      timeout: 5s\n      retries: 10\n    restart: unless-stopped\n\nvolumes:\n  metabase_meta:\n  warehouse_data:",
-      en: "# docker-compose.yml - self-hosted BI stack for Lab 06\n# Compose Spec (v2) - the 'version' key is deprecated.\n#\n# Three services, and the split is deliberate:\n#   metabase   - the application\n#   postgres   - Metabase's OWN metadata (questions, dashboards, users)\n#   warehouse  - the analytical database holding the Superstore data. Only\n#                this service is published (port 5433) so that psql, DBeaver\n#                or pgAdmin can look inside.\nservices:\n  metabase:\n    image: metabase/metabase:v0.63.13   # pin to a patch version, never :latest\n    # For real reproducibility pin the digest as well:\n    #   image: metabase/metabase@sha256:<digest>\n    ports:\n      - \"3000:3000\"\n    environment:\n      MB_DB_TYPE: postgres\n      MB_DB_DBNAME: metabase\n      MB_DB_HOST: postgres\n      MB_DB_USER: metabase\n      MB_DB_PASS: ${POSTGRES_PASSWORD}\n    depends_on:\n      postgres:\n        condition: service_healthy\n      warehouse:\n        condition: service_healthy\n    restart: unless-stopped\n\n  postgres:\n    image: postgres:17.8-alpine\n    environment:\n      POSTGRES_USER: metabase\n      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}\n      POSTGRES_DB: metabase\n    volumes:\n      - metabase_meta:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U metabase\"]\n      interval: 5s\n      timeout: 5s\n      retries: 10\n    restart: unless-stopped\n\n  warehouse:\n    image: postgres:17.8-alpine\n    ports:\n      - \"5433:5432\"          # 5433 outside, so a local Postgres does not clash\n    environment:\n      POSTGRES_USER: superstore\n      POSTGRES_PASSWORD: ${WAREHOUSE_PASSWORD}\n      POSTGRES_DB: superstore\n    volumes:\n      - warehouse_data:/var/lib/postgresql/data\n      - ./init:/docker-entrypoint-initdb.d:ro   # runs once on first start\n      - ./train.csv:/data/train.csv:ro          # so that COPY can see the file\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U superstore -d superstore\"]\n      interval: 5s\n      timeout: 5s\n      retries: 10\n    restart: unless-stopped\n\nvolumes:\n  metabase_meta:\n  warehouse_data:",
-    };
-
-    const codeEnvFile = {
-
-      de: "# .env (im selben Verzeichnis wie docker-compose.yml)\n# Diese Datei NIE ins Git-Repo committen -> in .gitignore aufnehmen!\nPOSTGRES_PASSWORD=BitteAendern_Metabase123!\nWAREHOUSE_PASSWORD=BitteAendern_Warehouse123!",
-
-      en: "# .env (in the same directory as docker-compose.yml)\n# NEVER commit this file to the Git repo -> add it to .gitignore!\nPOSTGRES_PASSWORD=ChangeMe_Metabase123!\nWAREHOUSE_PASSWORD=ChangeMe_Warehouse123!",
-
-    };
-
-    const codeBashDocker = {
-
-      de: "# .env-Datei aus dem Block oben anlegen (Passwort anpassen!):\nnano .env      # oder: notepad .env / code .env\n\n# Stack starten:\ndocker compose up -d\n\n# Status pr\u00fcfen:\ndocker compose ps\n\n# Logs anzeigen:\ndocker compose logs -f metabase\n\n# Zugriff: http://localhost:3000\n# Erster Start: Einrichtungsassistent \u00f6ffnet sich",
-
-      en: "# Create the .env file from the block above (change the password!):\nnano .env      # or: notepad .env / code .env\n\n# Start the stack:\ndocker compose up -d\n\n# Check status:\ndocker compose ps\n\n# View logs:\ndocker compose logs -f metabase\n\n# Access: http://localhost:3000\n# First start: the setup wizard opens",
-
-    };
-
-
-    // Import des Kursdatensatzes in die Analysedatenbank.
-
-    // gegen postgres:17-alpine und metabase/metabase:v0.63.13.
-
-    const codeSchemaSql = {
-
-      de: "-- init/01_schema.sql - laeuft beim ersten Start automatisch\nCREATE TABLE IF NOT EXISTS orders (\n    row_id        integer PRIMARY KEY,\n    order_id      text NOT NULL,\n    order_date    date NOT NULL,\n    ship_date     date NOT NULL,\n    ship_mode     text NOT NULL,\n    customer_id   text NOT NULL,\n    customer_name text NOT NULL,\n    segment       text NOT NULL,\n    country       text NOT NULL,\n    city          text NOT NULL,\n    state         text NOT NULL,\n    postal_code   text,            -- NULL-faehig: elf Werte fehlen\n    region        text NOT NULL,\n    product_id    text NOT NULL,\n    category      text NOT NULL,\n    sub_category  text NOT NULL,\n    product_name  text NOT NULL,\n    sales         numeric(12,4) NOT NULL\n);\n\n-- Zwei Entscheidungen, die man begruenden koennen sollte:\n--   postal_code ist text, nicht integer. US-PLZ haben fuehrende Nullen\n--   (\"01013\"); als Zahl gespeichert gingen sie verloren.\n--   sales ist numeric(12,4), nicht float und nicht numeric(12,2). Die CSV\n--   enthaelt Werte wie 957,5775. Mit zwei Nachkommastellen rundet Postgres\n--   schon beim Import, und die Gesamtsumme weicht um rund 20 Cent von der\n--   pandas- und der Power-BI-Zahl ab.\n\nCREATE INDEX IF NOT EXISTS orders_order_date_idx   ON orders (order_date);\nCREATE INDEX IF NOT EXISTS orders_category_idx     ON orders (category, sub_category);\nCREATE INDEX IF NOT EXISTS orders_region_state_idx ON orders (region, state);",
-
-      en: "-- init/01_schema.sql - runs automatically on first start\nCREATE TABLE IF NOT EXISTS orders (\n    row_id        integer PRIMARY KEY,\n    order_id      text NOT NULL,\n    order_date    date NOT NULL,\n    ship_date     date NOT NULL,\n    ship_mode     text NOT NULL,\n    customer_id   text NOT NULL,\n    customer_name text NOT NULL,\n    segment       text NOT NULL,\n    country       text NOT NULL,\n    city          text NOT NULL,\n    state         text NOT NULL,\n    postal_code   text,            -- nullable: eleven values are missing\n    region        text NOT NULL,\n    product_id    text NOT NULL,\n    category      text NOT NULL,\n    sub_category  text NOT NULL,\n    product_name  text NOT NULL,\n    sales         numeric(12,4) NOT NULL\n);\n\n-- Two decisions you should be able to justify:\n--   postal_code is text, not integer. US ZIP codes have leading zeros\n--   (\"01013\"); stored as a number they would be lost.\n--   sales is numeric(12,4), not float and not numeric(12,2). The CSV\n--   contains values such as 957.5775. With two decimal places Postgres\n--   rounds during import, and the total then differs by about 20 cents\n--   from the pandas and Power BI figures.\n\nCREATE INDEX IF NOT EXISTS orders_order_date_idx   ON orders (order_date);\nCREATE INDEX IF NOT EXISTS orders_category_idx     ON orders (category, sub_category);\nCREATE INDEX IF NOT EXISTS orders_region_state_idx ON orders (region, state);",
-
-    };
-
-
-    const codeImportSql = {
-
-      de: "-- init/02_import.sql - laeuft direkt nach dem Schema\n--\n-- COPY liest serverseitig, die Datei muss also IM Container liegen. Dafuer\n-- ist der Mount ./train.csv -> /data/train.csv in der Compose-Datei da.\n-- Wer keine Datei in den Container legen kann, nimmt \\copy in psql; dann\n-- liest der Client.\n--\n-- Das Datumsformat ist TT/MM/JJJJ. Ohne DateStyle bricht Postgres bei jedem\n-- Tag > 12 ab - dieselbe Falle wie dayfirst=True in pandas.\nSET datestyle = 'ISO, DMY';\n\nCOPY orders (\n    row_id, order_id, order_date, ship_date, ship_mode,\n    customer_id, customer_name, segment, country, city, state,\n    postal_code, region, product_id, category, sub_category,\n    product_name, sales\n)\nFROM '/data/train.csv'\nWITH (FORMAT csv, HEADER true, ENCODING 'LATIN1');\n\n-- Erfolgskontrolle: bricht ab, wenn die Zeilenzahl nicht stimmt.\nDO $$\nDECLARE n bigint;\nBEGIN\n    SELECT count(*) INTO n FROM orders;\n    IF n <> 9800 THEN\n        RAISE EXCEPTION 'Import fehlgeschlagen: % Zeilen statt 9800', n;\n    END IF;\n    RAISE NOTICE 'Import ok: % Zeilen', n;\nEND $$;",
-
-      en: "-- init/02_import.sql - runs right after the schema\n--\n-- COPY reads server-side, so the file has to be INSIDE the container. That\n-- is what the mount ./train.csv -> /data/train.csv in the compose file is\n-- for. If you cannot place a file in the container, use \\copy in psql;\n-- then the client reads it.\n--\n-- The date format is DD/MM/YYYY. Without DateStyle, Postgres fails on every\n-- day > 12 - the same trap as dayfirst=True in pandas.\nSET datestyle = 'ISO, DMY';\n\nCOPY orders (\n    row_id, order_id, order_date, ship_date, ship_mode,\n    customer_id, customer_name, segment, country, city, state,\n    postal_code, region, product_id, category, sub_category,\n    product_name, sales\n)\nFROM '/data/train.csv'\nWITH (FORMAT csv, HEADER true, ENCODING 'LATIN1');\n\n-- Success check: aborts if the row count is wrong.\nDO $$\nDECLARE n bigint;\nBEGIN\n    SELECT count(*) INTO n FROM orders;\n    IF n <> 9800 THEN\n        RAISE EXCEPTION 'Import failed: % rows instead of 9800', n;\n    END IF;\n    RAISE NOTICE 'Import ok: % rows', n;\nEND $$;",
-
-    };
-
-
-    const codeVerifyBash = {
-
-      de: "# Erfolgskontrolle - laeuft gegen den warehouse-Container\ndocker compose logs warehouse | grep \"Import ok\"\n# -> NOTICE:  Import ok: 9800 Zeilen\n\ndocker compose exec -T warehouse \\\n  psql -U superstore -d superstore -f - < verify.sql\n\n# Sollausgabe:\n#   zeilen        9800\n#   bestellungen  4922\n#   gesamtumsatz  2261536.78\n#   fehlende_plz  11\n#   Zeitraum      2015-01-03 bis 2018-12-30\n#   2015 479856.21 | 2016 459436.01 | 2017 600192.55 | 2018 722052.02\n#\n# Dieselben Zahlen liefern der pandas-Block aus Lab 05 und die DAX-Measures\n# in Power BI. Weichen sie ab: Datumsformat oder Encoding pruefen.\n\n# Aufraeumen\ndocker compose down       # Container weg, Daten bleiben\ndocker compose down -v    # auch die Volumes - der Import laeuft dann neu",
-
-      en: "# Success check - runs against the warehouse container\ndocker compose logs warehouse | grep \"Import ok\"\n# -> NOTICE:  Import ok: 9800 rows\n\ndocker compose exec -T warehouse \\\n  psql -U superstore -d superstore -f - < verify.sql\n\n# Expected output:\n#   rows          9800\n#   orders        4922\n#   total_sales   2261536.78\n#   missing_zip   11\n#   period        2015-01-03 to 2018-12-30\n#   2015 479856.21 | 2016 459436.01 | 2017 600192.55 | 2018 722052.02\n#\n# The pandas block from Lab 05 and the DAX measures in Power BI produce the\n# same numbers. If they differ: check the date format or the encoding.\n\n# Cleanup\ndocker compose down       # containers gone, data stays\ndocker compose down -v    # volumes too - the import then runs again",
-
-    };
-
-    const doneCount = checkedItems.filter(Boolean).length;
-
-    return (
-      <div data-lang={lang}>
-        {/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */}
-        <a className="skip-link" href="#main">
-          {lang === 'en' ? 'Skip to content' : 'Zum Inhalt springen'}
-        </a>
-        <header className="header">
-          <div className="header-left">
-            <a href={'index.html?lang=' + lang} className="header-logo">{c.logo}</a>
-            <a href={c.backHref} className="header-back">{c.back}</a>
-          </div>
-          <div style={{ display: 'flex', gap: '0.35rem' }}>
-            <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => toggleLang('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">DE</button>
-            <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => toggleLang('en')} aria-pressed={lang === 'en'} aria-label="English">EN</button>
-          </div>
-        </header>
-
-        <nav className="sidebar">
-          <div className="sidebar-title">Lab 06</div>
-          {c.nav.map((item) => (
-            <a key={item.id} href={'#' + item.id} className={'sidebar-link' + (activeSection === item.id ? ' active' : '')}>{item.label}</a>
-          ))}
-        </nav>
-
-        <main className="main-content" id="main">
-          {/* Lab Header */}
-          <div style={{ marginBottom: '2.5rem', position: 'relative' }}>
-            <span className="lab-num">06</span>
-            <span className="bauhaus-badge">{c.badge}</span>
-            {/* Der Labtitel ist die einzige h1 der Seite; die Abschnitte darunter
-                sind h2. Vorher war der Titel selbst eine h2 - die Seite hatte damit
-                gar keine h1 und keine erkennbare Ueberschriftenhierarchie. */}
-            <h1 style={{ fontSize: '2rem', marginTop: '0.75rem', marginBottom: '0.25rem' }}>{c.pageTitle}</h1>
-            <div className="bauhaus-accent-line"></div>
-            <p style={{ color: '#555', fontSize: '1.05rem', maxWidth: '640px' }}>{c.pageSubtitle}</p>
-          </div>
-
-          {/* 1 – Überblick */}
-          <section id="ueberblick" className="section-block">
-            <h2>{c.s1Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <div className="lernziele-box">
-              <h4 className="lernziele-heading">{c.s1Lernziele}</h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                {c.s1Goals.map((g, i) => <span key={i} className="lernziel-chip">{g}</span>)}
-              </div>
-            </div>
-          </section>
-
-          {/* 2 – Digitale Souveränität */}
-          <section id="souveraenitaet" className="section-block">
-            <h2>{c.s2Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <p>{c.s2P1}</p>
-            <div className="concept-box" style={{ marginBottom: '1.25rem' }}>
-              <h4 style={{ marginTop: 0 }}>{c.s2ConceptTitle}</h4>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: '2' }}>
-                {c.s2ConceptItems.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </div>
-            <p>{c.s2P2}</p>
-            <p>{c.s2P3}</p>
-            <ul style={{ paddingLeft: '1.5rem', lineHeight: '2' }}>
-              {c.s2Bullets.map((b, i) => <li key={i}>{b}</li>)}
-            </ul>
-            <div className="info-box" style={{ marginTop: '1.25rem' }}>
-              <strong>{c.s2InfoTitle}:</strong> {c.s2InfoText}
-            </div>
-          </section>
-
-          {/* 3 – Cloud Lock-in */}
-          <section id="lock-in" className="section-block">
-            <h2>{c.s3Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <p>{c.s3P1}</p>
-            <div className="concept-box">
-              <h4 style={{ marginTop: 0 }}>{c.s3ConceptTitle}</h4>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: '2' }}>
-                {c.s3ConceptItems.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </div>
-            <div className="tip-box" style={{ marginTop: '1.25rem' }}>
-              <strong>{c.s3LockInTitle}</strong>
-              <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.25rem', lineHeight: '2' }}>
-                {c.s3LockInItems.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </div>
-          </section>
-
-          {/* 4 – Open-Source BI */}
-          <section id="opensource" className="section-block">
-            <h2>{c.s4Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <p>{c.s4P1}</p>
-            <h3 style={{ marginTop: '2rem', marginBottom: '0.5rem' }}>{c.s4TableTitle}</h3>
-            <div className="table-wrap">
-              <table>
-              <thead>
-                <tr>
-                  <th>{c.s4ThTool}</th>
-                  <th>{c.s4ThLicense}</th>
-                  <th>{c.s4ThDocker}</th>
-                  <th>{c.s4ThStrengths}</th>
-                  <th>{c.s4ThStatus}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {c.s4Rows.map((row, i) => (
-                  <tr key={i}>
-                    <td><strong>{row.tool}</strong></td>
-                    <td>{row.license}</td>
-                    <td style={{ textAlign: 'center' }}>{row.docker}</td>
-                    <td>{row.strengths}</td>
-                    <td>{row.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-              </table>
-            </div>
-            <div className="info-box" style={{ marginTop: '1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem' }}>{c.s4RedashNote}</p>
-            </div>
-            <div className="tip-box" style={{ marginTop: '1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem' }}><strong>{c.s4LicenseTip}</strong></p>
-            </div>
-          </section>
-
-          {/* 5 – Docker Setup */}
-          <section id="docker" className="section-block">
-            <h2>{c.s5Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <p>{c.s5Intro}</p>
-            <div className="tip-box" style={{ marginTop: '1.25rem' }}>
-              <h4 style={{ marginTop: 0 }}>{c.starterTitle}</h4>
-              <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem' }}>{c.starterText}</p>
-              <a href="starter/lab-06-stack.zip" download
-                 style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none',
-                          padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                {c.starterBtn}
-              </a>
-            </div>
-            <CodeBlock code={codeDockerCompose[lang]} lang={lang} kind="run" />
-            <h4 style={{ marginTop: '1.5rem' }}>.env</h4>
-            <CodeBlock code={codeEnvFile[lang]} lang={lang} kind="run" />
-            <div className="tip-box">
-              <strong>Tipp:</strong> {c.s5TipText}
-            </div>
-            <p style={{ marginTop: '1.5rem' }}>{c.s5BashIntro}</p>
-            <CodeBlock code={codeBashDocker[lang]} lang={lang} kind="run" />
-            <h3 style={{ marginTop: '2.5rem' }}>{c.s5ImportTitle}</h3>
-            <p>{c.s5ImportIntro}</p>
-            <div className="info-box" style={{ marginTop: '1.25rem' }}>
-              <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{c.dataTitle}</h4>
-              <p style={{ margin: '0 0 0.75rem' }}>{c.dataText}</p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <a href="data/train.csv" download
-                   style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                  {c.dataDirect}
-                </a>
-                <a href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting"
-                   target="_blank" rel="noopener noreferrer"
-                   style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                  {c.dataKaggle}
-                </a>
-              </div>
-              <p style={{ margin: '0.75rem 0 0', fontSize: '0.78rem', color: '#4B5563' }}>{c.dataLicense}</p>
-            </div>
-            <h4>{c.s5ImportStepsTitle}</h4>
-            <ol style={{ lineHeight: '1.9', paddingLeft: '1.25rem' }}>
-              {c.s5ImportSteps.map((item, i) => <li key={i}>{item}</li>)}
-            </ol>
-            <h4 style={{ marginTop: '1.5rem' }}>{c.s5ImportDdlTitle}</h4>
-            <CodeBlock code={codeSchemaSql[lang]} lang={lang} kind="run" />
-            <h4 style={{ marginTop: '1.5rem' }}>{c.s5ImportCopyTitle}</h4>
-            <CodeBlock code={codeImportSql[lang]} lang={lang} kind="run" note={c.s5ImportInitNote} />
-            <h4 style={{ marginTop: '1.5rem' }}>{c.s5ImportVerifyTitle}</h4>
-            <CodeBlock code={codeVerifyBash[lang]} lang={lang} kind="run" />
-            <div className="tip-box">
-              <strong>{c.s5ImportMbTitle}:</strong> {c.s5ImportMbText}
-            </div>
-            <p style={{ fontSize: '0.82rem', color: '#4B5563' }}>{c.s5ImportTimeNote}</p>
-            <div className="challenge-box">
-              <h4 style={{ marginTop: 0 }}>{c.selfCheckTitle}</h4>
-              <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
-                {c.selfCheckItems.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </div>
-
-            <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-              <h4 style={{ marginTop: 0 }}>{c.s5SecurityTitle}</h4>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: '2' }}>
-                {c.s5SecurityItems.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </div>
-          </section>
-
-          {/* 6 – DSGVO Checkliste */}
-          <section id="dsgvo" className="section-block">
-            <h2>{c.s6Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <p>{c.s6Intro}</p>
-            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '1.25rem 1.5rem', marginTop: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B7280' }}>
-                  {c.s6ProgressLabel}: {doneCount} {c.s6Of} {checklistCount}
-                </span>
-                <div style={{ height: '6px', width: '140px', background: '#E5E7EB', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: (doneCount / checklistCount * 100) + '%', background: 'var(--col-accent)', borderRadius: '3px', transition: 'width 0.3s ease' }}></div>
-                </div>
-              </div>
-              {c.s6ChecklistItems.map((item, i) => (
-                <ChecklistItem key={i} text={item} checked={checkedItems[i]} onToggle={() => toggleCheck(i)} />
-              ))}
-              {doneCount > 0 && (
-                <button
-                  onClick={resetChecklist}
-                  style={{
-                    marginTop: '0.9rem', background: 'transparent', border: '1px solid #D1D5DB',
-                    borderRadius: '6px', padding: '0.3rem 0.7rem', fontSize: '0.75rem',
-                    color: '#6B7280', cursor: 'pointer', fontFamily: 'inherit'
-                  }}>
-                  {c.s6Reset}
-                </button>
-              )}
-            </div>
-          </section>
-
-          {/* 7 – Entscheidungsmatrix */}
-          <section id="entscheidung" className="section-block">
-            <h2>{c.s7Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <div className="table-wrap">
-              <table>
-              <thead>
-                <tr>
-                  <th>{c.s7ThScenario}</th>
-                  <th>{c.s7ThRec}</th>
-                  <th>{c.s7ThReason}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {c.s7Rows.map((row, i) => (
-                  <tr key={i}>
-                    <td>{row.scenario}</td>
-                    <td><strong>{row.rec}</strong></td>
-                    <td>{row.reason}</td>
-                  </tr>
-                ))}
-              </tbody>
-              </table>
-            </div>
-          </section>
-
-          {/* 8 – Abschlussprojekt */}
-          <section id="abschlussprojekt" className="section-block">
-            <h2>{c.s8Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <div className="challenge-box">
-              <h4 style={{ marginTop: 0, color: '#15803d' }}>{c.s8ChallengeTitle}</h4>
-              <p style={{ margin: '0 0 0.75rem', color: '#166534' }}>{c.s8ChallengeDesc}</p>
-              <ol style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: '2.2', color: '#166534' }}>
-                {c.s8Steps.map((step, i) => <li key={i}>{step}</li>)}
-              </ol>
-            </div>
-          </section>
-
-          {/* 9 – YouTube */}
-          <section id="youtube" className="section-block">
-            <h2>{c.s9Title}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <p>{c.s9Intro}</p>
-            <div className="youtube-box">
-              <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#78350F' }}>
-                {c.ytNote}
-              </p>
-              {c.s9Resources.map((res, i) => (
-                <div key={i} style={{ marginBottom: i < c.s9Resources.length - 1 ? '1.25rem' : 0 }}>
-                  <h4 style={{ marginTop: 0 }}>{res.title}</h4>
-                  <p style={{ margin: '0.25rem 0 0.5rem', color: '#78350F', fontSize: '0.875rem' }}>{res.desc}</p>
-                  <a href={res.url} target="_blank" rel="noopener noreferrer" className="youtube-link">{res.label}</a>
-                </div>
-              ))}
-            </div>
-            <div className="info-box" style={{ marginTop: '1.25rem' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem' }}>{c.s9BookRef}</p>
-            </div>
-          </section>
-
-          {/* 10 – Quiz */}
-          <section id="quiz" className="section-block">
-            <h2>{c.quizTitle}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <p>{c.quizIntro}</p>
-            {c.quizQuestions.map((q, i) => (
-              <QuizQuestion key={i} question={q} index={i + 1} lang={lang} />
-            ))}
-          </section>
-
-          {/* 11 – Zusammenfassung */}
-          <section id="zusammenfassung" className="section-block">
-            <h2>{c.sumTitle}</h2>
-            <div className="bauhaus-accent-line"></div>
-            <ol style={{ paddingLeft: '1.25rem', lineHeight: '2.2' }}>
-              {c.sumItems.map((item, i) => <li key={i}>{item}</li>)}
-            </ol>
-          </section>
-
-          <div className="nav-bottom">
-            <a href={c.navBackHref} className="nav-btn">{c.navBack}</a>
-          </div>
-        </main>
-
-        <footer className="footer">
-          <p className="footer-text">{c.footer}</p>
-        </footer>
+      <div class="ressource">
+        <h4>Apache Superset – Preset Channel</h4>
+        <p><span lang="de">Preset (das Unternehmen hinter Superset) bietet Demos, Feature-Walkthroughs und Best Practices für SQL-basierte Analytik.</span><span lang="en">Preset (the company behind Superset) offers demos, feature walkthroughs, and best practices for SQL-based analytics.</span></p>
+        <a class="youtube-link" href="https://www.youtube.com/@preset-io" target="_blank" rel="noopener noreferrer"><span lang="de">Preset (Superset) auf YouTube →</span><span lang="en">Preset (Superset) on YouTube →</span></a>
       </div>
-    );
-  }
+      <div class="ressource">
+        <h4>TechWorld with Nana – Docker</h4>
+        <p><span lang="de">Nana erklärt Docker von Grund auf: Container, Images, Docker Compose und praktische Anwendungsfälle – ideal als Vorbereitung für das Bonus-Projekt.</span><span lang="en">Nana explains Docker from scratch: containers, images, Docker Compose, and practical use cases – ideal preparation for the bonus project.</span></p>
+        <a class="youtube-link" href="https://www.youtube.com/@TechWorldwithNana" target="_blank" rel="noopener noreferrer"><span lang="de">TechWorld with Nana auf YouTube →</span><span lang="en">TechWorld with Nana on YouTube →</span></a>
+      </div>
+      <div class="ressource">
+        <h4>NetworkChuck – Docker &amp; Self-Hosting</h4>
+        <p><span lang="de">Eingängige Erklärungen zu Docker, Portainer, Self-Hosting und Netzwerk-Grundlagen – unterhaltsam und praxisnah.</span><span lang="en">Engaging explanations of Docker, Portainer, self-hosting, and networking basics – entertaining and hands-on.</span></p>
+        <a class="youtube-link" href="https://www.youtube.com/@NetworkChuck" target="_blank" rel="noopener noreferrer"><span lang="de">NetworkChuck auf YouTube →</span><span lang="en">NetworkChuck on YouTube →</span></a>
+      </div>
+    </div>
+    <div class="info-box">
+      <p><span lang="de">Literatur: Floridi, L. (2020). „The Fight for Digital Sovereignty: What It Is, and Why It Matters, Especially for the EU.“ Philosophy &amp; Technology, 33(3). | Bitkom (2023). „Leitfaden Cloud-Souveränität.“</span><span lang="en">References: Floridi, L. (2020). "The Fight for Digital Sovereignty: What It Is, and Why It Matters, Especially for the EU." Philosophy &amp; Technology, 33(3). | Bitkom (2023). "Cloud Sovereignty Guide."</span></p>
+    </div>
+  </section>
 
-  const root = ReactDOM.createRoot(document.getElementById('root'));
-  root.render(<App />);
+  <section class="section-block" id="quiz">
+    <h2>Quiz</h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Testen Sie Ihr Wissen zu Digitaler Souveränität und Open-Source BI:</span><span lang="en">Test your knowledge on Digital Sovereignty and Open-Source BI:</span></p>
+    <div data-quiz></div>
+  </section>
+
+  <section class="section-block" id="zusammenfassung">
+    <h2><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h2>
+    <div class="accent-line"></div>
+    <div class="concept-box">
+      <ol>
+        <li><span lang="de">Digitale Souveränität umfasst Daten-, Technologie- und regulatorische Souveränität (Floridi, 2020).</span><span lang="en">Digital sovereignty encompasses data, technology, and regulatory sovereignty (Floridi, 2020).</span></li>
+        <li><span lang="de">Cloud Lock-in entsteht durch proprietäre Formate, APIs und Ökosystem-Abhängigkeiten – TCO-Analyse hilft bei der Bewertung.</span><span lang="en">Cloud lock-in arises from proprietary formats, APIs, and ecosystem dependencies – TCO analysis helps assess the situation.</span></li>
+        <li><span lang="de">Der EU Data Act – VO (EU) 2023/2854 – und der AI Act stärken europäische Datensouveränität und Cloud-Wechselrechte.</span><span lang="en">The EU Data Act – Regulation (EU) 2023/2854 – and the AI Act strengthen European data sovereignty and cloud switching rights.</span></li>
+        <li><span lang="de">Open-Source BI (Superset, Metabase, Grafana, Dash, Lightdash, Evidence) verlagert Kontrolle und Betriebsverantwortung zu Ihnen – Lizenzmodelle beachten.</span><span lang="en">Open-source BI (Superset, Metabase, Grafana, Dash, Lightdash, Evidence) shifts control and operational responsibility to you – mind the license models.</span></li>
+        <li><span lang="de">Docker Compose ermöglicht schnelles Self-Hosted-Deployment – HTTPS und Backup-Strategie nicht vergessen.</span><span lang="en">Docker Compose enables fast self-hosted deployment – don’t forget HTTPS and backup strategy.</span></li>
+        <li><span lang="de">DSGVO-Compliance erfordert systematische Prüfung: AVV, SCCs, TIA, TOMs, Löschkonzept.</span><span lang="en">GDPR compliance requires systematic checks: DPA, SCCs, TIA, TOMs, deletion concept.</span></li>
+        <li><span lang="de">Tool-Wahl hängt vom Szenario ab: Team-Größe, Datentyp, regulatorische Anforderungen, vorhandener Tech-Stack.</span><span lang="en">Tool choice depends on scenario: Team size, data type, regulatory requirements, existing tech stack.</span></li>
+      </ol>
+    </div>
+    <nav class="nav-bottom"></nav>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span lang="de">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+  <span lang="en">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+</footer>
+
+<script type="module">
+  import { starteLab } from './assets/bint.js'
+  starteLab({ lab: 'lab-06', basis: '.' })
 </script>
 </body>
 </html>

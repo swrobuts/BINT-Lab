@@ -1,0 +1,182 @@
+[
+  {
+    "id": "B05-01",
+    "frage": {
+      "de": "Welche Ebene der KPI-Hierarchie zeigt Gesamtumsatz und Ø Bestellwert?",
+      "en": "Which KPI hierarchy level shows total revenue and average order value?"
+    },
+    "optionen": [
+      {
+        "de": "Operativ",
+        "en": "Operational"
+      },
+      {
+        "de": "Warnsignale",
+        "en": "Warning Signals"
+      },
+      {
+        "de": "Strategisch",
+        "en": "Strategic"
+      },
+      {
+        "de": "Taktisch",
+        "en": "Tactical"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "Die strategische Ebene richtet sich an die Geschäftsführung und zeigt hoch aggregierte Kennzahlen wie Gesamtumsatz, Bestellungen und durchschnittlichen Bestellwert. Die operative Ebene bricht diese auf Region, Kategorie oder Produkt herunter; Warnsignale zeigen gesondert, wo Umsatz wegbricht.",
+      "en": "The strategic level targets executive management and shows highly aggregated metrics such as total revenue, orders and average order value. The operational level breaks these down by region, category or product; warning signals show separately where revenue is dropping."
+    }
+  },
+  {
+    "id": "B05-02",
+    "frage": {
+      "de": "Was ist der erste Schritt im CRISP-DM-Zyklus?",
+      "en": "What is the first step in the CRISP-DM cycle?"
+    },
+    "optionen": [
+      {
+        "de": "Modeling",
+        "en": "Modeling"
+      },
+      {
+        "de": "Evaluation",
+        "en": "Evaluation"
+      },
+      {
+        "de": "Business Understanding",
+        "en": "Business Understanding"
+      },
+      {
+        "de": "Data Preparation",
+        "en": "Data Preparation"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "CRISP-DM beginnt mit Business Understanding: erst die fachliche Frage klären, dann Daten anfassen. Die Reihenfolge lautet Business Understanding, Data Understanding, Data Preparation, Modeling, Evaluation, Deployment – wer mit den Daten startet, baut oft am Problem vorbei.",
+      "en": "CRISP-DM starts with Business Understanding: clarify the business question before touching data. The order is Business Understanding, Data Understanding, Data Preparation, Modeling, Evaluation, Deployment - starting from the data often means solving the wrong problem."
+    }
+  },
+  {
+    "id": "B05-03",
+    "frage": {
+      "de": "Wie viele Zeilen enthält die train.csv des Superstore-Datensatzes?",
+      "en": "How many rows does train.csv of the Superstore dataset contain?"
+    },
+    "optionen": [
+      {
+        "de": "5.000",
+        "en": "5,000"
+      },
+      {
+        "de": "9.800",
+        "en": "9,800"
+      },
+      {
+        "de": "9.994",
+        "en": "9,994"
+      },
+      {
+        "de": "20.000",
+        "en": "20,000"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "Die train.csv enthält 9.800 Zeilen – also Bestellpositionen, nicht Bestellungen: eine Bestellung umfasst oft mehrere Positionen, df['Order ID'].nunique() liefert rund 4.900. Achtung bei der Abgrenzung: die Vollversion des Superstore-Datensatzes hat 9.994 Zeilen, die hier genutzte Forecasting-Variante 9.800. Prüfen mit df.shape.",
+      "en": "train.csv contains 9,800 rows – order line items, not orders: one order often spans several lines, and df['Order ID'].nunique() returns roughly 4,900. Mind the distinction: the full Superstore dataset has 9,994 rows, the forecasting variant used here has 9,800. Verify with df.shape."
+    }
+  },
+  {
+    "id": "B05-04",
+    "frage": {
+      "de": "Welches Tool eignet sich besser für nicht-technische Nutzer?",
+      "en": "Which tool is better suited for non-technical users?"
+    },
+    "optionen": [
+      {
+        "de": "Jupyter Notebook",
+        "en": "Jupyter Notebook"
+      },
+      {
+        "de": "Plotly Dash",
+        "en": "Plotly Dash"
+      },
+      {
+        "de": "Streamlit",
+        "en": "Streamlit"
+      },
+      {
+        "de": "Power BI",
+        "en": "Power BI"
+      }
+    ],
+    "richtig": 3,
+    "erklaerung": {
+      "de": "Power BI bietet Drag-and-drop, fertige Visuals und eine Oberfläche, die Excel-Nutzern vertraut ist – ohne Programmierkenntnisse. Plotly Dash ist mächtiger und voll anpassbar, setzt aber Python-Kenntnisse und eigenes Deployment voraus.",
+      "en": "Power BI offers drag-and-drop, ready-made visuals and an interface familiar to Excel users, with no programming required. Plotly Dash is more powerful and fully customisable but assumes Python skills and your own deployment."
+    }
+  },
+  {
+    "id": "B05-05",
+    "frage": {
+      "de": "Was liefert df.describe() in pandas?",
+      "en": "What does df.describe() return in pandas?"
+    },
+    "optionen": [
+      {
+        "de": "Nur Nullwerte",
+        "en": "Only null values"
+      },
+      {
+        "de": "Statistische Übersicht (count, mean, std, min, max)",
+        "en": "Statistical summary (count, mean, std, min, max)"
+      },
+      {
+        "de": "Spaltenanzahl",
+        "en": "Column count"
+      },
+      {
+        "de": "Nur Datentypen",
+        "en": "Only data types"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "df.describe() liefert eine statistische Übersicht der numerischen Spalten: count, mean, std, min, die Quartile 25/50/75 % und max. Ideal für den ersten Plausibilitätscheck – auffällige Minima oder Maxima decken Datenqualitätsprobleme sofort auf.",
+      "en": "df.describe() returns a statistical summary of the numeric columns: count, mean, std, min, the 25/50/75% quartiles and max. Ideal for a first plausibility check - implausible minima or maxima expose data quality problems immediately."
+    }
+  },
+  {
+    "id": "B05-06",
+    "frage": {
+      "de": "Wie deployt man eine Dash-App produktiv?",
+      "en": "How do you deploy a Dash app to production?"
+    },
+    "optionen": [
+      {
+        "de": "Power BI Service",
+        "en": "Power BI Service"
+      },
+      {
+        "de": "Google Sheets",
+        "en": "Google Sheets"
+      },
+      {
+        "de": "Excel Online",
+        "en": "Excel Online"
+      },
+      {
+        "de": "Gunicorn + Docker",
+        "en": "Gunicorn + Docker"
+      }
+    ],
+    "richtig": 3,
+    "erklaerung": {
+      "de": "Produktiv läuft eine Dash-App hinter Gunicorn als WSGI-Server, verpackt in einen Docker-Container – reproduzierbar, skalierbar über Worker und unabhängig von der lokalen Python-Installation. In der Praxis kommt davor noch ein Reverse Proxy für HTTPS.",
+      "en": "In production a Dash app runs behind Gunicorn as the WSGI server, packaged in a Docker container - reproducible, scalable via workers and independent of the local Python installation. In practice a reverse proxy for HTTPS sits in front of it."
+    }
+  }
+]

@@ -1,1219 +1,415 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 02 &#8211; Daten: Quellen, Modelle, Qualit&auml;t &middot; THWS BINT-Lab</title>
+  <title>Lab 02 · Daten: Quellen, Modelle, Qualität · BINT-Lab</title>
+  <meta name="bint:titel-en" content="Lab 02 · Data: Sources, Models, Quality · BINT-Lab" />
+  <meta name="description" content="Datenquellen anbinden, Star- und Snowflake-Schema verstehen und Qualitätsprobleme erkennen und beheben – mit pandas in Python und mit Power Query in Power BI." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
-       die dieses build-freie Setup (Transpilierung per text/babel im Browser) voraussetzt. -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-          integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-          integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-  <!-- Babel bewusst auf 7.x gepinnt: Babel 8 stellt auf den automatic JSX runtime um
-       und bricht damit text/babel ohne Bundler. 7.29.8 = letzter 7.x-Stand. -->
-  <script src="https://unpkg.com/@babel/standalone@7.29.8/babel.min.js"
-          integrity="sha384-Ux6uBqExf/7ahsSNrA9VI7vuaw6sKjDoVdjdUxmIoL2qdlzFVZ157sTi6JK3Z9Q8" crossorigin="anonymous"></script>
-  <style>
-
-    :root {
-      --col-primary: #1E3A8A;
-      --col-accent: #2563EB;
-      --col-primary-light: rgba(30,58,138,0.08);
-    }
-    [data-lang="en"] {
-      --col-primary: #0D9488;
-      --col-accent: #0D9488;
-      --col-primary-light: rgba(13,148,136,0.08);
-    }
-    :root {
-      --primary: #1E3A8A;
-      --accent: #2563EB;
-      --dark: #1A1A1A;
-      --light-bg: #FAFAFA;
-      --primary-light: rgba(30,58,138,0.08);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background: #FAFAFA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; color: #1A1A1A; }
-    h2 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-top: 0; }
-    h3 { color: #1E3A8A; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; margin: 0.5rem 0; }
-    p { line-height: 1.7; }
-
-    /* Bauhaus */
-    .bauhaus-card { border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.5rem; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .bauhaus-accent-line { width: 48px; height: 4px; background: #2563EB; margin: 0.5rem 0 1rem 0; }
-    .bauhaus-badge { background: #2563EB; color: white; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 0; display: inline-block; }
-
-    /* Code */
-    .code-block { background: #F3F4F6; color: #1A1A1A; padding: 1.25rem; border-left: 4px solid #D1D5DB; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.85rem; overflow-x: auto; position: relative; border-radius: 0 8px 8px 0; white-space: pre; margin: 1rem 0; }
-
-    /* Info boxes */
-    .tip-box { border-left: 4px solid #2563EB; background: #EFF6FF; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .info-box { border-left: 4px solid #3b82f6; background: #eff6ff; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .concept-box { border-left: 4px solid #1E3A8A; background: rgba(30,58,138,0.08); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-
-    /* Layout */
-    .header {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 100;
-      background: white; border-bottom: 1px solid #E5E7EB; box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.5rem;
-    }
-    .header-left { display: flex; align-items: center; gap: 1.5rem; }
-    .header-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: #1E3A8A; text-decoration: none; }
-    .header-back { font-size: 0.85rem; color: #555; text-decoration: none; font-weight: 500; }
-    .header-back:hover { color: #1E3A8A; }
-    .lang-btn { border: 2px solid #1A1A1A; background: white; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; border-radius: 4px; letter-spacing: 0.05em; }
-    .lang-btn.active { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .lang-btn:hover:not(.active) { background: #f5f5f5; }
-
-    .sidebar {
-      position: fixed; top: 56px; left: 0; width: 260px;
-      height: calc(100vh - 56px); overflow-y: auto;
-      border-right: 1px solid #E5E7EB; background: white;
-      padding: 1.5rem 0;
-    }
-    .sidebar-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #888; padding: 0 1.25rem; margin-bottom: 0.75rem; }
-    .sidebar-link {
-      display: block; padding: 0.55rem 1.25rem; font-size: 0.88rem; color: #444;
-      text-decoration: none; border-left: 3px solid transparent;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      font-weight: 500;
-    }
-    .sidebar-link:hover { color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .sidebar-link.active { color: #1E3A8A; border-left-color: #1E3A8A; background: rgba(30,58,138,0.06); font-weight: 700; }
-
-    .main-content {
-      margin-left: 260px; padding-top: 72px; padding-bottom: 4rem;
-      padding-left: 3rem; padding-right: 3rem; max-width: 960px;
-    }
-    .section-block { margin-bottom: 4rem; }
-
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-    /* ── Kennzeichnung kopierbarer Codebloecke ───────────────────────────────
-       Jeder Block sagt, ob er in einer frischen Umgebung so laeuft ("run")
-       oder ob er ein Konzeptsnippet mit Platzhalternamen ist ("concept"). */
-    .code-tag { display: inline-block; font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 5px 5px 0 0; }
-    .code-tag-run { background: #065F46; color: #fff; }
-    .code-tag-concept { background: #92400E; color: #fff; }
-    .code-tag + .code-block { border-radius: 0 8px 8px 0; margin-top: 0; }
-    .code-note { font-size: 0.78rem; color: #4B5563; margin: 0.35rem 0 0; line-height: 1.55; }
-    /* ── Quiz: zweiter Versuch statt Einmal-Sperre ───────────────────────────
-       Eine falsche Antwort sperrt die Frage nicht mehr. Die Loesung wird erst
-       gezeigt, wenn sie getroffen oder ausdruecklich angefordert wurde. */
-    .quiz-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    .quiz-retry-btn { font-family: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1.5px solid var(--col-primary, #1E3A8A); background: white; color: var(--col-primary, #1E3A8A); cursor: pointer; }
-    .quiz-retry-btn:hover { background: rgba(30,58,138,0.06); }
-    .quiz-retry-btn.secondary { border-color: #9CA3AF; color: #4B5563; }
-    .quiz-retry-btn.secondary:hover { background: #F3F4F6; }
-    .quiz-hint { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: #92400E; background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 0.55rem 0.9rem; border-radius: 0 6px 6px 0; }
-    .quiz-attempts { font-size: 0.78rem; color: #6B7280; align-self: center; }
-    /* ── Responsive Guards (Mobilnutzung) ────────────────────────────────────
-       Tabellen und Codebloecke duerfen breiter sein als der Viewport, aber sie
-       scrollen dann in ihrem eigenen Container. Die Seite selbst scrollt nie
-       horizontal. Pruefwert: document.scrollWidth <= window.innerWidth bei
-       320 / 390 / 768 / 1024 / 1440 px. */
-    .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1rem 0; }
-    .table-wrap > table { margin: 0; }
-    /* Flex- und Grid-Kinder duerfen unter ihre Inhaltsbreite schrumpfen,
-       sonst sprengt ein <pre> den Elternteil (min-width:auto ist der Default). */
-    .step-content, .step-block > * { min-width: 0; }
-    .section-block, .content, main { min-width: 0; }
-    .code-block { max-width: 100%; }
-    /* Lange Bezeichner ohne Leerzeichen (Spaltennamen, URLs) umbrechen lassen. */
-    p, li, td, th, h1, h2, h3, h4 { overflow-wrap: break-word; }
-    code { overflow-wrap: anywhere; word-break: break-word; }
-    .tip-box, .info-box, .concept-box, .challenge-box, .youtube-box { max-width: 100%; overflow-wrap: break-word; }
-    th { background: #1E3A8A; color: white; padding: 0.65rem 1rem; text-align: left; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.05em; }
-    td { padding: 0.6rem 1rem; border-bottom: 1px solid #e5e7eb; }
-    tr:nth-child(even) td { background: #f9fafb; }
-    tr:hover td { background: rgba(30,58,138,0.03); }
-
-    /* Nav bottom */
-    .nav-bottom { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid #E5E7EB; }
-    .nav-btn { border: 2px solid #1A1A1A; background: white; padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; color: #1A1A1A; font-family: 'Space Grotesk', sans-serif; display: inline-block; border-radius: 4px; }
-    .nav-btn:hover { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .nav-btn.primary { background: #1E3A8A; border-color: #1E3A8A; color: white; }
-    .nav-btn.primary:hover { background: #1e40af; border-color: #1e40af; }
-
-    /* Lab header */
-    .lab-header { padding: 3rem 3rem 2rem; margin-left: 260px; padding-top: 88px; }
-    .lab-num { font-family: 'Space Grotesk', sans-serif; font-size: 4rem; font-weight: 900; color: #2563EB; line-height: 1; margin-bottom: 0.5rem; }
-    .lab-title-h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: #1A1A1A; margin-bottom: 0.75rem; }
-    .lab-desc-intro { font-size: 1.1rem; color: #4B5563; line-height: 1.6; max-width: 680px; margin-bottom: 1.5rem; }
-    .lernziele-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .lernziel-chip { background: rgba(30,58,138,0.08); color: #1E3A8A; border: 1px solid rgba(30,58,138,0.2); padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600; border-radius: 20px; font-family: 'Space Grotesk', sans-serif; }
-
-    /* YouTube box */
-    .youtube-box { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 1.5rem; margin: 2rem 0; }
-    .youtube-box h3 { color: #EA580C; margin-top: 0; }
-    .youtube-link { color: #EA580C; text-decoration: none; font-weight: 600; }
-    .youtube-link:hover { text-decoration: underline; }
-
-    /* Source category tags */
-    .source-tag { display: inline-block; background: rgba(30,58,138,0.1); color: #1E3A8A; border: 1px solid rgba(30,58,138,0.25); border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif; margin: 0.15rem; }
-
-    /* Quiz */
-    .quiz-option { display: block; width: 100%; text-align: left; padding: 0.75rem 1rem; margin: 0.4rem 0; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.95rem; transition: border-color 0.15s, background 0.15s; }
-    .quiz-option:hover:not(:disabled) { border-color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .quiz-option.correct { border-color: #22c55e; background: #f0fdf4; color: #166534; font-weight: 600; }
-    .quiz-option.wrong { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
-    .quiz-option:disabled { cursor: default; }
-    .quiz-question-block { margin-bottom: 2rem; padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 10px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .quiz-question-block h4 { margin: 0 0 1rem; font-size: 1rem; line-height: 1.5; color: #1A1A1A; }
-    .quiz-explanation { margin-top: 0.75rem; padding: 0.75rem 1rem; background: #f0fdf4; border-left: 3px solid #22c55e; font-size: 0.88rem; color: #166534; border-radius: 0 6px 6px 0; }
-    .quiz-explanation.wrong-exp { background: #fef2f2; border-left-color: #ef4444; color: #991b1b; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-      .lab-header { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-    }
-
-    /* Footer */
-    .footer { background: #1A1A1A; color: rgba(255,255,255,0.6); text-align: center; padding: 1.5rem; margin-left: 260px; font-size: 0.85rem; }
-    @media (max-width: 768px) { .footer { margin-left: 0; } }
-  
-    /* ── EN mode: Teal #0D9488 (mirrors index.html) ── */
-    [data-lang="en"] h2,
-    [data-lang="en"] h3 { color: #0D9488; }
-    [data-lang="en"] h4 { color: #0D9488; }
-    [data-lang="en"] .bauhaus-accent-line { background: #14B8A6; }
-    [data-lang="en"] .bauhaus-badge { background: #0D9488; }
-    [data-lang="en"] .header-logo { color: #0D9488; }
-    [data-lang="en"] .lang-btn.active { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .sidebar-link:hover { color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .sidebar-link.active { color: #0D9488; border-left-color: #0D9488; background: rgba(13,148,136,0.06); }
-    [data-lang="en"] .lernziel-chip { background: rgba(13,148,136,0.1); color: #0D9488; border-color: rgba(13,148,136,0.25); }
-    [data-lang="en"] .bauhaus-card h4 { color: #0D9488 !important; }
-    [data-lang="en"] th { background: #0D9488; }
-    [data-lang="en"] .lab-num { color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary:hover { background: #0f766e; border-color: #0f766e; }
-    [data-lang="en"] .tip-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .concept-box { border-left-color: #0D9488; background: rgba(13,148,136,0.08); }
-    [data-lang="en"] .info-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .challenge-box { border-left-color: #0D9488; }
-    [data-lang="en"] .quiz-option:hover:not(:disabled) { border-color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .footer { background: #0D9488; }
-  
-    /* ── Barrierefreiheit ────────────────────────────────────────────────────
-       sr-only blendet Text visuell aus, laesst ihn aber vorlesbar. Wird fuer
-       die Antwortzustaende im Quiz und den Sprunglink gebraucht. */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .quiz-mark { font-weight: 800; margin-right: 0.4rem; }
-    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--col-primary, #1E3A8A); color: #fff; padding: 0.6rem 1rem; border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 0; }
-    /* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
-    a:focus-visible, button:focus-visible { outline: 3px solid #F59E0B; outline-offset: 2px; }
-  </style>
+  <link rel="stylesheet" href="assets/bint.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231E3A8A'/><text x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' text-anchor='middle' fill='%2338BDF8'>B</text></svg>" />
 </head>
-<body>
-  <div id="root"></div>
-
-  <!-- Ausfallsicherung fuer die CDN-Abhaengigkeiten.
-       React, ReactDOM und Babel kommen von unpkg.com. Faellt der Dienst aus
-       oder sperrt ein Hochschulnetz die Domain, blieb die Seite bisher weiss
-       und der Lernende sah keinen Hinweis, woran es liegt. Dieses Skript
-       laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
-       wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
-       hat (faengt Transpilierungsfehler ab). -->
-  <script src="assets/site.js"></script>
-  <script>
-  (function () {
-    var isEn = BINTLab.getLanguage() === 'en';
-    var T = isEn ? {
-      head: 'This page could not load',
-      miss: 'The following libraries were not delivered:',
-      why: 'The page loads React and Babel from unpkg.com at runtime. If your network blocks that host, or the service is unavailable, nothing can be rendered.',
-      what: 'What you can do:',
-      s1: 'Reload the page - the CDN is often only briefly unavailable.',
-      s2: 'Try a different network (mobile hotspot instead of campus Wi-Fi).',
-      s3: 'Check whether a proxy, VPN or content blocker is blocking unpkg.com.',
-      s4: 'If it persists, report it - the lab content itself is fine, only the delivery failed.',
-      slow: 'The libraries loaded, but the page did not render. That points to a script error rather than the network. Please report it with the browser console output.'
-    } : {
-      head: 'Diese Seite konnte nicht geladen werden',
-      miss: 'Folgende Bibliotheken wurden nicht ausgeliefert:',
-      why: 'Die Seite laedt React und Babel zur Laufzeit von unpkg.com. Sperrt das Netz diesen Host oder ist der Dienst gestoert, kann nichts dargestellt werden.',
-      what: 'Was du tun kannst:',
-      s1: 'Seite neu laden - das CDN ist oft nur kurz nicht erreichbar.',
-      s2: 'Ein anderes Netz probieren (Mobilfunk statt Campus-WLAN).',
-      s3: 'Pruefen, ob ein Proxy, VPN oder Contentblocker unpkg.com blockiert.',
-      s4: 'Bleibt es dabei: melden - die Lab-Inhalte sind in Ordnung, nur die Auslieferung ist gescheitert.',
-      slow: 'Die Bibliotheken sind geladen, die Seite hat aber nicht gerendert. Das deutet auf einen Skriptfehler hin, nicht auf das Netz. Bitte mit der Ausgabe der Browser-Konsole melden.'
-    };
-
-    function panel(title, body) {
-      var root = document.getElementById('root') || document.body;
-      root.innerHTML =
-        '<div style="max-width:44rem;margin:4rem auto;padding:1.75rem;font-family:' +
-        "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" +
-        ';line-height:1.65;color:#1A1A1A;background:#fff;border:1px solid #E5E7EB;' +
-        'border-left:5px solid #DC2626;border-radius:0 10px 10px 0">' +
-        '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
-        body +
-        '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
-        '</div>';
-    }
-
-    var missing = [];
-    if (typeof window.React === 'undefined') missing.push('React');
-    if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
-    if (typeof window.Babel === 'undefined') missing.push('Babel');
-
-    if (missing.length) {
-      panel(T.head,
-        '<p><strong>' + T.miss + '</strong> ' + missing.join(', ') + '</p>' +
-        '<p>' + T.why + '</p>' +
-        '<p><strong>' + T.what + '</strong></p>' +
-        '<ol style="padding-left:1.25rem"><li>' + T.s1 + '</li><li>' + T.s2 +
-        '</li><li>' + T.s3 + '</li><li>' + T.s4 + '</li></ol>');
-      return;
-    }
-
-    // Bibliotheken da, aber die App mountet nicht -> Skriptfehler.
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        panel(T.head, '<p>' + T.slow + '</p>');
-      }
-    }, 5000);
-  })();
-  </script>
-
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    // ─── CodeBlock Component ──────────────────────────────────────────────────
-    function CodeBlock({ code, lang, kind, note }) {
-      const [copied, setCopied] = React.useState(false);
-    const [copyFailed, setCopyFailed] = React.useState(false);
-      const copy = async () => {
-      const ok = await BINTLab.copyText(code);
-      setCopied(ok);
-      setCopyFailed(!ok);
-      if (ok) setTimeout(() => setCopied(false), 1500);
-    };
-      return (
-        <div style={{ position: 'relative', marginBottom: '1rem' }}>
-          {kind && (
-            <div className={'code-tag ' + (kind === 'run' ? 'code-tag-run' : 'code-tag-concept')}>
-              {kind === 'run'
-                ? (lang === 'en' ? 'Runnable as-is' : 'L\u00E4uft unver\u00E4ndert')
-                : kind === 'diagram'
-                  ? (lang === 'en' ? 'Schema \u2013 not code' : 'Schema \u2013 kein Code')
-                  : (lang === 'en' ? 'Concept \u2013 placeholder names' : 'Konzept \u2013 Platzhalternamen')}
-            </div>
-          )}
-          <pre className="code-block">{code}</pre>
-          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
-          {note && <p className="code-note">{note}</p>}
-          <button onClick={copy} style={{
-            position: 'absolute', top: '0.5rem', right: '0.5rem',
-            background: copied ? '#059669' : '#E5E7EB',
-            color: copied ? 'white' : '#374151',
-            border: 'none', borderRadius: '4px',
-            padding: '0.2rem 0.5rem', fontSize: '0.75rem',
-            cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif'
-          }}>
-            {copied ? (lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert') : (lang === 'en' ? 'Copy' : 'Kopieren')}
-          </button>
-        </div>
-      );
-    }
-
-    // ─── QuizQuestion Component ───────────────────────────────────────────────
-    function QuizQuestion({ question, options, correctIndex, explanation, lang }) {
-      // Mastery statt One-shot: eine falsche Antwort sperrt die Frage nicht.
-      // "revealed" entscheidet, ob die Loesung sichtbar ist - getroffen oder angefordert.
-      const [selected, setSelected] = useState(null);
-      const [revealed, setRevealed] = useState(false);
-      const [attempts, setAttempts] = useState(0);
-      const wrongPick = selected !== null && selected !== correctIndex;
-      const solved = selected === correctIndex;
-
-      const pick = (i) => {
-        if (revealed) return;
-        setSelected(i);
-        setAttempts((n) => n + 1);
-        if (i === correctIndex) setRevealed(true);
-      };
-
-      return (
-        <div className="quiz-question-block">
-          <h4>{question}</h4>
-          {options.map((opt, i) => {
-            let cls = 'quiz-option';
-            let mark = null;
-            // Zustand nie nur ueber Farbe: das Zeichen steht im DOM und wird
-            // damit auch vorgelesen und bei Farbsehschwaeche erkannt.
-            if (revealed && i === correctIndex) { cls += ' correct'; mark = '\u2713'; }
-            else if (i === selected && i !== correctIndex) { cls += ' wrong'; mark = '\u2717'; }
-            return (
-              <button
-                key={i}
-                className={cls}
-                disabled={revealed}
-                onClick={() => pick(i)}
-              >
-                {mark && <span className="quiz-mark" aria-hidden="true">{mark}</span>}
-                {mark && <span className="sr-only">
-                  {mark === '\u2713'
-                    ? (lang === 'en' ? 'Correct answer: ' : 'Richtige Antwort: ')
-                    : (lang === 'en' ? 'Your wrong answer: ' : 'Deine falsche Antwort: ')}
-                </span>}
-                {opt}
-              </button>
-            );
-          })}
-
-          {wrongPick && !revealed && (
-            <div className="quiz-hint" role="status" aria-live="polite">
-              {lang === 'en'
-                ? '\u2717 Not quite. Re-read the question and try again \u2013 or reveal the answer.'
-                : '\u2717 Noch nicht richtig. Lies die Frage noch einmal und versuche es erneut \u2013 oder lass dir die L\u00F6sung zeigen.'}
-            </div>
-          )}
-
-          {(wrongPick && !revealed) && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn" onClick={() => setSelected(null)}>
-                {lang === 'en' ? 'Try again' : 'Nochmal versuchen'}
-              </button>
-              <button type="button" className="quiz-retry-btn secondary" onClick={() => setRevealed(true)}>
-                {lang === 'en' ? 'Show answer' : 'L\u00F6sung anzeigen'}
-              </button>
-              <span className="quiz-attempts">
-                {(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}
-              </span>
-            </div>
-          )}
-
-          {revealed && (
-            <div className={'quiz-explanation' + (!solved ? ' wrong-exp' : '')} role="status" aria-live="polite">
-              {solved
-                ? (lang === 'en' ? '\u2713 Correct! ' : '\u2713 Richtig! ')
-                : (lang === 'en' ? 'Answer shown. ' : 'L\u00F6sung eingeblendet. ')}{explanation}
-            </div>
-          )}
-
-          {revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn secondary"
-                onClick={() => { setSelected(null); setRevealed(false); setAttempts(0); }}>
-                {lang === 'en' ? 'Reset question' : 'Frage zur\u00FCcksetzen'}
-              </button>
-              {attempts > 1 && (
-                <span className="quiz-attempts">
-                  {(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // ─── Translations ─────────────────────────────────────────────────────────
-    const translations = {
-      de: {
-        title: 'Daten: Quellen, Modelle, Qualit\u00E4t',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
-        desc: 'Daten sind das Fundament jeder BI-L\u00F6sung. In diesem Lab lernen Sie, wie verschiedene Datenquellen angebunden werden, wie Star- und Snowflake-Schemata funktionieren und wie Datenqualit\u00E4tsprobleme erkannt und behoben werden.',
-        lernziele: [
-          'Verschiedene Datenquellen anbinden',
-          'Star Schema & Snowflake Schema verstehen',
-          'Datenqualit\u00E4tsprobleme erkennen & beheben',
-          'Power Query & Pandas nutzen',
-        ],
-        navContents: 'Inhalt',
-        nav: [
-          { href: '#datenquellen',  label: 'Datenquellen' },
-          { href: '#modellierung',  label: 'Datenmodellierung' },
-          { href: '#qualitaet',     label: 'Datenqualit\u00E4t' },
-          { href: '#youtube',       label: 'Ressourcen' },
-          { href: '#quiz',          label: 'Quiz' },
-          { href: '#zusammenfassung', label: 'Zusammenfassung' },
-        ],
-        backLabel: '\u2190 \u00DCbersicht',
-
-        s1Title: 'Datenquellen',
-        s1Desc: 'BI-Systeme integrieren Daten aus vielen verschiedenen Quellen. Je nach Struktur der Daten unterscheidet man drei Hauptkategorien.',
-        s1CategoriesTitle: 'Kategorien von Datenquellen',
-        s1Categories: [
-          {
-            label: 'Strukturiert',
-            color: 'var(--col-primary)',
-            examples: ['CSV', 'Excel', 'SQL (MySQL, PostgreSQL)', 'SAP-Exporte'],
-            desc: 'Klar definiertes Schema, Zeilen und Spalten. Einfach zu verarbeiten.',
-          },
-          {
-            label: 'Semi-strukturiert',
-            color: 'var(--col-accent)',
-            examples: ['JSON', 'XML', 'REST-APIs', 'GraphQL (API-Abfrageparadigma, Antwort: JSON)', 'Log-Dateien (JSON-Lines, Syslog)'],
-            desc: 'Flexibles Schema, hierarchische oder verschachtelte Strukturen.',
-          },
-          {
-            label: 'Unstrukturiert',
-            color: '#7C3AED',
-            examples: ['PDF-Dokumente', 'E-Mails', 'Bilder', 'Audio/Video', 'Freitext-Notizen'],
-            desc: 'Kein festes Schema. Aufbereitung durch NLP, OCR oder KI nötig. Wachsende Relevanz durch LLMs.',
-          },
-          {
-            label: 'Cloud-Quellen',
-            color: '#3B82F6',
-            examples: ['Google Sheets', 'Azure Blob Storage', 'SharePoint', 'Snowflake', 'BigQuery'],
-            desc: 'Online-Dienste mit API-Zugriff oder nativer Konnektorunterstützung. Können strukturierte und unstrukturierte Daten enthalten.',
-          },
-        ],
-        s1PowerBITitle: 'Daten laden in Power BI',
-        s1PowerBIText: 'In Power BI \u00F6ffnet der Dialog \u201EDaten abrufen\u201C (Home \u2192 Daten abrufen) eine Quellen-Auswahl mit \u00FCber 100 Konnektoren. Nach der Verbindung \u00F6ffnet sich der Power Query Editor zur Vorschau und Transformation.',
-        s1PythonTitle: 'Daten laden in Python',
-        s1PythonDesc: 'Mit pandas und der requests-Bibliothek k\u00F6nnen alle g\u00E4ngigen Datenquellen eingelesen werden:',
-        dataTitle: 'Daten f\u00FCr diesen Abschnitt',
-        dataCsv: 'umsatz.csv',
-        dataXlsx: 'bericht.xlsx',
-        dataJson: 'sales_api.json',
-        dataDirect: 'train.csv (Kursdatensatz)',
-        dataKaggle: 'Originalquelle bei Kaggle',
-        dataText: 'Alle Codebl\u00F6cke auf dieser Seite arbeiten mit Dateien, die hier bereitliegen. Die drei Beispielquellen (CSV, Excel, JSON) enthalten dieselben zw\u00F6lf Zeilen \u2013 daran l\u00E4sst sich pr\u00FCfen, ob alle Wege zum selben Ergebnis f\u00FChren. train.csv ist der Kursdatensatz f\u00FCr die Datenqualit\u00E4ts\u00FCbung: 9.800 Zeilen, TT/MM/JJJJ, Encoding latin-1.',
-        dataLicense: 'Quelle: Superstore Sales Dataset von Rohit Sahoo (Kaggle), Lizenz GPL\u00A02. Die Beispieldateien umsatz.csv, bericht.xlsx und sales_api.json sind frei erfunden und dienen nur der \u00DCbung.',
-        s1CodePython: "# Drei Quellen, dieselben Zahlen. Alle drei Dateien stehen oben zum\n# Download und liegen im Repo unter data/beispiel/.\nimport pandas as pd\nimport requests\n\n# 1. CSV\ndf_csv = pd.read_csv('umsatz.csv')\n\n# 2. Excel - der Blattname gehoert zur Datei, nicht zur Sprache\ndf_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')\n\n# 3. REST-API: dieselben Daten, aber ueber HTTP.\n#    Die Nutzlast liegt unter dem Schluessel 'data' - deshalb steht er\n#    in json_normalize. Bei anderen APIs heisst er 'results' oder 'items';\n#    ein Blick in die Antwort spart hier viel Raterei.\nurl = 'https://swrobuts.github.io/BINT-Lab/data/beispiel/sales_api.json'\nresponse = requests.get(url, timeout=10)\nresponse.raise_for_status()          # wirft bei 404 statt still leer zu bleiben\ndf_api = pd.json_normalize(response.json()['data'])\n\nfor name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:\n    print(f\"{name:6} {df.shape}  Umsatz {df['Umsatz'].sum():,.2f}\")\n\n# Probe: drei Wege, ein Ergebnis. Genau darum geht es in diesem Abschnitt.\nassert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()\nprint('Alle drei Quellen stimmen ueberein.')",
-        s1CodeNote: 'Voraussetzung: pip install pandas requests openpyxl, dazu umsatz.csv und bericht.xlsx aus dem Download oben im selben Verzeichnis. Die dritte Quelle wird \u00FCber HTTP geladen und braucht eine Internetverbindung. Sollausgabe: dreimal (12, 5) und dreimal Umsatz 243.209,05, danach \u201EAlle drei Quellen stimmen ueberein.\u201C',
-        s1RunTitle: 'Dasselbe Muster auf dem Kursdatensatz train.csv',
-        s1CodePythonRun: "# Dieselben drei Quellen, aber mit dem Kursdatensatz statt Platzhaltern.\n# train.csv liegt im selben Verzeichnis wie dieses Skript.\nimport pandas as pd\n\n# 1. CSV laden\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# 2. Datum: die Datei nutzt TT/MM/JJJJ -> dayfirst=True ist Pflicht,\n#    sonst bricht das Parsen ab, sobald der Tag groesser als 12 ist.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# 3. Struktur und Qualitaet pruefen\nprint(df.shape)                            # (9800, 18)\nprint(round(df['Sales'].sum(), 2))         # 2261536.78\nprint(df['Order ID'].nunique())            # 4922\nprint(df.isnull().sum()[lambda s: s > 0])  # Postal Code    11",
-        s1RunNote: 'Voraussetzung: pandas installiert, train.csv im selben Verzeichnis (Download in Lab\u00A004). Sollausgabe: (9800, 18) \u00B7 2261536.78 \u00B7 4922 \u00B7 Postal Code 11. Weichen die Zahlen ab, wurde meist dayfirst=True vergessen.',
-        selfCheckTitle: 'Selbstcheck (1 Minute)',
-        selfCheckItems: [
-          'df.shape liefert (9800, 18) \u2013 sonst wurde die falsche Datei geladen.',
-          'Die Umsatzsumme ist 2261536.78 \u2013 weicht sie ab, stimmt das encoding nicht.',
-          '4922 verschiedene Order ID \u2013 nicht zu verwechseln mit den 9800 Positionen.',
-          'Genau elf fehlende Postal Code und sonst keine Nullwerte.',
-          'Typischer Fehler: ohne dayfirst=True bricht das Parsen ab, sobald der Tag gr\u00F6\u00DFer als 12 ist.',
-        ],
-
-        s2Title: 'Datenmodellierung',
-        s2Desc: 'Ein gutes Datenmodell ist entscheidend f\u00FCr die Performance und Verst\u00E4ndlichkeit eines BI-Systems. Das Star Schema ist das verbreitetste Modell im Data Warehousing.',
-        s2StarTitle: 'Star Schema',
-        s2StarDesc: 'Im Star Schema liegt eine zentrale Faktentabelle im Mittelpunkt, die von mehreren Dimensionstabellen umgeben wird \u2013 wie ein Stern.',
-        s2DiagramCode: '              Dim_Zeit\n                 |\nDim_Produkt \u2014 Fakt_Umsatz \u2014 Dim_Kunde\n                 |\n             Dim_Region',
-        s2FactTitle: 'Faktentabelle',
-        s2FactText: 'Enth\u00E4lt die Messgr\u00F6\u00DFen (Kennzahlen) des Gesch\u00E4ftsprozesses: Umsatz, Menge, Preis, Rabatt. Jede Zeile repr\u00E4sentiert einen Gesch\u00E4ftsvorfall (z.\u202FB. eine Bestellung). Die Faktentabelle hat in der Regel viele Millionen Zeilen.',
-        s2DimTitle: 'Dimensionstabellen',
-        s2DimText: 'Beschreiben den Kontext der Fakten: Zeit (Jahr, Quartal, Monat), Produkt (Kategorie, Marke), Kunde (Region, Segment), Region (Land, Stadt). Dimensionstabellen sind kleiner und enthalten beschreibende Attribute.',
-        s2CompareTitle: 'Star Schema vs. Snowflake Schema',
-        s2CompareHeaders: ['Merkmal', 'Star Schema', 'Snowflake Schema'],
-        s2CompareRows: [
-          ['Dimensionen', 'Flach (denormalisiert)', 'Normalisiert (mehrere Tabellen)'],
-          ['Performance', 'Schnellere Abfragen', 'Etwas langsamer durch JOINs'],
-          ['Speicher', 'H\u00F6herer Bedarf', 'Geringerer Bedarf'],
-          ['Komplexit\u00E4t', 'Einfach zu verstehen', 'Komplexere Struktur'],
-          ['Einsatz', 'Standard in Power BI, Tableau, Looker', 'Klassisch in normalisierten DWH (z.\u00A0B. Inmon-Ansatz)'],
-        ],
-        s2KimballInmonTitle: 'Kimball vs. Inmon',
-        s2KimballInmonText: 'Ralph Kimball (Bottom-Up, 1996): Fachbereichsbezogene Data Marts mit Star Schema, schnell produktiv. Bill Inmon (Top-Down, 1992): Unternehmensweites normalisiertes DWH (3NF), dann Data Marts ableiten. Moderne Praxis: Hybridansätze mit dem Data Vault 2.0 von Dan Linstedt.',
-        s2SCDTitle: 'Slowly Changing Dimensions (SCD)',
-        s2SCDText: 'Dimensionsdaten ändern sich über die Zeit (z.\u00A0B. Kundenadresse, Produktkategorie). SCD-Typen: Typ\u00A01 = Überschreiben (kein Verlauf), Typ\u00A02 = Neue Zeile mit Gültigkeitszeitraum (Standard im DWH), Typ\u00A03 = Zusätzliche Spalte für den alten Wert.',
-        s2TipTitle: 'Empfehlung',
-        s2TipText: 'Für die meisten BI-Projekte ist das Star Schema (Kimball-Ansatz) die bessere Wahl: es ist einfacher zu verstehen, leichter zu pflegen und liefert in den meisten BI-Tools schnellere Abfragezeiten.',
-
-        s3Title: 'Datenqualit\u00E4t',
-        s3Desc: 'Schlechte Datenqualit\u00E4t ist die h\u00E4ufigste Ursache f\u00FCr falsche BI-Ergebnisse. Das Erkennen und Beheben von Qualit\u00E4tsproblemen ist ein zentraler Teil jedes ETL-Prozesses.',
-        s3FrameworkTitle: 'Datenqualitätsdimensionen (DAMA DMBOK)',
-        s3FrameworkText: 'Das DAMA DMBOK-Framework definiert sechs Kernkategorien: Accuracy (Korrektheit), Completeness (Vollständigkeit), Consistency (Widerspruchsfreiheit), Timeliness (Aktualität), Validity (Regelkonformität) und Uniqueness (Eindeutigkeit). Diese Dimensionen bilden die Basis für systematisches Datenqualitätsmanagement.',
-        s3ProblemsTitle: 'Häufige Datenqualitätsprobleme',
-        s3Problems: [
-          { name: 'Nullwerte', desc: 'Fehlende Werte in Pflichtfeldern (z.\u202FB. kein Umsatz eingetragen)', fix: 'Zeilen entfernen oder mit Standardwert f\u00FCllen' },
-          { name: 'Duplikate', desc: 'Gleiche Datens\u00E4tze mehrfach vorhanden (z.\u202FB. doppelte Bestellungen)', fix: 'Mit drop_duplicates() oder Power Query entfernen' },
-          { name: 'Falsche Datentypen', desc: 'Datum als Text gespeichert, Zahlen als String', fix: 'pd.to_datetime(), astype(), Power Query: Typ \u00E4ndern' },
-          { name: 'Inkonsistenzen', desc: 'Schreibweisen variieren: \u201EDE\u201C, \u201Ede\u201C, \u201E Deutschland \u201C', fix: 'str.strip(), str.upper(), Ersetzungstabellen' },
-        ],
-        s3PandasTitle: 'Datenqualit\u00E4t pr\u00FCfen & bereinigen mit Pandas',
-        s3CodePandas: "# Datenqualitaet auf dem Kursdatensatz - echte Defekte statt Platzhalter.\nimport pandas as pd\n\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# 1. Befund aufnehmen, bevor irgendetwas geaendert wird\nprint(df.isnull().sum()[lambda s: s > 0])   # Postal Code    11\nprint('Duplikate:', df.duplicated().sum())  # 0\nprint(df['Order Date'].dtype)               # str bzw. object - noch Text, kein Datum\n\n# 2. Typen richtigstellen. dayfirst=True ist Pflicht: die Datei ist TT/MM/JJJJ.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Ship Date']  = pd.to_datetime(df['Ship Date'],  dayfirst=True)\n\n# 3. Schreibweisen vereinheitlichen, bevor gruppiert wird.\n#    Ohne strip() werden ' West' und 'West' zu zwei Gruppen.\ndf['Region'] = df['Region'].str.strip()\ndf['State']  = df['State'].str.strip()\n\n# 4. Plausibilitaet pruefen statt blind bereinigen\nprint('Umsatz <= 0:', (df['Sales'] <= 0).sum())                       # 0\nprint('Versand vor Bestellung:', (df['Ship Date'] < df['Order Date']).sum())  # 0\n\n# 5. Die elf fehlenden Postal Code werden weder geloescht noch erfunden.\n#    Warum, steht in Lab 05 unter Datenqualitaet.\nprint('Zeilen nach Bereinigung:', len(df))  # 9800",
-        s3CodeNote: 'Voraussetzung: pandas installiert, train.csv aus dem Download oben im selben Verzeichnis. Sollausgabe: Postal Code 11, Duplikate 0, Umsatz <= 0 ist 0, Versand vor Bestellung ist 0, 9800 Zeilen. Der Datensatz ist bewusst weitgehend sauber \u2013 der eine echte Defekt sind die elf fehlenden Postleitzahlen.',
-        s3PowerBITitle: 'Datenqualit\u00E4t in Power BI',
-        s3PowerBIText: 'Im Power Query Editor (Home \u2192 Daten transformieren) stehen folgende Werkzeuge zur Verf\u00FCgung:',
-        s3PowerBISteps: [
-          'Spalte markieren \u2192 Transformieren \u2192 Datentyp \u00E4ndern',
-          'Start \u2192 Zeilen entfernen \u2192 Leere Zeilen entfernen',
-          'Rechtsklick auf Spalte \u2192 Werte ersetzen',
-          'Start \u2192 Zeilen entfernen \u2192 Duplikate entfernen',
-        ],
-
-        s4Title: 'Lernressourcen',
-        s4Desc: 'Erg\u00E4nzende YouTube-Kanalempfehlungen f\u00FCr Datentransformation und Datenqualit\u00E4t:',
-        s4Resources: [
-          {
-            title: 'Power Query Tutorial \u2013 Curbal',
-            url: 'https://www.youtube.com/@Curbal',
-            desc: 'Umfangreiche Tutorial-Serie zu Power Query, M-Sprache und Datentransformation in Power BI.',
-          },
-          {
-            title: 'Pandas Data Cleaning \u2013 Keith Galli',
-            url: 'https://www.youtube.com/@KeithGalli',
-            desc: 'Praxisnahe Python-Tutorials zu Pandas, Datenbereinigung und explorativer Datenanalyse.',
-          },
-        ],
-
-        s5Title: 'Quiz',
-        s5Desc: 'Testen Sie Ihr Wissen aus Lab 02.',
-        s5Questions: [
-          {
-            q: 'Was ist der Hauptunterschied zwischen Star Schema und Snowflake Schema?',
-            opts: [
-              'Star Schema hat mehrere Faktentabellen, Snowflake nur eine',
-              'Im Star Schema sind Dimensionen denormalisiert (flach), im Snowflake normalisiert (mehrere Tabellen)',
-              'Snowflake Schema wird nur in der Cloud verwendet',
-              'Star Schema ben\u00f6tigt mehr Speicher als Snowflake Schema',
-            ],
-            correct: 1,
-            exp: 'Im Star Schema liegen die Dimensionen denormalisiert (flach) vor \u2013 einfacher und schneller. Im Snowflake Schema sind Dimensionen in mehrere Tabellen normalisiert \u2013 spart Speicher, aber erfordert mehr JOINs.',
-          },
-          {
-            q: 'Welche Methode in pandas entfernt doppelte Zeilen aus einem DataFrame?',
-            opts: [
-              'df.remove_duplicates()',
-              'df.drop_duplicates()',
-              'df.deduplicate()',
-              'df.unique()',
-            ],
-            correct: 1,
-            exp: 'df.drop_duplicates() entfernt doppelte Zeilen aus einem pandas DataFrame. Mit subset=[] k\u00f6nnen spezifische Spalten f\u00fcr den Vergleich angegeben werden.',
-          },
-          {
-            q: 'Was ist GraphQL?',
-            opts: [
-              'Ein Dateiformat wie JSON oder XML',
-              'Eine Datenbanksprache wie SQL',
-              'Eine API-Abfragesprache \u2013 die Antwort ist JSON',
-              'Ein Cloud-Speicherdienst',
-            ],
-            correct: 2,
-            exp: 'GraphQL ist eine API-Abfragesprache (kein Datenformat). Die Antworten einer GraphQL-API werden als JSON zurückgegeben.',
-          },
-          {
-            q: 'Welcher DWH-Architekturansatz verwendet Star Schemata in fachbereichsbezogenen Data Marts?',
-            opts: [
-              'Bill Inmon (Top-Down)',
-              'Ralph Kimball (Bottom-Up)',
-              'Dan Linstedt (Data Vault)',
-              'Edgar F. Codd (Relational)',
-            ],
-            correct: 1,
-            exp: 'Ralph Kimball (1996) propagiert den Bottom-Up-Ansatz: fachbereichsbezogene Data Marts mit Star Schema, die schnell produktiv sind. Inmon bevorzugt ein unternehmensweites normalisiertes DWH.',
-          },
-          {
-            q: 'Welcher SCD-Typ speichert historische Änderungen mit Gültigkeitszeitraum?',
-            opts: [
-              'SCD Typ 1 (Überschreiben)',
-              'SCD Typ 2 (Neue Zeile)',
-              'SCD Typ 3 (Zusätzliche Spalte)',
-              'SCD Typ 0 (Keine Änderung)',
-            ],
-            correct: 1,
-            exp: 'SCD Typ 2 fügt bei jeder Änderung eine neue Zeile mit Gültigkeitszeitraum (valid_from, valid_to) ein. Das ist der Standard im Data Warehousing, weil die vollständige Historie erhalten bleibt.',
-          },
-          {
-            q: 'Welche der folgenden ist KEINE Dimension im DAMA DMBOK-Datenqualitätsframework?',
-            opts: [
-              'Accuracy (Korrektheit)',
-              'Scalability (Skalierbarkeit)',
-              'Completeness (Vollständigkeit)',
-              'Timeliness (Aktualität)',
-            ],
-            correct: 1,
-            exp: 'Scalability ist keine Datenqualitätsdimension. Die sechs DAMA DMBOK-Dimensionen sind: Accuracy, Completeness, Consistency, Timeliness, Validity und Uniqueness.',
-          },
-        ],
-
-        // Zusammenfassung
-        summaryTitle: 'Zusammenfassung',
-        summaryItems: [
-          'Datenquellen werden nach Struktur klassifiziert: strukturiert (CSV, SQL), semi-strukturiert (JSON, XML, APIs, die meisten modernen Logformate), unstrukturiert (PDFs, Bilder, Freitext) und Cloud-Quellen (Snowflake, BigQuery, Azure). Die Grenzen sind flie\u00DFend \u2013 ein Logfile kann je nach Format in beide Kategorien fallen.',
-          'Das Star Schema (Kimball, 1996) ist das verbreitetste Modell im Data Warehousing: eine zentrale Faktentabelle mit Kennzahlen, umgeben von denormalisierten Dimensionstabellen.',
-          'Das Snowflake Schema normalisiert Dimensionen in mehrere Tabellen – spart Speicher, erfordert aber mehr JOINs. Kimball (Bottom-Up) und Inmon (Top-Down, 1992) beschreiben die zwei grundlegenden DWH-Architekturschulen.',
-          'Slowly Changing Dimensions (SCD) behandeln zeitliche Änderungen in Dimensionsdaten: Typ\u00A01 (Überschreiben), Typ\u00A02 (neue Zeile mit Gültigkeitszeitraum) und Typ\u00A03 (zusätzliche Spalte).',
-          'Datenqualität wird nach dem DAMA DMBOK-Framework in sechs Dimensionen bewertet: Accuracy, Completeness, Consistency, Timeliness, Validity und Uniqueness.',
-          'Häufige Qualitätsprobleme (Nullwerte, Duplikate, falsche Datentypen, Inkonsistenzen) werden mit pandas (Python) oder Power Query (Power BI) behoben.',
-          'GraphQL ist eine API-Abfragesprache (kein Datenformat) – die Antworten werden als JSON zurückgegeben.',
-        ],
-        navPrev: '\u2190 Lab 01: Grundlagen',
-        navNext: 'Lab 03: KPIs \u2192',
-      },
-
-      en: {
-        title: 'Data: Sources, Models, Quality',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
-        desc: 'Data is the foundation of every BI solution. In this lab you will learn how to connect different data sources, how star and snowflake schemas work, and how to identify and fix data quality issues.',
-        lernziele: [
-          'Connect various data sources',
-          'Understand Star & Snowflake Schema',
-          'Identify & fix data quality issues',
-          'Use Power Query & Pandas',
-        ],
-        navContents: 'Contents',
-        nav: [
-          { href: '#datenquellen',  label: 'Data Sources' },
-          { href: '#modellierung',  label: 'Data Modelling' },
-          { href: '#qualitaet',     label: 'Data Quality' },
-          { href: '#youtube',       label: 'Resources' },
-          { href: '#quiz',          label: 'Quiz' },
-          { href: '#zusammenfassung', label: 'Summary' },
-        ],
-        backLabel: '\u2190 Overview',
-
-        s1Title: 'Data Sources',
-        s1Desc: 'BI systems integrate data from many different sources. Depending on the structure of the data, three main categories are distinguished.',
-        s1CategoriesTitle: 'Categories of Data Sources',
-        s1Categories: [
-          {
-            label: 'Structured',
-            color: 'var(--col-primary)',
-            examples: ['CSV', 'Excel', 'SQL (MySQL, PostgreSQL)', 'SAP exports'],
-            desc: 'Clearly defined schema, rows and columns. Easy to process.',
-          },
-          {
-            label: 'Semi-structured',
-            color: 'var(--col-accent)',
-            examples: ['JSON', 'XML', 'REST APIs', 'GraphQL (API query paradigm, response: JSON)', 'Log files (JSON lines, syslog)'],
-            desc: 'Flexible schema, hierarchical or nested structures.',
-          },
-          {
-            label: 'Unstructured',
-            color: '#7C3AED',
-            examples: ['PDF documents', 'Emails', 'Images', 'Audio/Video', 'Free-text notes'],
-            desc: 'No fixed schema. Requires NLP, OCR or AI processing. Growing relevance through LLMs.',
-          },
-          {
-            label: 'Cloud Sources',
-            color: '#3B82F6',
-            examples: ['Google Sheets', 'Azure Blob Storage', 'SharePoint', 'Snowflake', 'BigQuery'],
-            desc: 'Online services with API access or native connector support. Can contain structured and unstructured data.',
-          },
-        ],
-        s1PowerBITitle: 'Loading Data in Power BI',
-        s1PowerBIText: 'In Power BI, the "Get Data" dialog (Home \u2192 Get Data) opens a source selection with over 100 connectors. After connecting, the Power Query Editor opens for preview and transformation.',
-        s1PythonTitle: 'Loading Data in Python',
-        s1PythonDesc: 'With pandas and the requests library, all common data sources can be read:',
-        dataTitle: 'Data for this section',
-        dataCsv: 'umsatz.csv',
-        dataXlsx: 'bericht.xlsx',
-        dataJson: 'sales_api.json',
-        dataDirect: 'train.csv (course dataset)',
-        dataKaggle: 'Original source on Kaggle',
-        dataText: 'Every code block on this page works with files provided right here. The three example sources (CSV, Excel, JSON) contain the same twelve rows \u2013 that is how you check whether all routes lead to the same result. train.csv is the course dataset for the data-quality exercise: 9,800 rows, DD/MM/YYYY, encoding latin-1.',
-        dataLicense: 'Source: Superstore Sales Dataset by Rohit Sahoo (Kaggle), licensed GPL\u00A02. The example files umsatz.csv, bericht.xlsx and sales_api.json are fictional and exist only for practice.',
-        s1CodePython: "# Three sources, the same numbers. All three files are available for\n# download above and live in the repo under data/beispiel/.\nimport pandas as pd\nimport requests\n\n# 1. CSV\ndf_csv = pd.read_csv('umsatz.csv')\n\n# 2. Excel - the sheet name belongs to the file, not to the language\ndf_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')\n\n# 3. REST API: the same data, but over HTTP.\n#    The payload sits under the key 'data' - that is why it appears in\n#    json_normalize. Other APIs call it 'results' or 'items'; looking at\n#    the actual response saves a lot of guesswork here.\nurl = 'https://swrobuts.github.io/BINT-Lab/data/beispiel/sales_api.json'\nresponse = requests.get(url, timeout=10)\nresponse.raise_for_status()          # raises on 404 instead of staying silently empty\ndf_api = pd.json_normalize(response.json()['data'])\n\nfor name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:\n    print(f\"{name:6} {df.shape}  revenue {df['Umsatz'].sum():,.2f}\")\n\n# Check: three routes, one result. That is the whole point of this section.\nassert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()\nprint('All three sources agree.')",
-        s1CodeNote: 'Prerequisites: pip install pandas requests openpyxl, plus umsatz.csv and bericht.xlsx from the download above in the same directory. The third source is fetched over HTTP and needs an internet connection. Expected output: three times (12, 5) and three times revenue 243,209.05, then \u201CAll three sources agree.\u201D',
-        s1RunTitle: 'The same pattern on the course dataset train.csv',
-        s1CodePythonRun: "# The same three sources, but with the course dataset instead of placeholders.\n# train.csv sits in the same directory as this script.\nimport pandas as pd\n\n# 1. Load CSV\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# 2. Dates: the file uses DD/MM/YYYY -> dayfirst=True is mandatory,\n#    otherwise parsing breaks as soon as the day exceeds 12.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# 3. Check structure and quality\nprint(df.shape)                            # (9800, 18)\nprint(round(df['Sales'].sum(), 2))         # 2261536.78\nprint(df['Order ID'].nunique())            # 4922\nprint(df.isnull().sum()[lambda s: s > 0])  # Postal Code    11",
-        s1RunNote: 'Prerequisites: pandas installed, train.csv in the same directory (download in Lab\u00A004). Expected output: (9800, 18) \u00B7 2261536.78 \u00B7 4922 \u00B7 Postal Code 11. If the numbers differ, dayfirst=True was usually forgotten.',
-        selfCheckTitle: 'Self-check (1 minute)',
-        selfCheckItems: [
-          'df.shape returns (9800, 18) \u2013 otherwise the wrong file was loaded.',
-          'The revenue total is 2261536.78 \u2013 if it differs, the encoding is wrong.',
-          '4922 distinct Order ID values \u2013 not to be confused with the 9800 line items.',
-          'Exactly eleven missing Postal Code values and no other nulls.',
-          'Common error: without dayfirst=True parsing breaks as soon as the day exceeds 12.',
-        ],
-
-        s2Title: 'Data Modelling',
-        s2Desc: 'A good data model is crucial for the performance and comprehensibility of a BI system. The star schema is the most common model in data warehousing.',
-        s2StarTitle: 'Star Schema',
-        s2StarDesc: 'In the star schema, a central fact table is at the centre, surrounded by several dimension tables \u2013 like a star.',
-        s2DiagramCode: '              Dim_Time\n                 |\nDim_Product \u2014 Fact_Sales \u2014 Dim_Customer\n                 |\n             Dim_Region',
-        s2FactTitle: 'Fact Table',
-        s2FactText: 'Contains the measures (metrics) of the business process: revenue, quantity, price, discount. Each row represents a business transaction (e.g. an order). The fact table typically has many millions of rows.',
-        s2DimTitle: 'Dimension Tables',
-        s2DimText: 'Describe the context of the facts: Time (year, quarter, month), Product (category, brand), Customer (region, segment), Region (country, city). Dimension tables are smaller and contain descriptive attributes.',
-        s2CompareTitle: 'Star Schema vs. Snowflake Schema',
-        s2CompareHeaders: ['Feature', 'Star Schema', 'Snowflake Schema'],
-        s2CompareRows: [
-          ['Dimensions', 'Flat (denormalised)', 'Normalised (multiple tables)'],
-          ['Performance', 'Faster queries', 'Slightly slower due to JOINs'],
-          ['Storage', 'Higher requirement', 'Lower requirement'],
-          ['Complexity', 'Easy to understand', 'More complex structure'],
-          ['Usage', 'Standard in Power BI, Tableau, Looker', 'Classic in normalised DWH (e.g. Inmon approach)'],
-        ],
-        s2KimballInmonTitle: 'Kimball vs. Inmon',
-        s2KimballInmonText: 'Ralph Kimball (Bottom-Up, 1996): Business-area data marts with star schema, quick to productionise. Bill Inmon (Top-Down, 1992): Enterprise-wide normalised DWH (3NF), then derive data marts. Modern practice: Hybrid approaches with Dan Linstedt\u2019s Data Vault 2.0.',
-        s2SCDTitle: 'Slowly Changing Dimensions (SCD)',
-        s2SCDText: 'Dimension data changes over time (e.g. customer address, product category). SCD types: Type\u00A01 = Overwrite (no history), Type\u00A02 = New row with validity period (standard in DWH), Type\u00A03 = Additional column for the old value.',
-        s2TipTitle: 'Recommendation',
-        s2TipText: 'For most BI projects, the star schema (Kimball approach) is the better choice: it is easier to understand, easier to maintain, and delivers faster query times in most BI tools.',
-
-        s3Title: 'Data Quality',
-        s3Desc: 'Poor data quality is the most common cause of incorrect BI results. Identifying and fixing quality issues is a central part of every ETL process.',
-        s3FrameworkTitle: 'Data Quality Dimensions (DAMA DMBOK)',
-        s3FrameworkText: 'The DAMA DMBOK framework defines six core dimensions: Accuracy, Completeness, Consistency, Timeliness, Validity, and Uniqueness. These dimensions form the basis for systematic data quality management.',
-        s3ProblemsTitle: 'Common Data Quality Issues',
-        s3Problems: [
-          { name: 'Null values', desc: 'Missing values in required fields (e.g. no revenue entered)', fix: 'Remove rows or fill with default value' },
-          { name: 'Duplicates', desc: 'Same records present multiple times (e.g. duplicate orders)', fix: 'Remove with drop_duplicates() or Power Query' },
-          { name: 'Wrong data types', desc: 'Date stored as text, numbers as string', fix: 'pd.to_datetime(), astype(), Power Query: change type' },
-          { name: 'Inconsistencies', desc: 'Spellings vary: "DE", "de", " Germany "', fix: 'str.strip(), str.upper(), replacement tables' },
-        ],
-        s3PandasTitle: 'Check & Clean Data Quality with Pandas',
-        s3CodePandas: "# Data quality on the course dataset - real defects instead of placeholders.\nimport pandas as pd\n\ndf = pd.read_csv('train.csv', encoding='latin-1')\n\n# 1. Record the findings before changing anything\nprint(df.isnull().sum()[lambda s: s > 0])   # Postal Code    11\nprint('Duplicates:', df.duplicated().sum()) # 0\nprint(df['Order Date'].dtype)               # str or object - still text, not a date\n\n# 2. Fix the types. dayfirst=True is mandatory: the file is DD/MM/YYYY.\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\ndf['Ship Date']  = pd.to_datetime(df['Ship Date'],  dayfirst=True)\n\n# 3. Normalise spellings before grouping.\n#    Without strip(), ' West' and 'West' become two separate groups.\ndf['Region'] = df['Region'].str.strip()\ndf['State']  = df['State'].str.strip()\n\n# 4. Check plausibility instead of cleaning blindly\nprint('Sales <= 0:', (df['Sales'] <= 0).sum())                        # 0\nprint('Shipped before ordered:', (df['Ship Date'] < df['Order Date']).sum())  # 0\n\n# 5. The eleven missing Postal Code values are neither deleted nor invented.\n#    Lab 05 explains why, under data quality.\nprint('Rows after cleaning:', len(df))  # 9800",
-        s3CodeNote: 'Prerequisites: pandas installed, train.csv from the download above in the same directory. Expected output: Postal Code 11, duplicates 0, Sales <= 0 is 0, shipped-before-ordered is 0, 9800 rows. The dataset is deliberately fairly clean \u2013 the one real defect is the eleven missing postal codes.',
-        s3PowerBITitle: 'Data Quality in Power BI',
-        s3PowerBIText: 'In the Power Query Editor (Home \u2192 Transform Data) the following tools are available:',
-        s3PowerBISteps: [
-          'Select column \u2192 Transform \u2192 Change Data Type',
-          'Home \u2192 Remove Rows \u2192 Remove Blank Rows',
-          'Right-click column \u2192 Replace Values',
-          'Home \u2192 Remove Rows \u2192 Remove Duplicates',
-        ],
-
-        s4Title: 'Learning Resources',
-        s4Desc: 'Recommended YouTube channels for data transformation and data quality:',
-        s4Resources: [
-          {
-            title: 'Power Query Tutorial \u2013 Curbal',
-            url: 'https://www.youtube.com/@Curbal',
-            desc: 'Comprehensive tutorial series on Power Query, M language and data transformation in Power BI.',
-          },
-          {
-            title: 'Pandas Data Cleaning \u2013 Keith Galli',
-            url: 'https://www.youtube.com/@KeithGalli',
-            desc: 'Practical Python tutorials on pandas, data cleaning and exploratory data analysis.',
-          },
-        ],
-
-        s5Title: 'Quiz',
-        s5Desc: 'Test your knowledge from Lab 02.',
-        s5Questions: [
-          {
-            q: 'What is the main difference between Star Schema and Snowflake Schema?',
-            opts: [
-              'Star Schema has multiple fact tables, Snowflake only one',
-              'In Star Schema dimensions are denormalised (flat), in Snowflake normalised (multiple tables)',
-              'Snowflake Schema is only used in the cloud',
-              'Star Schema requires more storage than Snowflake Schema',
-            ],
-            correct: 1,
-            exp: 'In the Star Schema, dimensions are denormalised (flat) \u2013 simpler and faster. In the Snowflake Schema, dimensions are normalised into multiple tables \u2013 saves storage but requires more JOINs.',
-          },
-          {
-            q: 'Which pandas method removes duplicate rows from a DataFrame?',
-            opts: [
-              'df.remove_duplicates()',
-              'df.drop_duplicates()',
-              'df.deduplicate()',
-              'df.unique()',
-            ],
-            correct: 1,
-            exp: 'df.drop_duplicates() removes duplicate rows from a pandas DataFrame. The subset=[] parameter can specify which columns to compare.',
-          },
-          {
-            q: 'What is GraphQL?',
-            opts: [
-              'A file format like JSON or XML',
-              'A database language like SQL',
-              'An API query language \u2013 the response is JSON',
-              'A cloud storage service',
-            ],
-            correct: 2,
-            exp: 'GraphQL is an API query language (not a data format). Responses from a GraphQL API are returned as JSON.',
-          },
-          {
-            q: 'Which DWH architecture approach uses star schemas in business-area data marts?',
-            opts: [
-              'Bill Inmon (Top-Down)',
-              'Ralph Kimball (Bottom-Up)',
-              'Dan Linstedt (Data Vault)',
-              'Edgar F. Codd (Relational)',
-            ],
-            correct: 1,
-            exp: 'Ralph Kimball (1996) advocates the Bottom-Up approach: business-area data marts with star schema that are quick to productionise. Inmon prefers an enterprise-wide normalised DWH.',
-          },
-          {
-            q: 'Which SCD type stores historical changes with a validity period?',
-            opts: [
-              'SCD Type 1 (Overwrite)',
-              'SCD Type 2 (New row)',
-              'SCD Type 3 (Additional column)',
-              'SCD Type 0 (No change)',
-            ],
-            correct: 1,
-            exp: 'SCD Type 2 adds a new row with validity period (valid_from, valid_to) for each change. This is the standard in data warehousing because the complete history is preserved.',
-          },
-          {
-            q: 'Which of the following is NOT a dimension in the DAMA DMBOK data quality framework?',
-            opts: [
-              'Accuracy',
-              'Scalability',
-              'Completeness',
-              'Timeliness',
-            ],
-            correct: 1,
-            exp: 'Scalability is not a data quality dimension. The six DAMA DMBOK dimensions are: Accuracy, Completeness, Consistency, Timeliness, Validity, and Uniqueness.',
-          },
-        ],
-
-        // Summary
-        summaryTitle: 'Summary',
-        summaryItems: [
-          'Data sources are classified by structure: structured (CSV, SQL), semi-structured (JSON, XML, APIs, most modern log formats), unstructured (PDFs, images, free text) and cloud sources (Snowflake, BigQuery, Azure). The boundaries are fluid \u2013 a log file can fall into either category depending on its format.',
-          'The Star Schema (Kimball, 1996) is the most common model in data warehousing: a central fact table with measures, surrounded by denormalised dimension tables.',
-          'The Snowflake Schema normalises dimensions into multiple tables – saves storage but requires more JOINs. Kimball (Bottom-Up) and Inmon (Top-Down, 1992) describe the two fundamental DWH architecture schools.',
-          'Slowly Changing Dimensions (SCD) handle temporal changes in dimension data: Type\u00A01 (overwrite), Type\u00A02 (new row with validity period) and Type\u00A03 (additional column).',
-          'Data quality is assessed using the DAMA DMBOK framework across six dimensions: Accuracy, Completeness, Consistency, Timeliness, Validity, and Uniqueness.',
-          'Common quality issues (null values, duplicates, wrong data types, inconsistencies) are fixed with pandas (Python) or Power Query (Power BI).',
-          'GraphQL is an API query language (not a data format) – responses are returned as JSON.',
-        ],
-        navPrev: '\u2190 Lab 01: Foundations',
-        navNext: 'Lab 03: KPIs \u2192',
-      },
-    };
-
-    // ─── App Component ────────────────────────────────────────────────────────
-    function App() {
-
-      const [lang, setLang] = useState(BINTLab.getLanguage);
-      const [activeSection, setActiveSection] = useState('datenquellen');
-
-      const setLangAndStore = (l) => {
-        setLang(l);
-        BINTLab.setLanguage(l);
-      };
-
-      useEffect(() => {
-        const sections = ['datenquellen', 'modellierung', 'qualitaet', 'youtube', 'quiz', 'zusammenfassung'];
-        const handler = () => {
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const el = document.getElementById(sections[i]);
-            if (el && el.getBoundingClientRect().top <= 100) {
-              setActiveSection(sections[i]);
-              return;
-            }
-          }
-          setActiveSection('datenquellen');
-        };
-        window.addEventListener('scroll', handler, { passive: true });
-        return () => window.removeEventListener('scroll', handler);
-      }, []);
-
-      const tx = translations[lang];
-
-      // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
-      React.useEffect(() => {
-        document.title = 'Lab 02 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
-        document.documentElement.lang = lang;
-        BINTLab.setLanguage(lang);
-      }, [lang, tx.title]);
-
-      return (
-        <div data-lang={lang}>
-
-          {/* Fixed Header */}
-          {/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */}
-          <a className="skip-link" href="#main">
-            {lang === 'en' ? 'Skip to content' : 'Zum Inhalt springen'}
-          </a>
-          <header className="header">
-            <div className="header-left">
-              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
-              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
-            </div>
-            <div style={{ display: 'flex', gap: '0.35rem' }}>
-              <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
-              <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => setLangAndStore('en')} aria-pressed={lang === 'en'} aria-label="English">{'EN'}</button>
-            </div>
-          </header>
-
-          {/* Sidebar */}
-          <nav className="sidebar">
-            <div className="sidebar-title">{tx.navContents}</div>
-            {tx.nav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={'sidebar-link' + (activeSection === item.href.slice(1) ? ' active' : '')}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Lab Header */}
-          <div className="lab-header">
-            <div className="lab-num">{'02'}</div>
-            <h1 className="lab-title-h1">{tx.title}</h1>
-            <p className="lab-desc-intro">{tx.desc}</p>
-            <div className="lernziele-chips">
-              {tx.lernziele.map((lz, i) => (
-                <span key={i} className="lernziel-chip">{lz}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <main className="main-content" id="main">
-
-            {/* ── Section 1: Datenquellen ── */}
-            <section id="datenquellen" className="section-block">
-              <h2>{tx.s1Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s1Desc}</p>
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s1CategoriesTitle}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
-                {tx.s1Categories.map((cat, i) => (
-                  <div key={i} className="bauhaus-card">
-                    <div style={{
-                      display: 'inline-block', background: cat.color, color: 'white',
-                      fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
-                      fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                      padding: '0.2rem 0.6rem', borderRadius: '3px', marginBottom: '0.75rem'
-                    }}>
-                      {cat.label}
-                    </div>
-                    <p style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', color: '#4B5563', lineHeight: 1.5 }}>{cat.desc}</p>
-                    <div>
-                      {cat.examples.map((ex, j) => (
-                        <span key={j} className="source-tag">{ex}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s1PowerBITitle}</h3>
-              <div className="info-box">
-                <p style={{ margin: 0 }}>{tx.s1PowerBIText}</p>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s1PythonTitle}</h3>
-              <p style={{ marginBottom: '0.5rem' }}>{tx.s1PythonDesc}</p>
-              <div className="info-box" style={{ marginTop: '1.25rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.dataTitle}</h4>
-                <p style={{ margin: '0 0 0.75rem' }}>{tx.dataText}</p>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <a href="data/beispiel/umsatz.csv" download
-                     style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataCsv}
-                  </a>
-                  <a href="data/beispiel/bericht.xlsx" download
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataXlsx}
-                  </a>
-                  <a href="data/beispiel/sales_api.json" download
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataJson}
-                  </a>
-                  <a href="data/train.csv" download
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataDirect}
-                  </a>
-                  <a href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting"
-                     target="_blank" rel="noopener noreferrer"
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataKaggle}
-                  </a>
-                </div>
-                <p style={{ margin: '0.75rem 0 0', fontSize: '0.78rem', color: '#4B5563' }}>{tx.dataLicense}</p>
-              </div>
-              <CodeBlock code={tx.s1CodePython} lang={lang} kind="run" note={tx.s1CodeNote} />
-              <h4 style={{ marginTop: '1.5rem' }}>{tx.s1RunTitle}</h4>
-              <CodeBlock code={tx.s1CodePythonRun} lang={lang} kind="run" note={tx.s1RunNote} />
-              <div className="challenge-box">
-                <h4 style={{ marginTop: 0 }}>{tx.selfCheckTitle}</h4>
-                <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
-                  {tx.selfCheckItems.map((item, i) => <li key={i}>{item}</li>)}
-                </ul>
-              </div>
-            </section>
-
-            {/* ── Section 2: Datenmodellierung ── */}
-            <section id="modellierung" className="section-block">
-              <h2>{tx.s2Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s2Desc}</p>
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s2StarTitle}</h3>
-              <p>{tx.s2StarDesc}</p>
-
-              <CodeBlock code={tx.s2DiagramCode} lang={lang} kind="diagram" />
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', margin: '1.5rem 0' }}>
-                <div className="concept-box" style={{ margin: 0 }}>
-                  <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s2FactTitle}</h4>
-                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{tx.s2FactText}</p>
-                </div>
-                <div className="tip-box" style={{ margin: 0 }}>
-                  <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s2DimTitle}</h4>
-                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{tx.s2DimText}</p>
-                </div>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s2CompareTitle}</h3>
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>{tx.s2CompareHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tx.s2CompareRows.map((row, i) => (
-                    <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s2KimballInmonTitle}</h3>
-              <div className="concept-box">
-                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.7 }}>{tx.s2KimballInmonText}</p>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s2SCDTitle}</h3>
-              <div className="tip-box">
-                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.7 }}>{tx.s2SCDText}</p>
-              </div>
-
-              <div className="info-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ margin: '0 0 0.4rem', color: 'var(--col-primary)' }}>{tx.s2TipTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s2TipText}</p>
-              </div>
-            </section>
-
-            {/* ── Section 3: Datenqualitat ── */}
-            <section id="qualitaet" className="section-block">
-              <h2>{tx.s3Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s3Desc}</p>
-
-              <div className="info-box" style={{ marginTop: '1rem' }}>
-                <h4 style={{ margin: '0 0 0.4rem', color: 'var(--col-primary)' }}>{tx.s3FrameworkTitle}</h4>
-                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.7 }}>{tx.s3FrameworkText}</p>
-              </div>
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s3ProblemsTitle}</h3>
-              <div style={{ margin: '1rem 0' }}>
-                {tx.s3Problems.map((prob, i) => (
-                  <div key={i} style={{
-                    display: 'flex', gap: '1rem', padding: '0.9rem 0',
-                    borderBottom: '1px solid #E5E7EB', alignItems: 'flex-start'
-                  }}>
-                    <div style={{
-                      flexShrink: 0, width: '28px', height: '28px',
-                      background: 'var(--col-primary)', color: 'white',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: '0.8rem',
-                      borderRadius: '4px'
-                    }}>{i + 1}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--col-primary)', marginBottom: '0.2rem' }}>{prob.name}</div>
-                      <div style={{ fontSize: '0.875rem', color: '#4B5563', lineHeight: 1.5, marginBottom: '0.35rem' }}>{prob.desc}</div>
-                      <div style={{ fontSize: '0.82rem', color: '#374151', background: '#F3F4F6', padding: '0.2rem 0.55rem', borderRadius: '4px', display: 'inline-block', fontFamily: "'Fira Code', 'Courier New', monospace" }}>
-                        {'\u2192 '}{prob.fix}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s3PandasTitle}</h3>
-              <CodeBlock code={tx.s3CodePandas} lang={lang} kind="run" note={tx.s3CodeNote} />
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s3PowerBITitle}</h3>
-              <div className="concept-box">
-                <p style={{ margin: '0 0 0.75rem' }}>{tx.s3PowerBIText}</p>
-                <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                  {tx.s3PowerBISteps.map((step, i) => (
-                    <li key={i} style={{ fontSize: '0.875rem', color: '#374151', lineHeight: 1.8, fontFamily: "'Fira Code', 'Courier New', monospace" }}>{step}</li>
-                  ))}
-                </ul>
-              </div>
-            </section>
-
-            {/* ── Section 4: YouTube-Ressourcen ── */}
-            <section id="youtube" className="section-block">
-              <h2>{tx.s4Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s4Desc}</p>
-
-              <div className="youtube-box">
-                <h3>{'YouTube'}</h3>
-
-                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#78350F' }}>
-
-                  {tx.ytNote}
-
-                </p>
-                {tx.s4Resources.map((res, i) => (
-                  <div key={i} style={{
-                    marginBottom: i < tx.s4Resources.length - 1 ? '1.25rem' : 0,
-                    paddingBottom: i < tx.s4Resources.length - 1 ? '1.25rem' : 0,
-                    borderBottom: i < tx.s4Resources.length - 1 ? '1px solid #FED7AA' : 'none'
-                  }}>
-                    <a href={res.url} target="_blank" rel="noopener noreferrer" className="youtube-link">{res.title}</a>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#78350F' }}>{res.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ── Section 5: Quiz ── */}
-            <section id="quiz" className="section-block">
-              <h2>{tx.s5Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s5Desc}</p>
-
-              {tx.s5Questions.map((q, i) => (
-                <QuizQuestion
-                  key={lang + '-' + i}
-                  question={(i + 1) + '. ' + q.q}
-                  options={q.opts}
-                  correctIndex={q.correct}
-                  explanation={q.exp}
-                  lang={lang}
-                />
-              ))}
-            </section>
-
-            {/* ── Section 6: Zusammenfassung ── */}
-            <section id="zusammenfassung" className="section-block">
-              <span className="bauhaus-badge">{lang === 'de' ? 'ZUSAMMENFASSUNG' : 'SUMMARY'}</span>
-              <div className="bauhaus-accent-line" />
-              <h2>{tx.summaryTitle}</h2>
-              <div className="concept-box">
-                <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.85 }}>
-                  {tx.summaryItems.map((item, i) => <li key={i} style={{ fontSize: '0.92rem', marginBottom: '0.3rem' }}>{item}</li>)}
-                </ul>
-              </div>
-            </section>
-
-            {/* ── Nav Bottom ── */}
-            <div className="nav-bottom">
-              <a href={'lab-01-grundlagen.html' + ('?lang=' + lang)} className="nav-btn">
-                {tx.navPrev}
-              </a>
-              <a href={'lab-03-kpis.html' + ('?lang=' + lang)} className="nav-btn primary">
-                {tx.navNext}
-              </a>
-            </div>
-
-          </main>
-
-          {/* Footer */}
-          <footer className="footer">
-            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
-          </footer>
-
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+<body class="lab-page" data-lab="lab-02">
+
+<a class="skip-link" href="#main"><span lang="de">Zum Inhalt springen</span><span lang="en">Skip to content</span></a>
+
+<header class="header">
+  <div class="header-left">
+    <a class="header-logo" href="index.html" data-lab-link><span class="mark">BINT</span>-Lab</a>
+    <a class="header-back" href="index.html" data-lab-link>
+      <span lang="de">← Zur Übersicht</span><span lang="en">← Back to overview</span>
+    </a>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" data-lang-btn="de" aria-pressed="true" aria-label="Deutsch">DE</button>
+    <button class="lang-btn" data-lang-btn="en" aria-pressed="false" aria-label="English">EN</button>
+  </div>
+</header>
+
+<nav class="sidebar" aria-label="Lab-Navigation">
+  <div class="sidebar-title"><span lang="de">Abschnitte</span><span lang="en">Sections</span></div>
+  <a class="sidebar-link" href="#datenquellen"><span lang="de">Datenquellen</span><span lang="en">Data Sources</span></a>
+  <a class="sidebar-link" href="#modellierung"><span lang="de">Datenmodellierung</span><span lang="en">Data Modelling</span></a>
+  <a class="sidebar-link" href="#qualitaet"><span lang="de">Datenqualität</span><span lang="en">Data Quality</span></a>
+  <a class="sidebar-link" href="#youtube"><span lang="de">Ressourcen</span><span lang="en">Resources</span></a>
+  <a class="sidebar-link" href="#quiz">Quiz</a>
+  <a class="sidebar-link" href="#zusammenfassung"><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></a>
+</nav>
+
+<div class="lab-header">
+  <div class="lab-num-big">02</div>
+  <h1 class="lab-title"><span lang="de">Daten: Quellen, Modelle, Qualität</span><span lang="en">Data: Sources, Models, Quality</span></h1>
+  <p class="lab-intro"><span lang="de">Daten sind das Fundament jeder BI-Lösung. In diesem Lab lernen Sie, wie verschiedene Datenquellen angebunden werden, wie Star- und Snowflake-Schemata funktionieren und wie Datenqualitätsprobleme erkannt und behoben werden.</span><span lang="en">Data is the foundation of every BI solution. In this lab you will learn how to connect different data sources, how star and snowflake schemas work, and how to identify and fix data quality issues.</span></p>
+  <div class="lernziele">
+    <span class="lernziel-chip"><span lang="de">Verschiedene Datenquellen anbinden</span><span lang="en">Connect various data sources</span></span>
+    <span class="lernziel-chip"><span lang="de">Star Schema &amp; Snowflake Schema verstehen</span><span lang="en">Understand Star &amp; Snowflake Schema</span></span>
+    <span class="lernziel-chip"><span lang="de">Datenqualitätsprobleme erkennen &amp; beheben</span><span lang="en">Identify &amp; fix data quality issues</span></span>
+    <span class="lernziel-chip"><span lang="de">Power Query &amp; Pandas nutzen</span><span lang="en">Use Power Query &amp; Pandas</span></span>
+  </div>
+</div>
+
+<main class="main-content" id="main">
+
+  <section class="section-block" id="datenquellen">
+    <h2><span lang="de">Datenquellen</span><span lang="en">Data Sources</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">BI-Systeme integrieren Daten aus vielen verschiedenen Quellen. Je nach Struktur der Daten unterscheidet man vier Hauptkategorien.</span><span lang="en">BI systems integrate data from many different sources. Depending on the structure of the data, four main categories are distinguished.</span></p>
+
+    <h3><span lang="de">Kategorien von Datenquellen</span><span lang="en">Categories of Data Sources</span></h3>
+    <div class="karten">
+      <div class="karte">
+        <span class="marke"><span lang="de">Strukturiert</span><span lang="en">Structured</span></span>
+        <p><span lang="de">Klar definiertes Schema, Zeilen und Spalten. Einfach zu verarbeiten.</span><span lang="en">Clearly defined schema, rows and columns. Easy to process.</span></p>
+        <div><span class="chip">CSV</span><span class="chip">Excel</span><span class="chip">SQL (MySQL, PostgreSQL)</span><span class="chip"><span lang="de">SAP-Exporte</span><span lang="en">SAP exports</span></span></div>
+      </div>
+      <div class="karte">
+        <span class="marke"><span lang="de">Semi-strukturiert</span><span lang="en">Semi-structured</span></span>
+        <p><span lang="de">Flexibles Schema, hierarchische oder verschachtelte Strukturen.</span><span lang="en">Flexible schema, hierarchical or nested structures.</span></p>
+        <div><span class="chip">JSON</span><span class="chip">XML</span><span class="chip"><span lang="de">REST-APIs</span><span lang="en">REST APIs</span></span><span class="chip"><span lang="de">GraphQL (API-Abfrageparadigma, Antwort: JSON)</span><span lang="en">GraphQL (API query paradigm, response: JSON)</span></span><span class="chip"><span lang="de">Log-Dateien (JSON-Lines, Syslog)</span><span lang="en">Log files (JSON lines, syslog)</span></span></div>
+      </div>
+      <div class="karte">
+        <span class="marke"><span lang="de">Unstrukturiert</span><span lang="en">Unstructured</span></span>
+        <p><span lang="de">Kein festes Schema. Aufbereitung durch NLP, OCR oder KI nötig. Wachsende Relevanz durch LLMs.</span><span lang="en">No fixed schema. Requires NLP, OCR or AI processing. Growing relevance through LLMs.</span></p>
+        <div><span class="chip"><span lang="de">PDF-Dokumente</span><span lang="en">PDF documents</span></span><span class="chip"><span lang="de">E-Mails</span><span lang="en">Emails</span></span><span class="chip"><span lang="de">Bilder</span><span lang="en">Images</span></span><span class="chip">Audio/Video</span><span class="chip"><span lang="de">Freitext-Notizen</span><span lang="en">Free-text notes</span></span></div>
+      </div>
+      <div class="karte">
+        <span class="marke"><span lang="de">Cloud-Quellen</span><span lang="en">Cloud Sources</span></span>
+        <p><span lang="de">Online-Dienste mit API-Zugriff oder nativer Konnektorunterstützung. Können strukturierte und unstrukturierte Daten enthalten.</span><span lang="en">Online services with API access or native connector support. Can contain structured and unstructured data.</span></p>
+        <div><span class="chip">Google Sheets</span><span class="chip">Azure Blob Storage</span><span class="chip">SharePoint</span><span class="chip">Snowflake</span><span class="chip">BigQuery</span></div>
+      </div>
+    </div>
+
+    <h3><span lang="de">Daten laden in Power BI</span><span lang="en">Loading Data in Power BI</span></h3>
+    <div class="info-box">
+      <p><span lang="de">In Power BI öffnet der Dialog „Daten abrufen“ (Start → Daten abrufen) eine Quellen-Auswahl mit über 100 Konnektoren. Nach der Verbindung öffnet sich der Power Query Editor zur Vorschau und Transformation.</span><span lang="en">In Power BI, the "Get Data" dialog (Home → Get Data) opens a source selection with over 100 connectors. After connecting, the Power Query Editor opens for preview and transformation.</span></p>
+    </div>
+    <!-- SCREENSHOT: powerbi-get-data · Start → Daten abrufen → Quellenauswahl (Text/CSV, Excel, Web) -->
+    <!-- SCREENSHOT: powerbi-power-query-preview · Power Query Editor nach dem Verbinden: Vorschau der geladenen Tabelle -->
+
+    <h3><span lang="de">Daten laden in Python</span><span lang="en">Loading Data in Python</span></h3>
+    <p><span lang="de">Mit pandas und der requests-Bibliothek können alle gängigen Datenquellen eingelesen werden:</span><span lang="en">With pandas and the requests library, all common data sources can be read:</span></p>
+    <div class="download-box">
+      <h4><span lang="de">Daten für diesen Abschnitt</span><span lang="en">Data for this section</span></h4>
+      <p><span lang="de">Alle Codeblöcke auf dieser Seite arbeiten mit Dateien, die hier bereitliegen. Die drei Beispielquellen (CSV, Excel, JSON) enthalten dieselben zwölf Zeilen – daran lässt sich prüfen, ob alle Wege zum selben Ergebnis führen. train.csv ist der Kursdatensatz für die Datenqualitätsübung: 9.800 Zeilen, TT/MM/JJJJ, Encoding latin-1.</span><span lang="en">Every code block on this page works with files provided right here. The three example sources (CSV, Excel, JSON) contain the same twelve rows – that is how you check whether all routes lead to the same result. train.csv is the course dataset for the data-quality exercise: 9,800 rows, DD/MM/YYYY, encoding latin-1.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="data/beispiel/umsatz.csv" download>umsatz.csv</a>
+        <a class="btn-download sekundaer" href="data/beispiel/bericht.xlsx" download>bericht.xlsx</a>
+        <a class="btn-download sekundaer" href="data/beispiel/sales_api.json" download>sales_api.json</a>
+        <a class="btn-download sekundaer" href="data/train.csv" download><span lang="de">train.csv (Kursdatensatz)</span><span lang="en">train.csv (course dataset)</span></a>
+        <a class="btn-download sekundaer" href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting" target="_blank" rel="noopener noreferrer"><span lang="de">Originalquelle bei Kaggle</span><span lang="en">Original source on Kaggle</span></a>
+      </div>
+      <p class="lizenz"><span lang="de">Quelle: Superstore Sales Dataset von Rohit Sahoo (Kaggle), Lizenz GPL 2. Die Beispieldateien umsatz.csv, bericht.xlsx und sales_api.json sind frei erfunden und dienen nur der Übung.</span><span lang="en">Source: Superstore Sales Dataset by Rohit Sahoo (Kaggle), licensed GPL 2. The example files umsatz.csv, bericht.xlsx and sales_api.json are fictional and exist only for practice.</span></p>
+    </div>
+    <div class="codeblock" data-kind="run" data-name="s1CodePython">
+<pre class="code-block" lang="de"># Drei Quellen, dieselben Zahlen. Alle drei Dateien stehen oben zum
+# Download und liegen im Repo unter data/beispiel/.
+import pandas as pd
+import requests
+
+# 1. CSV
+df_csv = pd.read_csv('umsatz.csv')
+
+# 2. Excel - der Blattname gehoert zur Datei, nicht zur Sprache
+df_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')
+
+# 3. REST-API: dieselben Daten, aber ueber HTTP.
+#    Die Nutzlast liegt unter dem Schluessel 'data' - deshalb steht er
+#    in json_normalize. Bei anderen APIs heisst er 'results' oder 'items';
+#    ein Blick in die Antwort spart hier viel Raterei.
+url = 'https://swrobuts.github.io/BINT-Lab/data/beispiel/sales_api.json'
+response = requests.get(url, timeout=10)
+response.raise_for_status()          # wirft bei 404 statt still leer zu bleiben
+df_api = pd.json_normalize(response.json()['data'])
+
+for name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:
+    print(f"{name:6} {df.shape}  Umsatz {df['Umsatz'].sum():,.2f}")
+
+# Probe: drei Wege, ein Ergebnis. Genau darum geht es in diesem Abschnitt.
+assert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()
+print('Alle drei Quellen stimmen ueberein.')</pre>
+<pre class="code-block" lang="en"># Three sources, the same numbers. All three files are available for
+# download above and live in the repo under data/beispiel/.
+import pandas as pd
+import requests
+
+# 1. CSV
+df_csv = pd.read_csv('umsatz.csv')
+
+# 2. Excel - the sheet name belongs to the file, not to the language
+df_excel = pd.read_excel('bericht.xlsx', sheet_name='Umsatz')
+
+# 3. REST API: the same data, but over HTTP.
+#    The payload sits under the key 'data' - that is why it appears in
+#    json_normalize. Other APIs call it 'results' or 'items'; looking at
+#    the actual response saves a lot of guesswork here.
+url = 'https://swrobuts.github.io/BINT-Lab/data/beispiel/sales_api.json'
+response = requests.get(url, timeout=10)
+response.raise_for_status()          # raises on 404 instead of staying silently empty
+df_api = pd.json_normalize(response.json()['data'])
+
+for name, df in [('CSV', df_csv), ('Excel', df_excel), ('API', df_api)]:
+    print(f"{name:6} {df.shape}  revenue {df['Umsatz'].sum():,.2f}")
+
+# Check: three routes, one result. That is the whole point of this section.
+assert df_csv['Umsatz'].sum() == df_excel['Umsatz'].sum() == df_api['Umsatz'].sum()
+print('All three sources agree.')</pre>
+    <p class="code-note"><span lang="de">Voraussetzung: pip install pandas requests openpyxl, dazu umsatz.csv und bericht.xlsx aus dem Download oben im selben Verzeichnis. Die dritte Quelle wird über HTTP geladen und braucht eine Internetverbindung. Sollausgabe: dreimal (12, 5) und dreimal Umsatz 243.209,05, danach „Alle drei Quellen stimmen überein.“</span><span lang="en">Prerequisites: pip install pandas requests openpyxl, plus umsatz.csv and bericht.xlsx from the download above in the same directory. The third source is fetched over HTTP and needs an internet connection. Expected output: three times (12, 5) and three times revenue 243,209.05, then “All three sources agree.”</span></p>
+    </div>
+    <h4><span lang="de">Dasselbe Muster auf dem Kursdatensatz train.csv</span><span lang="en">The same pattern on the course dataset train.csv</span></h4>
+    <div class="codeblock" data-kind="run" data-name="s1CodePythonRun">
+<pre class="code-block" lang="de"># Dieselben drei Quellen, aber mit dem Kursdatensatz statt Platzhaltern.
+# train.csv liegt im selben Verzeichnis wie dieses Skript.
+import pandas as pd
+
+# 1. CSV laden
+df = pd.read_csv('train.csv', encoding='latin-1')
+
+# 2. Datum: die Datei nutzt TT/MM/JJJJ -&gt; dayfirst=True ist Pflicht,
+#    sonst bricht das Parsen ab, sobald der Tag groesser als 12 ist.
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+
+# 3. Struktur und Qualitaet pruefen
+print(df.shape)                            # (9800, 18)
+print(round(df['Sales'].sum(), 2))         # 2261536.78
+print(df['Order ID'].nunique())            # 4922
+print(df.isnull().sum()[lambda s: s &gt; 0])  # Postal Code    11</pre>
+<pre class="code-block" lang="en"># The same three sources, but with the course dataset instead of placeholders.
+# train.csv sits in the same directory as this script.
+import pandas as pd
+
+# 1. Load CSV
+df = pd.read_csv('train.csv', encoding='latin-1')
+
+# 2. Dates: the file uses DD/MM/YYYY -&gt; dayfirst=True is mandatory,
+#    otherwise parsing breaks as soon as the day exceeds 12.
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+
+# 3. Check structure and quality
+print(df.shape)                            # (9800, 18)
+print(round(df['Sales'].sum(), 2))         # 2261536.78
+print(df['Order ID'].nunique())            # 4922
+print(df.isnull().sum()[lambda s: s &gt; 0])  # Postal Code    11</pre>
+    <p class="code-note"><span lang="de">Voraussetzung: pandas installiert, train.csv im selben Verzeichnis (Download oben). Sollausgabe: (9800, 18) · 2261536.78 · 4922 · Postal Code 11. Weichen die Zahlen ab, wurde meist dayfirst=True vergessen.</span><span lang="en">Prerequisites: pandas installed, train.csv in the same directory (download above). Expected output: (9800, 18) · 2261536.78 · 4922 · Postal Code 11. If the numbers differ, dayfirst=True was usually forgotten.</span></p>
+    </div>
+    <div class="challenge-box">
+      <h4><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h4>
+      <ul>
+        <li><span lang="de">df.shape liefert (9800, 18) – sonst wurde die falsche Datei geladen.</span><span lang="en">df.shape returns (9800, 18) – otherwise the wrong file was loaded.</span></li>
+        <li><span lang="de">Die Umsatzsumme ist 2261536.78 – weicht sie ab, stimmt das encoding nicht.</span><span lang="en">The revenue total is 2261536.78 – if it differs, the encoding is wrong.</span></li>
+        <li><span lang="de">4922 verschiedene Order ID – nicht zu verwechseln mit den 9800 Positionen.</span><span lang="en">4922 distinct Order ID values – not to be confused with the 9800 line items.</span></li>
+        <li><span lang="de">Genau elf fehlende Postal Code und sonst keine Nullwerte.</span><span lang="en">Exactly eleven missing Postal Code values and no other nulls.</span></li>
+        <li><span lang="de">Typischer Fehler: ohne dayfirst=True bricht das Parsen ab, sobald der Tag größer als 12 ist.</span><span lang="en">Common error: without dayfirst=True parsing breaks as soon as the day exceeds 12.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-block" id="modellierung">
+    <h2><span lang="de">Datenmodellierung</span><span lang="en">Data Modelling</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Ein gutes Datenmodell ist entscheidend für die Performance und Verständlichkeit eines BI-Systems. Das Star Schema ist das verbreitetste Modell im Data Warehousing.</span><span lang="en">A good data model is crucial for the performance and comprehensibility of a BI system. The star schema is the most common model in data warehousing.</span></p>
+
+    <h3>Star Schema</h3>
+    <p><span lang="de">Im Star Schema liegt eine zentrale Faktentabelle im Mittelpunkt, die von mehreren Dimensionstabellen umgeben wird – wie ein Stern.</span><span lang="en">In the star schema, a central fact table is at the centre, surrounded by several dimension tables – like a star.</span></p>
+    <div class="codeblock diagram" data-kind="diagram" data-name="s2DiagramCode">
+<pre class="code-block" lang="de">              Dim_Zeit
+                 |
+Dim_Produkt — Fakt_Umsatz — Dim_Kunde
+                 |
+             Dim_Region</pre>
+<pre class="code-block" lang="en">              Dim_Time
+                 |
+Dim_Product — Fact_Sales — Dim_Customer
+                 |
+             Dim_Region</pre>
+    </div>
+    <div class="karten breit">
+      <div class="concept-box">
+        <h4><span lang="de">Faktentabelle</span><span lang="en">Fact Table</span></h4>
+        <p><span lang="de">Enthält die Messgrößen (Kennzahlen) des Geschäftsprozesses: Umsatz, Menge, Preis, Rabatt. Jede Zeile repräsentiert einen Geschäftsvorfall (z. B. eine Bestellung). Die Faktentabelle hat in der Regel viele Millionen Zeilen.</span><span lang="en">Contains the measures (metrics) of the business process: revenue, quantity, price, discount. Each row represents a business transaction (e.g. an order). The fact table typically has many millions of rows.</span></p>
+      </div>
+      <div class="tip-box">
+        <h4><span lang="de">Dimensionstabellen</span><span lang="en">Dimension Tables</span></h4>
+        <p><span lang="de">Beschreiben den Kontext der Fakten: Zeit (Jahr, Quartal, Monat), Produkt (Kategorie, Marke), Kunde (Region, Segment), Region (Land, Stadt). Dimensionstabellen sind kleiner und enthalten beschreibende Attribute.</span><span lang="en">Describe the context of the facts: Time (year, quarter, month), Product (category, brand), Customer (region, segment), Region (country, city). Dimension tables are smaller and contain descriptive attributes.</span></p>
+      </div>
+    </div>
+
+    <h3>Star Schema vs. Snowflake Schema</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th><span lang="de">Merkmal</span><span lang="en">Feature</span></th><th>Star Schema</th><th>Snowflake Schema</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="kopf"><span lang="de">Dimensionen</span><span lang="en">Dimensions</span></td><td><span lang="de">Flach (denormalisiert)</span><span lang="en">Flat (denormalised)</span></td><td><span lang="de">Normalisiert (mehrere Tabellen)</span><span lang="en">Normalised (multiple tables)</span></td></tr>
+          <tr><td class="kopf">Performance</td><td><span lang="de">Schnellere Abfragen</span><span lang="en">Faster queries</span></td><td><span lang="de">Etwas langsamer durch JOINs</span><span lang="en">Slightly slower due to JOINs</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Speicher</span><span lang="en">Storage</span></td><td><span lang="de">Höherer Bedarf</span><span lang="en">Higher requirement</span></td><td><span lang="de">Geringerer Bedarf</span><span lang="en">Lower requirement</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Komplexität</span><span lang="en">Complexity</span></td><td><span lang="de">Einfach zu verstehen</span><span lang="en">Easy to understand</span></td><td><span lang="de">Komplexere Struktur</span><span lang="en">More complex structure</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Einsatz</span><span lang="en">Usage</span></td><td>Standard in Power BI, Tableau, Looker</td><td><span lang="de">Klassisch in normalisierten DWH (z. B. Inmon-Ansatz)</span><span lang="en">Classic in normalised DWH (e.g. Inmon approach)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Kimball vs. Inmon</h3>
+    <div class="concept-box">
+      <p><span lang="de">Ralph Kimball (Bottom-Up, 1996): Fachbereichsbezogene Data Marts mit Star Schema, schnell produktiv. Bill Inmon (Top-Down, 1992): Unternehmensweites normalisiertes DWH (3NF), dann Data Marts ableiten. Moderne Praxis: Hybridansätze mit dem Data Vault 2.0 von Dan Linstedt.</span><span lang="en">Ralph Kimball (Bottom-Up, 1996): Business-area data marts with star schema, quick to productionise. Bill Inmon (Top-Down, 1992): Enterprise-wide normalised DWH (3NF), then derive data marts. Modern practice: Hybrid approaches with Dan Linstedt’s Data Vault 2.0.</span></p>
+    </div>
+
+    <h3>Slowly Changing Dimensions (SCD)</h3>
+    <div class="tip-box">
+      <p><span lang="de">Dimensionsdaten ändern sich über die Zeit (z. B. Kundenadresse, Produktkategorie). SCD-Typen: Typ 1 = Überschreiben (kein Verlauf), Typ 2 = Neue Zeile mit Gültigkeitszeitraum (Standard im DWH), Typ 3 = Zusätzliche Spalte für den alten Wert.</span><span lang="en">Dimension data changes over time (e.g. customer address, product category). SCD types: Type 1 = Overwrite (no history), Type 2 = New row with validity period (standard in DWH), Type 3 = Additional column for the old value.</span></p>
+    </div>
+
+    <div class="info-box">
+      <h4><span lang="de">Empfehlung</span><span lang="en">Recommendation</span></h4>
+      <p><span lang="de">Für die meisten BI-Projekte ist das Star Schema (Kimball-Ansatz) die bessere Wahl: es ist einfacher zu verstehen, leichter zu pflegen und liefert in den meisten BI-Tools schnellere Abfragezeiten.</span><span lang="en">For most BI projects, the star schema (Kimball approach) is the better choice: it is easier to understand, easier to maintain, and delivers faster query times in most BI tools.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="qualitaet">
+    <h2><span lang="de">Datenqualität</span><span lang="en">Data Quality</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Schlechte Datenqualität ist die häufigste Ursache für falsche BI-Ergebnisse. Das Erkennen und Beheben von Qualitätsproblemen ist ein zentraler Teil jedes ETL-Prozesses.</span><span lang="en">Poor data quality is the most common cause of incorrect BI results. Identifying and fixing quality issues is a central part of every ETL process.</span></p>
+
+    <div class="info-box">
+      <h3><span lang="de">Datenqualitätsdimensionen (DAMA DMBOK)</span><span lang="en">Data Quality Dimensions (DAMA DMBOK)</span></h3>
+      <p><span lang="de">Das DAMA DMBOK-Framework definiert sechs Kernkategorien: Accuracy (Korrektheit), Completeness (Vollständigkeit), Consistency (Widerspruchsfreiheit), Timeliness (Aktualität), Validity (Regelkonformität) und Uniqueness (Eindeutigkeit). Diese Dimensionen bilden die Basis für systematisches Datenqualitätsmanagement.</span><span lang="en">The DAMA DMBOK framework defines six core dimensions: Accuracy, Completeness, Consistency, Timeliness, Validity, and Uniqueness. These dimensions form the basis for systematic data quality management.</span></p>
+    </div>
+
+    <h3><span lang="de">Häufige Datenqualitätsprobleme</span><span lang="en">Common Data Quality Issues</span></h3>
+    <ol class="ebenen">
+      <li><span class="nr">1</span><div><div class="name"><span lang="de">Nullwerte</span><span lang="en">Null values</span></div><div class="text"><span lang="de">Fehlende Werte in Pflichtfeldern (z. B. kein Umsatz eingetragen)</span><span lang="en">Missing values in required fields (e.g. no revenue entered)</span></div><div class="text">→ <code><span lang="de">Zeilen entfernen oder mit Standardwert füllen</span><span lang="en">Remove rows or fill with default value</span></code></div></div></li>
+      <li><span class="nr">2</span><div><div class="name"><span lang="de">Duplikate</span><span lang="en">Duplicates</span></div><div class="text"><span lang="de">Gleiche Datensätze mehrfach vorhanden (z. B. doppelte Bestellungen)</span><span lang="en">Same records present multiple times (e.g. duplicate orders)</span></div><div class="text">→ <code><span lang="de">Mit drop_duplicates() oder Power Query entfernen</span><span lang="en">Remove with drop_duplicates() or Power Query</span></code></div></div></li>
+      <li><span class="nr">3</span><div><div class="name"><span lang="de">Falsche Datentypen</span><span lang="en">Wrong data types</span></div><div class="text"><span lang="de">Datum als Text gespeichert, Zahlen als String</span><span lang="en">Date stored as text, numbers as string</span></div><div class="text">→ <code><span lang="de">pd.to_datetime(), astype(), Power Query: Typ ändern</span><span lang="en">pd.to_datetime(), astype(), Power Query: change type</span></code></div></div></li>
+      <li><span class="nr">4</span><div><div class="name"><span lang="de">Inkonsistenzen</span><span lang="en">Inconsistencies</span></div><div class="text"><span lang="de">Schreibweisen variieren: „DE“, „de“, „ Deutschland “</span><span lang="en">Spellings vary: "DE", "de", " Germany "</span></div><div class="text">→ <code><span lang="de">str.strip(), str.upper(), Ersetzungstabellen</span><span lang="en">str.strip(), str.upper(), replacement tables</span></code></div></div></li>
+    </ol>
+
+    <h3><span lang="de">Datenqualität prüfen &amp; bereinigen mit Pandas</span><span lang="en">Check &amp; Clean Data Quality with Pandas</span></h3>
+    <div class="codeblock" data-kind="run" data-name="s3CodePandas">
+<pre class="code-block" lang="de"># Datenqualitaet auf dem Kursdatensatz - echte Defekte statt Platzhalter.
+import pandas as pd
+
+df = pd.read_csv('train.csv', encoding='latin-1')
+
+# 1. Befund aufnehmen, bevor irgendetwas geaendert wird
+print(df.isnull().sum()[lambda s: s &gt; 0])   # Postal Code    11
+print('Duplikate:', df.duplicated().sum())  # 0
+print(df['Order Date'].dtype)               # str bzw. object - noch Text, kein Datum
+
+# 2. Typen richtigstellen. dayfirst=True ist Pflicht: die Datei ist TT/MM/JJJJ.
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+df['Ship Date']  = pd.to_datetime(df['Ship Date'],  dayfirst=True)
+
+# 3. Schreibweisen vereinheitlichen, bevor gruppiert wird.
+#    Ohne strip() werden ' West' und 'West' zu zwei Gruppen.
+df['Region'] = df['Region'].str.strip()
+df['State']  = df['State'].str.strip()
+
+# 4. Plausibilitaet pruefen statt blind bereinigen
+print('Umsatz &lt;= 0:', (df['Sales'] &lt;= 0).sum())                       # 0
+print('Versand vor Bestellung:', (df['Ship Date'] &lt; df['Order Date']).sum())  # 0
+
+# 5. Die elf fehlenden Postal Code werden weder geloescht noch erfunden.
+#    Warum, steht in Lab 05 unter Datenqualitaet.
+print('Zeilen nach Bereinigung:', len(df))  # 9800</pre>
+<pre class="code-block" lang="en"># Data quality on the course dataset - real defects instead of placeholders.
+import pandas as pd
+
+df = pd.read_csv('train.csv', encoding='latin-1')
+
+# 1. Record the findings before changing anything
+print(df.isnull().sum()[lambda s: s &gt; 0])   # Postal Code    11
+print('Duplicates:', df.duplicated().sum()) # 0
+print(df['Order Date'].dtype)               # str or object - still text, not a date
+
+# 2. Fix the types. dayfirst=True is mandatory: the file is DD/MM/YYYY.
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+df['Ship Date']  = pd.to_datetime(df['Ship Date'],  dayfirst=True)
+
+# 3. Normalise spellings before grouping.
+#    Without strip(), ' West' and 'West' become two separate groups.
+df['Region'] = df['Region'].str.strip()
+df['State']  = df['State'].str.strip()
+
+# 4. Check plausibility instead of cleaning blindly
+print('Sales &lt;= 0:', (df['Sales'] &lt;= 0).sum())                        # 0
+print('Shipped before ordered:', (df['Ship Date'] &lt; df['Order Date']).sum())  # 0
+
+# 5. The eleven missing Postal Code values are neither deleted nor invented.
+#    Lab 05 explains why, under data quality.
+print('Rows after cleaning:', len(df))  # 9800</pre>
+    <p class="code-note"><span lang="de">Voraussetzung: pandas installiert, train.csv aus dem Download oben im selben Verzeichnis. Sollausgabe: Postal Code 11, Duplikate 0, Umsatz &lt;= 0 ist 0, Versand vor Bestellung ist 0, 9800 Zeilen. Der Datensatz ist bewusst weitgehend sauber – der eine echte Defekt sind die elf fehlenden Postleitzahlen.</span><span lang="en">Prerequisites: pandas installed, train.csv from the download above in the same directory. Expected output: Postal Code 11, duplicates 0, Sales &lt;= 0 is 0, shipped-before-ordered is 0, 9800 rows. The dataset is deliberately fairly clean – the one real defect is the eleven missing postal codes.</span></p>
+    </div>
+
+    <h3><span lang="de">Datenqualität in Power BI</span><span lang="en">Data Quality in Power BI</span></h3>
+    <div class="concept-box">
+      <p><span lang="de">Im Power Query Editor (Home → Daten transformieren) stehen folgende Werkzeuge zur Verfügung:</span><span lang="en">In the Power Query Editor (Home → Transform Data) the following tools are available:</span></p>
+      <!-- SCREENSHOT: powerbi-power-query-editor · Start → Daten transformieren → Power Query Editor mit Menüband „Transformieren“ und Datentyp-Auswahl einer Spalte -->
+      <ol class="schritte">
+        <li><span><span lang="de">Spalte markieren → Transformieren → Datentyp ändern</span><span lang="en">Select column → Transform → Change Data Type</span></span></li>
+        <li><span><span lang="de">Start → Zeilen entfernen → Leere Zeilen entfernen</span><span lang="en">Home → Remove Rows → Remove Blank Rows</span></span></li>
+        <li><span><span lang="de">Rechtsklick auf Spalte → Werte ersetzen</span><span lang="en">Right-click column → Replace Values</span></span></li>
+        <li><span><span lang="de">Start → Zeilen entfernen → Duplikate entfernen</span><span lang="en">Home → Remove Rows → Remove Duplicates</span></span></li>
+      </ol>
+      <!-- SCREENSHOT: powerbi-remove-rows · Power Query Editor → Start → Zeilen entfernen (Leere Zeilen, Duplikate) -->
+    </div>
+  </section>
+
+  <section class="section-block" id="youtube">
+    <h2><span lang="de">Lernressourcen</span><span lang="en">Learning Resources</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Ergänzende YouTube-Kanalempfehlungen für Datentransformation und Datenqualität:</span><span lang="en">Recommended YouTube channels for data transformation and data quality:</span></p>
+
+    <div class="youtube-box">
+      <h3>YouTube</h3>
+      <p class="hinweis-klein"><span lang="de">Externe Ziele: Die Links führen auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kanäle bieten eine zentrale Anlaufstelle.</span><span lang="en">External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.</span></p>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@Curbal" target="_blank" rel="noopener noreferrer">Power Query Tutorial – Curbal</a>
+        <p><span lang="de">Umfangreiche Tutorial-Serie zu Power Query, M-Sprache und Datentransformation in Power BI.</span><span lang="en">Comprehensive tutorial series on Power Query, M language and data transformation in Power BI.</span></p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@KeithGalli" target="_blank" rel="noopener noreferrer">Pandas Data Cleaning – Keith Galli</a>
+        <p><span lang="de">Praxisnahe Python-Tutorials zu Pandas, Datenbereinigung und explorativer Datenanalyse.</span><span lang="en">Practical Python tutorials on pandas, data cleaning and exploratory data analysis.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block" id="quiz">
+    <h2>Quiz</h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Testen Sie Ihr Wissen aus Lab 02.</span><span lang="en">Test your knowledge from Lab 02.</span></p>
+    <div data-quiz></div>
+  </section>
+
+  <section class="section-block" id="zusammenfassung">
+    <h2><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h2>
+    <div class="accent-line"></div>
+    <div class="concept-box">
+      <ol>
+        <li><span lang="de">Datenquellen werden nach Struktur klassifiziert: strukturiert (CSV, SQL), semi-strukturiert (JSON, XML, APIs, die meisten modernen Logformate), unstrukturiert (PDFs, Bilder, Freitext) und Cloud-Quellen (Snowflake, BigQuery, Azure). Die Grenzen sind fließend – ein Logfile kann je nach Format in beide Kategorien fallen.</span><span lang="en">Data sources are classified by structure: structured (CSV, SQL), semi-structured (JSON, XML, APIs, most modern log formats), unstructured (PDFs, images, free text) and cloud sources (Snowflake, BigQuery, Azure). The boundaries are fluid – a log file can fall into either category depending on its format.</span></li>
+        <li><span lang="de">Das Star Schema (Kimball, 1996) ist das verbreitetste Modell im Data Warehousing: eine zentrale Faktentabelle mit Kennzahlen, umgeben von denormalisierten Dimensionstabellen.</span><span lang="en">The Star Schema (Kimball, 1996) is the most common model in data warehousing: a central fact table with measures, surrounded by denormalised dimension tables.</span></li>
+        <li><span lang="de">Das Snowflake Schema normalisiert Dimensionen in mehrere Tabellen – spart Speicher, erfordert aber mehr JOINs. Kimball (Bottom-Up) und Inmon (Top-Down, 1992) beschreiben die zwei grundlegenden DWH-Architekturschulen.</span><span lang="en">The Snowflake Schema normalises dimensions into multiple tables – saves storage but requires more JOINs. Kimball (Bottom-Up) and Inmon (Top-Down, 1992) describe the two fundamental DWH architecture schools.</span></li>
+        <li><span lang="de">Slowly Changing Dimensions (SCD) behandeln zeitliche Änderungen in Dimensionsdaten: Typ 1 (Überschreiben), Typ 2 (neue Zeile mit Gültigkeitszeitraum) und Typ 3 (zusätzliche Spalte).</span><span lang="en">Slowly Changing Dimensions (SCD) handle temporal changes in dimension data: Type 1 (overwrite), Type 2 (new row with validity period) and Type 3 (additional column).</span></li>
+        <li><span lang="de">Datenqualität wird nach dem DAMA DMBOK-Framework in sechs Dimensionen bewertet: Accuracy, Completeness, Consistency, Timeliness, Validity und Uniqueness.</span><span lang="en">Data quality is assessed using the DAMA DMBOK framework across six dimensions: Accuracy, Completeness, Consistency, Timeliness, Validity, and Uniqueness.</span></li>
+        <li><span lang="de">Häufige Qualitätsprobleme (Nullwerte, Duplikate, falsche Datentypen, Inkonsistenzen) werden mit pandas (Python) oder Power Query (Power BI) behoben.</span><span lang="en">Common quality issues (null values, duplicates, wrong data types, inconsistencies) are fixed with pandas (Python) or Power Query (Power BI).</span></li>
+        <li><span lang="de">GraphQL ist eine API-Abfragesprache (kein Datenformat) – die Antworten werden als JSON zurückgegeben.</span><span lang="en">GraphQL is an API query language (not a data format) – responses are returned as JSON.</span></li>
+      </ol>
+    </div>
+    <nav class="nav-bottom"></nav>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span lang="de">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+  <span lang="en">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+</footer>
+
+<script type="module">
+  import { starteLab } from './assets/bint.js'
+  starteLab({ lab: 'lab-02', basis: '.' })
+</script>
 </body>
 </html>

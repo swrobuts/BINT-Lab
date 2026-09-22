@@ -1,0 +1,182 @@
+[
+  {
+    "id": "B04-01",
+    "frage": {
+      "de": "Was beschreibt das Data-Ink-Ratio-Prinzip (Tufte)?",
+      "en": "What does Tufte's Data-Ink Ratio principle describe?"
+    },
+    "optionen": [
+      {
+        "de": "Immer 3D-Charts verwenden",
+        "en": "Always use 3D charts"
+      },
+      {
+        "de": "Möglichst viele Farben verwenden",
+        "en": "Use as many colours as possible"
+      },
+      {
+        "de": "Nur nötige visuelle Elemente – jede Tinte muss Daten repräsentieren",
+        "en": "Only necessary visual elements – every drop of ink must represent data"
+      },
+      {
+        "de": "Alle Achsen entfernen",
+        "en": "Remove all axes"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "Edward Tufte definiert Data-Ink-Ratio als Verhältnis von datentragender zu gesamter „Tinte“. Ziel ist ein möglichst hoher Wert: Gitternetze, 3D-Effekte, Schatten und Rahmen weg, damit die Daten selbst dominieren. Nicht gemeint ist, alle Achsen zu entfernen – Achsen tragen Information.",
+      "en": "Edward Tufte defines the data-ink ratio as data-carrying ink divided by total ink. The goal is to maximise it: drop gridlines, 3D effects, shadows and frames so the data itself dominates. It does not mean removing all axes - axes carry information."
+    }
+  },
+  {
+    "id": "B04-02",
+    "frage": {
+      "de": "Warum sind Tortendiagramme bei > 4 Kategorien problematisch?",
+      "en": "Why are pie charts problematic with > 4 categories?"
+    },
+    "optionen": [
+      {
+        "de": "Sie laden langsamer",
+        "en": "They load more slowly"
+      },
+      {
+        "de": "Plotly unterstützt sie nicht",
+        "en": "Plotly doesn't support them"
+      },
+      {
+        "de": "Das menschliche Auge vergleicht Winkel schlecht",
+        "en": "The human eye is poor at comparing angles"
+      },
+      {
+        "de": "Sie benötigen zu viel Speicher",
+        "en": "They require too much memory"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "Menschen vergleichen Längen deutlich zuverlässiger als Winkel und Flächen (Cleveland/McGill). Ab etwa fünf Segmenten lassen sich ähnlich große Anteile kaum noch unterscheiden – ein sortiertes Balkendiagramm ist fast immer die bessere Wahl.",
+      "en": "People compare lengths far more reliably than angles and areas (Cleveland/McGill). From about five slices onward, similarly sized shares become nearly indistinguishable - a sorted bar chart is almost always the better choice."
+    }
+  },
+  {
+    "id": "B04-03",
+    "frage": {
+      "de": "Was ist ein Callback in Plotly Dash?",
+      "en": "What is a Callback in Plotly Dash?"
+    },
+    "optionen": [
+      {
+        "de": "Eine reaktive Funktion: Input → Python → Output",
+        "en": "A reactive function: Input → Python → Output"
+      },
+      {
+        "de": "Ein Plotly-Chart-Typ",
+        "en": "A Plotly chart type"
+      },
+      {
+        "de": "Eine Datenbankabfrage",
+        "en": "A database query"
+      },
+      {
+        "de": "Ein CSS-Selektor",
+        "en": "A CSS selector"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "Ein Callback ist eine mit @app.callback dekorierte Python-Funktion: Ändert sich ein Input (z. B. ein Dropdown-Wert), führt Dash die Funktion serverseitig aus und schreibt den Rückgabewert in den Output (z. B. eine Figure). Genau das macht ein Dash-Dashboard interaktiv.",
+      "en": "A callback is a Python function decorated with @app.callback: when an input changes (e.g. a dropdown value), Dash runs the function server-side and writes the return value into the output (e.g. a figure). This is exactly what makes a Dash dashboard interactive."
+    }
+  },
+  {
+    "id": "B04-04",
+    "frage": {
+      "de": "Welches Gestalt-Prinzip empfiehlt, zusammengehörige KPIs räumlich nah zu platzieren?",
+      "en": "Which Gestalt principle recommends placing related KPIs close together?"
+    },
+    "optionen": [
+      {
+        "de": "Kontinuität",
+        "en": "Continuity"
+      },
+      {
+        "de": "Nähe (Proximity)",
+        "en": "Proximity"
+      },
+      {
+        "de": "Geschlossenheit",
+        "en": "Closure"
+      },
+      {
+        "de": "Ähnlichkeit",
+        "en": "Similarity"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "Das Prinzip der Nähe (Proximity): Elemente, die räumlich nah beieinanderstehen, werden automatisch als zusammengehörig wahrgenommen – stärker noch als durch Rahmen oder Farbe. Deshalb gruppiert man verwandte KPIs eng und trennt Gruppen durch Weißraum.",
+      "en": "Proximity: elements placed near each other are automatically perceived as belonging together - more strongly than grouping by frame or colour. Hence related KPIs are grouped tightly and separated from other groups by whitespace."
+    }
+  },
+  {
+    "id": "B04-05",
+    "frage": {
+      "de": "Welcher Production-Server ersetzt den Dash-Dev-Server?",
+      "en": "Which production server replaces the Dash dev server?"
+    },
+    "optionen": [
+      {
+        "de": "Gunicorn",
+        "en": "Gunicorn"
+      },
+      {
+        "de": "Traefik",
+        "en": "Traefik"
+      },
+      {
+        "de": "Apache",
+        "en": "Apache"
+      },
+      {
+        "de": "nginx",
+        "en": "nginx"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "Gunicorn ist ein WSGI-Server für den Produktivbetrieb. Der eingebaute Dash-/Flask-Dev-Server ist ausdrücklich nicht für Produktion gedacht (single-threaded, keine Lastverteilung, debug=True erlaubt Codeausführung). Deshalb existiert in app.py die Zeile server = app.server – genau dieses Objekt bedient gunicorn app:server.",
+      "en": "Gunicorn is a WSGI server for production use. The built-in Dash/Flask dev server is explicitly not production-grade (single-threaded, no load distribution, debug=True allows code execution). That is why app.py contains server = app.server - that object is what gunicorn app:server serves."
+    }
+  },
+  {
+    "id": "B04-06",
+    "frage": {
+      "de": "Ca. wie viel Prozent der Männer haben eine Rot-Grün-Schwäche?",
+      "en": "Approximately what percentage of men have a red-green colour deficiency?"
+    },
+    "optionen": [
+      {
+        "de": "8 %",
+        "en": "8%"
+      },
+      {
+        "de": "4 %",
+        "en": "4%"
+      },
+      {
+        "de": "15 %",
+        "en": "15%"
+      },
+      {
+        "de": "1 %",
+        "en": "1%"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "Rund 8 % der Männer (etwa jeder Zwölfte) und ca. 0,5 % der Frauen haben eine Rot-Grün-Sehschwäche. Deshalb darf Farbe nie der einzige Bedeutungsträger sein: Rot/Grün-Ampeln zusätzlich durch Form, Symbol oder Beschriftung ergänzen.",
+      "en": "Around 8% of men (roughly one in twelve) and about 0.5% of women have a red-green colour vision deficiency. Colour must therefore never be the only carrier of meaning: supplement red/green status with shape, icon or label."
+    }
+  }
+]

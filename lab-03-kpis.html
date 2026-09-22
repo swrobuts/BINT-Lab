@@ -1,1226 +1,547 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 03 &#8211; KPIs mit DAX &amp; Python &middot; THWS BINT-Lab</title>
+  <title>Lab 03 · KPIs mit DAX, Tableau und Python · BINT-Lab</title>
+  <meta name="bint:titel-en" content="Lab 03 · KPIs with DAX, Tableau and Python · BINT-Lab" />
+  <meta name="description" content="Lab 03 des BINT-Lab: Kennzahlen als DAX-Measures in Power BI, als berechnete Felder in Tableau und in pandas definieren, Measures von Calculated Columns unterscheiden und den Filterkontext mit CALCULATE verstehen." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- React 18.3.1 (UMD). Bewusst NICHT React 19: React 19 liefert keine UMD-Builds mehr,
-       die dieses build-freie Setup (Transpilierung per text/babel im Browser) voraussetzt. -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-          integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-          integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-  <!-- Babel bewusst auf 7.x gepinnt: Babel 8 stellt auf den automatic JSX runtime um
-       und bricht damit text/babel ohne Bundler. 7.29.8 = letzter 7.x-Stand. -->
-  <script src="https://unpkg.com/@babel/standalone@7.29.8/babel.min.js"
-          integrity="sha384-Ux6uBqExf/7ahsSNrA9VI7vuaw6sKjDoVdjdUxmIoL2qdlzFVZ157sTi6JK3Z9Q8" crossorigin="anonymous"></script>
-  <style>
-
-    :root {
-      --col-primary: #1E3A8A;
-      --col-accent: #2563EB;
-      --col-primary-light: rgba(30,58,138,0.08);
-    }
-    [data-lang="en"] {
-      --col-primary: #0D9488;
-      --col-accent: #0D9488;
-      --col-primary-light: rgba(13,148,136,0.08);
-    }
-    :root {
-      --primary: #1E3A8A;
-      --accent: #2563EB;
-      --dark: #1A1A1A;
-      --light-bg: #FAFAFA;
-      --primary-light: rgba(30,58,138,0.08);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background: #FAFAFA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; color: #1A1A1A; }
-    h2 { color: #1E3A8A; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-top: 0; }
-    h3 { color: #1E3A8A; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; margin: 0.5rem 0; }
-    p { line-height: 1.7; }
-
-    /* Bauhaus */
-    .bauhaus-card { border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.5rem; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .bauhaus-accent-line { width: 48px; height: 4px; background: #2563EB; margin: 0.5rem 0 1rem 0; }
-    .bauhaus-badge { background: #2563EB; color: white; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 0; display: inline-block; }
-
-    /* Code */
-    .code-block { background: #F3F4F6; color: #1A1A1A; padding: 1.25rem; border-left: 4px solid #D1D5DB; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.85rem; overflow-x: auto; position: relative; border-radius: 0 8px 8px 0; white-space: pre; margin: 1rem 0; }
-
-    /* Info boxes */
-    .tip-box { border-left: 4px solid #2563EB; background: #EFF6FF; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .info-box { border-left: 4px solid #3b82f6; background: #eff6ff; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-    .concept-box { border-left: 4px solid #1E3A8A; background: rgba(30,58,138,0.08); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
-
-    /* Layout */
-    .header {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 100;
-      background: white; border-bottom: 1px solid #E5E7EB; box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.5rem;
-    }
-    .header-left { display: flex; align-items: center; gap: 1.5rem; }
-    .header-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: #1E3A8A; text-decoration: none; }
-    .header-back { font-size: 0.85rem; color: #555; text-decoration: none; font-weight: 500; }
-    .header-back:hover { color: #1E3A8A; }
-    .lang-btn { border: 2px solid #1A1A1A; background: white; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; border-radius: 4px; letter-spacing: 0.05em; }
-    .lang-btn.active { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .lang-btn:hover:not(.active) { background: #f5f5f5; }
-
-    .sidebar {
-      position: fixed; top: 56px; left: 0; width: 260px;
-      height: calc(100vh - 56px); overflow-y: auto;
-      border-right: 1px solid #E5E7EB; background: white;
-      padding: 1.5rem 0;
-    }
-    .sidebar-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #888; padding: 0 1.25rem; margin-bottom: 0.75rem; }
-    .sidebar-link {
-      display: block; padding: 0.55rem 1.25rem; font-size: 0.88rem; color: #444;
-      text-decoration: none; border-left: 3px solid transparent;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      font-weight: 500;
-    }
-    .sidebar-link:hover { color: #1E3A8A; background: rgba(30,58,138,0.04); }
-    .sidebar-link.active { color: #1E3A8A; border-left-color: #1E3A8A; background: rgba(30,58,138,0.06); font-weight: 700; }
-
-    .main-content {
-      margin-left: 260px; padding-top: 72px; padding-bottom: 4rem;
-      padding-left: 3rem; padding-right: 3rem; max-width: 960px;
-    }
-    .section-block { margin-bottom: 4rem; }
-
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-    /* ── Kennzeichnung kopierbarer Codebloecke ───────────────────────────────
-       Jeder Block sagt, ob er in einer frischen Umgebung so laeuft ("run")
-       oder ob er ein Konzeptsnippet mit Platzhalternamen ist ("concept"). */
-    .code-tag { display: inline-block; font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 5px 5px 0 0; }
-    .code-tag-run { background: #065F46; color: #fff; }
-    .code-tag-concept { background: #92400E; color: #fff; }
-    .code-tag + .code-block { border-radius: 0 8px 8px 0; margin-top: 0; }
-    .code-note { font-size: 0.78rem; color: #4B5563; margin: 0.35rem 0 0; line-height: 1.55; }
-    /* ── Quiz: zweiter Versuch statt Einmal-Sperre ───────────────────────────
-       Eine falsche Antwort sperrt die Frage nicht mehr. Die Loesung wird erst
-       gezeigt, wenn sie getroffen oder ausdruecklich angefordert wurde. */
-    .quiz-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    .quiz-retry-btn { font-family: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1.5px solid var(--col-primary, #1E3A8A); background: white; color: var(--col-primary, #1E3A8A); cursor: pointer; }
-    .quiz-retry-btn:hover { background: rgba(30,58,138,0.06); }
-    .quiz-retry-btn.secondary { border-color: #9CA3AF; color: #4B5563; }
-    .quiz-retry-btn.secondary:hover { background: #F3F4F6; }
-    .quiz-hint { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: #92400E; background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 0.55rem 0.9rem; border-radius: 0 6px 6px 0; }
-    .quiz-attempts { font-size: 0.78rem; color: #6B7280; align-self: center; }
-    /* ── Responsive Guards (Mobilnutzung) ────────────────────────────────────
-       Tabellen und Codebloecke duerfen breiter sein als der Viewport, aber sie
-       scrollen dann in ihrem eigenen Container. Die Seite selbst scrollt nie
-       horizontal. Pruefwert: document.scrollWidth <= window.innerWidth bei
-       320 / 390 / 768 / 1024 / 1440 px. */
-    .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1rem 0; }
-    .table-wrap > table { margin: 0; }
-    /* Flex- und Grid-Kinder duerfen unter ihre Inhaltsbreite schrumpfen,
-       sonst sprengt ein <pre> den Elternteil (min-width:auto ist der Default). */
-    .step-content, .step-block > * { min-width: 0; }
-    .section-block, .content, main { min-width: 0; }
-    .code-block { max-width: 100%; }
-    /* Lange Bezeichner ohne Leerzeichen (Spaltennamen, URLs) umbrechen lassen. */
-    p, li, td, th, h1, h2, h3, h4 { overflow-wrap: break-word; }
-    code { overflow-wrap: anywhere; word-break: break-word; }
-    .tip-box, .info-box, .concept-box, .challenge-box, .youtube-box { max-width: 100%; overflow-wrap: break-word; }
-    th { background: #1E3A8A; color: white; padding: 0.65rem 1rem; text-align: left; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.05em; }
-    td { padding: 0.6rem 1rem; border-bottom: 1px solid #e5e7eb; }
-    tr:nth-child(even) td { background: #f9fafb; }
-    tr:hover td { background: rgba(30,58,138,0.03); }
-    td code { font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.82rem; background: #F3F4F6; padding: 0.1rem 0.35rem; border-radius: 3px; }
-
-    /* Nav bottom */
-    .nav-bottom { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid #E5E7EB; }
-    .nav-btn { border: 2px solid #1A1A1A; background: white; padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; color: #1A1A1A; font-family: 'Space Grotesk', sans-serif; display: inline-block; border-radius: 4px; }
-    .nav-btn:hover { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-    .nav-btn.primary { background: #1E3A8A; border-color: #1E3A8A; color: white; }
-    .nav-btn.primary:hover { background: #1e40af; border-color: #1e40af; }
-
-    /* Lab header */
-    .lab-header { padding: 3rem 3rem 2rem; margin-left: 260px; padding-top: 88px; }
-    .lab-num { font-family: 'Space Grotesk', sans-serif; font-size: 4rem; font-weight: 900; color: #2563EB; line-height: 1; margin-bottom: 0.5rem; }
-    .lab-title-h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: #1A1A1A; margin-bottom: 0.75rem; }
-    .lab-desc-intro { font-size: 1.1rem; color: #4B5563; line-height: 1.6; max-width: 680px; margin-bottom: 1.5rem; }
-    .lernziele-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .lernziel-chip { background: rgba(30,58,138,0.08); color: #1E3A8A; border: 1px solid rgba(30,58,138,0.2); padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600; border-radius: 20px; font-family: 'Space Grotesk', sans-serif; }
-
-    /* YouTube box */
-    .youtube-box { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 1.5rem; margin: 2rem 0; }
-    .youtube-box h3 { color: #EA580C; margin-top: 0; }
-    .youtube-link { color: #EA580C; text-decoration: none; font-weight: 600; }
-    .youtube-link:hover { text-decoration: underline; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-      .lab-header { margin-left: 0; padding-left: 1.25rem; padding-right: 1.25rem; }
-    }
-
-    /* Footer */
-    .footer { background: #1A1A1A; color: rgba(255,255,255,0.6); text-align: center; padding: 1.5rem; margin-left: 260px; font-size: 0.85rem; }
-    @media (max-width: 768px) { .footer { margin-left: 0; } }
-  
-    /* ── EN mode: Teal #0D9488 (mirrors index.html) ── */
-    [data-lang="en"] h2,
-    [data-lang="en"] h3 { color: #0D9488; }
-    [data-lang="en"] h4 { color: #0D9488; }
-    [data-lang="en"] .bauhaus-accent-line { background: #14B8A6; }
-    [data-lang="en"] .bauhaus-badge { background: #0D9488; }
-    [data-lang="en"] .header-logo { color: #0D9488; }
-    [data-lang="en"] .lang-btn.active { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .sidebar-link:hover { color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .sidebar-link.active { color: #0D9488; border-left-color: #0D9488; background: rgba(13,148,136,0.06); }
-    [data-lang="en"] .lernziel-chip { background: rgba(13,148,136,0.1); color: #0D9488; border-color: rgba(13,148,136,0.25); }
-    [data-lang="en"] .bauhaus-card h4 { color: #0D9488 !important; }
-    [data-lang="en"] th { background: #0D9488; }
-    [data-lang="en"] .lab-num { color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary { background: #0D9488; border-color: #0D9488; }
-    [data-lang="en"] .nav-btn.primary:hover { background: #0f766e; border-color: #0f766e; }
-    [data-lang="en"] .tip-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .concept-box { border-left-color: #0D9488; background: rgba(13,148,136,0.08); }
-    [data-lang="en"] .info-box { border-left-color: #0D9488; background: #F0FDFA; }
-    [data-lang="en"] .challenge-box { border-left-color: #0D9488; }
-    .quiz-option:hover:not(:disabled) { border-color: #2563EB; background: rgba(37,99,235,0.04); }
-    [data-lang="en"] .quiz-option:hover:not(:disabled) { border-color: #0D9488; background: rgba(13,148,136,0.04); }
-    [data-lang="en"] .footer { background: #0D9488; }
-  
-    /* ── Barrierefreiheit ────────────────────────────────────────────────────
-       sr-only blendet Text visuell aus, laesst ihn aber vorlesbar. Wird fuer
-       die Antwortzustaende im Quiz und den Sprunglink gebraucht. */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .quiz-mark { font-weight: 800; margin-right: 0.4rem; }
-    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--col-primary, #1E3A8A); color: #fff; padding: 0.6rem 1rem; border-radius: 0 0 6px 0; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 0; }
-    /* Sichtbarer Fokus - der Browser-Default verschwindet auf farbigen Flaechen. */
-    a:focus-visible, button:focus-visible { outline: 3px solid #F59E0B; outline-offset: 2px; }
-  </style>
+  <link rel="stylesheet" href="assets/bint.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231E3A8A'/><text x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' text-anchor='middle' fill='%2338BDF8'>B</text></svg>" />
 </head>
-<body>
-  <div id="root"></div>
-
-  <!-- Ausfallsicherung fuer die CDN-Abhaengigkeiten.
-       React, ReactDOM und Babel kommen von unpkg.com. Faellt der Dienst aus
-       oder sperrt ein Hochschulnetz die Domain, blieb die Seite bisher weiss
-       und der Lernende sah keinen Hinweis, woran es liegt. Dieses Skript
-       laeuft nach den drei Script-Tags und prueft, was tatsaechlich geladen
-       wurde; ausserdem prueft es nach fuenf Sekunden, ob die App gemountet
-       hat (faengt Transpilierungsfehler ab). -->
-  <script src="assets/site.js"></script>
-  <script>
-  (function () {
-    var isEn = BINTLab.getLanguage() === 'en';
-    var T = isEn ? {
-      head: 'This page could not load',
-      miss: 'The following libraries were not delivered:',
-      why: 'The page loads React and Babel from unpkg.com at runtime. If your network blocks that host, or the service is unavailable, nothing can be rendered.',
-      what: 'What you can do:',
-      s1: 'Reload the page - the CDN is often only briefly unavailable.',
-      s2: 'Try a different network (mobile hotspot instead of campus Wi-Fi).',
-      s3: 'Check whether a proxy, VPN or content blocker is blocking unpkg.com.',
-      s4: 'If it persists, report it - the lab content itself is fine, only the delivery failed.',
-      slow: 'The libraries loaded, but the page did not render. That points to a script error rather than the network. Please report it with the browser console output.'
-    } : {
-      head: 'Diese Seite konnte nicht geladen werden',
-      miss: 'Folgende Bibliotheken wurden nicht ausgeliefert:',
-      why: 'Die Seite laedt React und Babel zur Laufzeit von unpkg.com. Sperrt das Netz diesen Host oder ist der Dienst gestoert, kann nichts dargestellt werden.',
-      what: 'Was du tun kannst:',
-      s1: 'Seite neu laden - das CDN ist oft nur kurz nicht erreichbar.',
-      s2: 'Ein anderes Netz probieren (Mobilfunk statt Campus-WLAN).',
-      s3: 'Pruefen, ob ein Proxy, VPN oder Contentblocker unpkg.com blockiert.',
-      s4: 'Bleibt es dabei: melden - die Lab-Inhalte sind in Ordnung, nur die Auslieferung ist gescheitert.',
-      slow: 'Die Bibliotheken sind geladen, die Seite hat aber nicht gerendert. Das deutet auf einen Skriptfehler hin, nicht auf das Netz. Bitte mit der Ausgabe der Browser-Konsole melden.'
-    };
-
-    function panel(title, body) {
-      var root = document.getElementById('root') || document.body;
-      root.innerHTML =
-        '<div style="max-width:44rem;margin:4rem auto;padding:1.75rem;font-family:' +
-        "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" +
-        ';line-height:1.65;color:#1A1A1A;background:#fff;border:1px solid #E5E7EB;' +
-        'border-left:5px solid #DC2626;border-radius:0 10px 10px 0">' +
-        '<h1 style="margin:0 0 .75rem;font-size:1.3rem;color:#991B1B">' + title + '</h1>' +
-        body +
-        '<p style="margin-top:1.25rem;font-size:.85rem;color:#6B7280">' +
-        '<a href="index.html" style="color:#1E3A8A">BINT-Lab</a> &middot; THWS Business School</p>' +
-        '</div>';
-    }
-
-    var missing = [];
-    if (typeof window.React === 'undefined') missing.push('React');
-    if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
-    if (typeof window.Babel === 'undefined') missing.push('Babel');
-
-    if (missing.length) {
-      panel(T.head,
-        '<p><strong>' + T.miss + '</strong> ' + missing.join(', ') + '</p>' +
-        '<p>' + T.why + '</p>' +
-        '<p><strong>' + T.what + '</strong></p>' +
-        '<ol style="padding-left:1.25rem"><li>' + T.s1 + '</li><li>' + T.s2 +
-        '</li><li>' + T.s3 + '</li><li>' + T.s4 + '</li></ol>');
-      return;
-    }
-
-    // Bibliotheken da, aber die App mountet nicht -> Skriptfehler.
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        panel(T.head, '<p>' + T.slow + '</p>');
-      }
-    }, 5000);
-  })();
-  </script>
-
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    // ─── CodeBlock Component ──────────────────────────────────────────────────
-    function CodeBlock({ code, lang, kind, note }) {
-      const [copied, setCopied] = React.useState(false);
-    const [copyFailed, setCopyFailed] = React.useState(false);
-      const copy = async () => {
-      const ok = await BINTLab.copyText(code);
-      setCopied(ok);
-      setCopyFailed(!ok);
-      if (ok) setTimeout(() => setCopied(false), 1500);
-    };
-      const labelCopy = lang === 'en' ? 'Copy' : 'Kopieren';
-      const labelDone = lang === 'en' ? '\u2713 Copied' : '\u2713 Kopiert';
-      return (
-        <div style={{ position: 'relative', marginBottom: '1rem' }}>
-          {kind && (
-            <div className={'code-tag ' + (kind === 'run' ? 'code-tag-run' : 'code-tag-concept')}>
-              {kind === 'run'
-                ? (lang === 'en' ? 'Runnable as-is' : 'L\u00E4uft unver\u00E4ndert')
-                : kind === 'diagram'
-                  ? (lang === 'en' ? 'Schema \u2013 not code' : 'Schema \u2013 kein Code')
-                  : (lang === 'en' ? 'Concept \u2013 placeholder names' : 'Konzept \u2013 Platzhalternamen')}
-            </div>
-          )}
-          <pre className="code-block">{code}</pre>
-          {copyFailed && <p role="status">{lang === 'en' ? 'Copy failed. Select the code and copy it manually.' : 'Kopieren fehlgeschlagen. Markiere den Code und kopiere ihn manuell.'}</p>}
-          {note && <p className="code-note">{note}</p>}
-          <button onClick={copy} style={{
-            position: 'absolute', top: '0.5rem', right: '0.5rem',
-            background: copied ? '#059669' : '#E5E7EB',
-            color: copied ? 'white' : '#374151',
-            border: 'none', borderRadius: '4px',
-            padding: '0.2rem 0.5rem', fontSize: '0.75rem',
-            cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif'
-          }}>
-            {copied ? labelDone : labelCopy}
-          </button>
-        </div>
-      );
-    }
-
-    // ─── QuizQuestion Component ──────────────────────────────────────────────
-    function QuizQuestion({ question, index, lang }) {
-      // Mastery statt One-shot: falsche Antwort sperrt die Frage nicht mehr.
-      const [selected, setSelected] = React.useState(null);
-      const [revealed, setRevealed] = React.useState(false);
-      const [attempts, setAttempts] = React.useState(0);
-      const solved = selected === question.correct;
-      const wrongPick = selected !== null && !solved;
-
-      const pick = (oi) => {
-        if (revealed) return;
-        setSelected(oi);
-        setAttempts((n) => n + 1);
-        if (oi === question.correct) setRevealed(true);
-      };
-
-      return (
-        <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: 'white', border: '1px solid #E5E7EB', borderRadius: '10px' }}>
-          <p style={{ fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", margin: '0 0 0.75rem', color: '#1A1A1A' }}>
-            {index + 1}. {question.q}
-          </p>
-          <div style={{ display: 'grid', gap: '0.5rem' }}>
-            {question.options.map((opt, oi) => {
-              let bg = 'white'; let border = '#D1D5DB'; let color = '#374151'; let mark = null;
-              // Zustand nie nur ueber Farbe - das Zeichen steht im DOM.
-              if (revealed && oi === question.correct) { bg = '#D1FAE5'; border = '#059669'; color = '#065F46'; mark = '\u2713'; }
-              else if (oi === selected && oi !== question.correct) { bg = '#FEE2E2'; border = '#DC2626'; color = '#991B1B'; mark = '\u2717'; }
-              return (
-                <button key={oi} disabled={revealed} onClick={() => pick(oi)}
-                  className="quiz-option"
-                  style={{
-                    textAlign: 'left', padding: '0.6rem 1rem', fontSize: '0.88rem',
-                    background: bg, border: '1.5px solid ' + border, borderRadius: '6px',
-                    color, cursor: revealed ? 'default' : 'pointer',
-                    fontFamily: 'inherit', transition: 'border-color 0.15s, background 0.15s'
-                  }}>
-                  {mark && <span className="quiz-mark" aria-hidden="true">{mark}</span>}
-                  {mark && <span className="sr-only">
-                    {mark === '\u2713'
-                      ? (lang === 'en' ? 'Correct answer: ' : 'Richtige Antwort: ')
-                      : (lang === 'en' ? 'Your wrong answer: ' : 'Deine falsche Antwort: ')}
-                  </span>}
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
-
-          {wrongPick && !revealed && (
-            <div className="quiz-hint" role="status" aria-live="polite">
-              {lang === 'en'
-                ? '\u2717 Not quite. Re-read the question and try again \u2013 or reveal the answer.'
-                : '\u2717 Noch nicht richtig. Lies die Frage noch einmal und versuche es erneut \u2013 oder lass dir die L\u00F6sung zeigen.'}
-            </div>
-          )}
-
-          {wrongPick && !revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn" onClick={() => setSelected(null)}>
-                {lang === 'en' ? 'Try again' : 'Nochmal versuchen'}
-              </button>
-              <button type="button" className="quiz-retry-btn secondary" onClick={() => setRevealed(true)}>
-                {lang === 'en' ? 'Show answer' : 'L\u00F6sung anzeigen'}
-              </button>
-              <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-            </div>
-          )}
-
-          {revealed && (
-            <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: solved ? '#059669' : '#B45309' }} role="status" aria-live="polite">
-              {solved
-                ? (lang === 'en' ? '\u2713 Correct!' : '\u2713 Richtig!')
-                : (lang === 'en' ? 'Answer shown' : 'L\u00F6sung eingeblendet')}
-            </p>
-          )}
-          {revealed && question.explanation && (
-            <p style={{ marginTop: '0.35rem', fontSize: '0.85rem', lineHeight: 1.6, color: '#374151' }}>
-              {question.explanation}
-            </p>
-          )}
-          {revealed && (
-            <div className="quiz-actions">
-              <button type="button" className="quiz-retry-btn secondary"
-                onClick={() => { setSelected(null); setRevealed(false); setAttempts(0); }}>
-                {lang === 'en' ? 'Reset question' : 'Frage zur\u00FCcksetzen'}
-              </button>
-              {attempts > 1 && (
-                <span className="quiz-attempts">{(lang === 'en' ? 'Attempts: ' : 'Versuche: ') + attempts}</span>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // ─── Translations ─────────────────────────────────────────────────────────
-    const translations = {
-      de: {
-        title: 'KPIs mit DAX \u0026 Python',
-        ytNote: 'Externe Ziele: Die Links f\u00FChren auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kan\u00E4le bieten eine zentrale Anlaufstelle.',
-        desc: 'DAX (Data Analysis Expressions) ist die Formelsprache von Power BI. In diesem Lab lernen Sie, wie Sie wichtige Business-KPIs sowohl in DAX als auch in Python berechnen, den Filter-Kontext verstehen und Measures korrekt einsetzen.',
-        lernziele: [
-          'DAX-Grundlagen in Power BI anwenden',
-          'Measures vs. Calculated Columns verstehen',
-          'Wichtige Business-KPIs berechnen',
-          'Filter-Kontext in DAX verstehen',
-        ],
-        navContents: 'Inhalt',
-        nav: [
-          { href: '#dax-grundlagen',   label: 'DAX Grundlagen' },
-          { href: '#python',           label: 'Python \u00C4quivalente' },
-          { href: '#kpi-tabelle',      label: 'KPI-Tabelle' },
-          { href: '#filter-kontext',   label: 'Filter-Kontext' },
-          { href: '#tableau',          label: 'Tableau' },
-          { href: '#youtube',          label: 'Ressourcen' },
-          { href: '#quiz',             label: 'Quiz' },
-          { href: '#zusammenfassung',  label: 'Zusammenfassung' },
-        ],
-        backLabel: '\u2190 \u00DCbersicht',
-
-        s1Title: 'DAX Grundlagen',
-        s1Desc: 'DAX (Data Analysis Expressions) ist eine Excel-\u00E4hnliche Formelsprache, die speziell f\u00FCr Power BI, Analysis Services und Power Pivot entwickelt wurde. Mit DAX k\u00F6nnen Sie leistungsstarke Berechnungen und Analysen direkt im Datenmodell definieren.',
-        s1WhatTitle: 'Was ist DAX?',
-        s1WhatText: 'DAX ist eine Sammlung von Funktionen, Operatoren und Konstanten, die in Formeln (Expressions) verwendet werden k\u00F6nnen, um einen oder mehrere Werte zu berechnen. DAX wurde f\u00FCr die Arbeit mit Tabellen und Beziehungen optimiert und kennt zwei wichtige Konzepte: Measures und Calculated Columns.',
-        s1MeasuresTitle: 'Measures vs. Calculated Columns',
-        s1MeasuresDe: [
-          {
-            name: 'Measures (Kennzahlen)',
-            color: 'var(--col-primary)',
-            points: [
-              'Dynamisch \u2013 werden zur Laufzeit berechnet',
-              'Abh\u00E4ngig vom aktuellen Filter-Kontext',
-              'Werden NICHT in der Tabelle gespeichert',
-              'Beispiele: Gesamtumsatz, Marge %, YoY-Wachstum',
-            ],
-          },
-          {
-            name: 'Calculated Columns',
-            color: 'var(--col-accent)',
-            points: [
-              'Werden bei jeder Datenaktualisierung neu berechnet',
-              'Zeile f\u00FCr Zeile im Row Context ausgewertet',
-              'Ergebnis wird im Modell gespeichert und belegt Speicher',
-              'Beispiele: Vollst\u00E4ndiger Name, Kategorie-Gruppe',
-            ],
-          },
-        ],
-        s1GoldenRule: 'Goldene Regel',
-        s1GoldenRuleText: 'Fast immer Measures verwenden! Measures sind flexibler, verbrauchen weniger Speicher und reagieren korrekt auf Filter. Calculated Columns nur verwenden, wenn Sie den Wert in Slicern oder als Filterbedingung ben\u00F6tigen.',
-        s1CodeDax: '-- Einfache Aggregation\nGesamtumsatz = SUM(Umsatz[Betrag])\n\n-- Mit Bedingung (CALCULATE)\nUmsatz_DE = CALCULATE(SUM(Umsatz[Betrag]), Umsatz[Land] = "Deutschland")\n\n-- Division mit Null-Absicherung\n-- Hinweis: [Bruttogewinn] muss als eigenes Measure existieren, z.B.\n-- Bruttogewinn = SUM(Umsatz[Gewinn])\nMarge_% = DIVIDE([Bruttogewinn], [Gesamtumsatz], 0) * 100\n\n-- Zeitintelligenz\nUmsatz_VJ = CALCULATE([Gesamtumsatz], SAMEPERIODLASTYEAR(Datum[Datum]))\nWachstum_% = DIVIDE([Gesamtumsatz] - [Umsatz_VJ], [Umsatz_VJ], 0) * 100\n\n-- Ranking\nTop_Produkte = RANKX(ALL(Produkt[Name]), [Gesamtumsatz], , DESC, Dense)',
-        s1CodeNote: 'Konzeptsnippet: Umsatz[Betrag], Umsatz[Gewinn] und Umsatz[Land] sind Platzhalter und existieren im Kursdatensatz nicht. Die auf train.csv passenden Measures stehen in Lab\u00A005.',
-
-        s2Title: 'Python \u00C4quivalente',
-        s2Desc: 'Die gleichen KPIs, die Sie in DAX berechnen, k\u00F6nnen in Python mit der pandas-Bibliothek umgesetzt werden. Hier sehen Sie die direkten \u00C4quivalente:',
-        s2CodePython: '# Gesamtumsatz\numsatz_gesamt = df[\'Betrag\'].sum()\n\n# Umsatz DE\numsatz_de = df[df[\'Land\'] == \'Deutschland\'][\'Betrag\'].sum()\n\n# Marge\nmarge_pct = df[\'Bruttogewinn\'].sum() / df[\'Betrag\'].sum() * 100\n\n# Jahresvergleich\n# Vorher: df[\'Datum\'] = pd.to_datetime(df[\'Datum\'])\ndf[\'Jahr\'] = pd.to_datetime(df[\'Datum\']).dt.year\nyearly = df.groupby(\'Jahr\')[\'Betrag\'].sum()\nwachstum = yearly.pct_change() * 100\nprint(wachstum)\n\n# Ranking\ntop_produkte = (df.groupby(\'Produkt\')[\'Betrag\'].sum()\n                  .sort_values(ascending=False)\n                  .reset_index())\ntop_produkte[\'Rang\'] = top_produkte[\'Betrag\'].rank(method=\'dense\', ascending=False).astype(int)  # Spalte \'Betrag\' entspricht \'Sales\' im Superstore-Datensatz\nprint(top_produkte.head(10))',
-        s2CodeNote: 'Konzeptsnippet mit Platzhalterspalten. Die lauff\u00E4hige Fassung auf train.csv steht direkt darunter.',
-        s2RunTitle: 'Dieselben KPIs, lauff\u00E4hig mit train.csv',
-        dataTitle: 'Daten f\u00FCr diesen Abschnitt',
-        dataText: 'Der lauff\u00E4hige Block unten braucht train.csv im selben Verzeichnis wie das Skript. Es ist derselbe Kursdatensatz wie in Lab\u00A004, 05 und 06: 9.800 Bestellpositionen, 2015\u20132018, Datumsformat TT/MM/JJJJ, Encoding latin-1. Einzige Kennzahl ist Sales \u2013 Profit, Quantity und Discount gibt es in dieser Variante nicht.',
-        dataLicense: 'Quelle: Superstore Sales Dataset von Rohit Sahoo (Kaggle), Lizenz GPL\u00A02.',
-        dataDirect: 'train.csv herunterladen',
-        dataKaggle: 'Originalquelle bei Kaggle',
-        s2CodePythonRun: "# Dieselben KPIs wie oben, aber auf dem Kursdatensatz train.csv\n# (echte Spaltennamen statt Betrag / Bruttogewinn / Land).\nimport pandas as pd\n\ndf = pd.read_csv('train.csv', encoding='latin-1')\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# Gesamtumsatz  ->  DAX: Umsatz = SUM(Orders[Sales])\numsatz_gesamt = df['Sales'].sum()\nprint(f\"Gesamtumsatz: {umsatz_gesamt:,.2f}\")        # 2,261,536.78\n\n# Gefilterte Aggregation  ->  DAX: CALCULATE(..., Orders[Region] = \"West\")\numsatz_west = df.loc[df['Region'] == 'West', 'Sales'].sum()\nprint(f\"Umsatz West:  {umsatz_west:,.2f}\")           # 710,219.68\n\n# Anteil am Gesamtumsatz  ->  DAX: DIVIDE(..., CALCULATE(..., ALL(...)))\nprint(f\"Anteil West:  {umsatz_west / umsatz_gesamt * 100:.1f} %\")  # 31.4 %\n\n# Jahresvergleich  ->  DAX: SAMEPERIODLASTYEAR(Datum[Datum])\njahr = df.groupby(df['Order Date'].dt.year)['Sales'].sum()\nprint(jahr.round(2))       # 2015 479856.21 | 2016 459436.01\n                           # 2017 600192.55 | 2018 722052.02\nprint((jahr.pct_change() * 100).round(1))   # 2018: 20.3\n\n# Ranking  ->  DAX: RANKX(ALL(...), [Umsatz], , DESC, Dense)\ntop = df.groupby('Sub-Category')['Sales'].sum().sort_values(ascending=False)\nprint(top.head(3).round(2))  # Phones 327782.45 | Chairs 322822.73\n                             # Storage 219343.39",
-        s2RunNote: 'Voraussetzung: pandas installiert, train.csv im selben Verzeichnis (Download in Lab\u00A004). Die Sollwerte stehen als Kommentar hinter jeder Zeile \u2013 stimmt eine Zahl nicht, liegt es fast immer am Datumsformat oder am encoding.',
-        selfCheckTitle: 'Selbstcheck (1 Minute)',
-        selfCheckItems: [
-          'Gesamtumsatz 2.261.536,78 \u2013 dieselbe Zahl liefert das DAX-Measure Umsatz in Lab 05.',
-          'Umsatz West 710.219,68, Anteil 31,4 % \u2013 das ist die Probe auf CALCULATE mit Filterargument.',
-          'Wachstum 2018 gegen\u00FCber 2017 rund 20,3 % \u2013 die Probe auf SAMEPERIODLASTYEAR.',
-          'Im Ranking stehen Phones, Chairs und Storage vorn.',
-          'Typischer Fehler: 2016 zeigt ein Minus (\u22124,3 %). Das ist korrekt, kein Rechenfehler.',
-        ],
-
-        s3Title: 'KPI-Tabelle',
-        s3Desc: 'Die wichtigsten Business-KPIs auf einen Blick \u2013 mit Formel, DAX-Funktion, Python- und Tableau-\u00C4quivalent.',
-        s3Headers: ['KPI', 'Formel', 'DAX-Funktion', 'Python (Pandas)', 'Tableau'],
-        s3Rows: [
-          ['Gesamtumsatz', '\u03A3 Betrag', 'SUM()', '.sum()', 'SUM()'],
-          ['Bruttogewinn', 'Umsatz \u2212 COGS', 'SUM() \u2212 SUM()', 'Subtraktion', 'SUM() \u2212 SUM()'],
-          ['Marge %', 'Gewinn / Umsatz \u00D7 100', 'DIVIDE()', '/ * 100', 'SUM() / SUM()'],
-          ['YoY-Wachstum', '(Jetzt \u2212 VJ) / VJ', 'SAMEPERIODLASTYEAR', 'pct_change()', 'LOOKUP(..., -1)'],
-          ['Conversion Rate', 'K\u00E4ufe / Besuche', 'DIVIDE()', '/', 'COUNTD() / COUNTD()'],
-          ['Customer LTV', '\u00D8 Bestellwert \u00D7 Frequenz', 'AVERAGEX + COUNTROWS', 'groupby + mean', '{FIXED [Kunde] : SUM()}'],
-          ['Churn Rate', 'Abgewanderte / Gesamt', 'COUNTROWS + DIVIDE', 'count + /', 'COUNTD() / COUNTD()'],
-        ],
-
-
-        twbxTitle: 'Fertige Arbeitsmappe herunterladen',
-        twbxText: 'BINT_Tableau_Uebung.twbx enthält train.csv und alle zehn berechneten Felder aus diesem Abschnitt. Die Datei ist gepackt – sie läuft ohne weitere Verbindung in Tableau Desktop und in Tableau Public. Zum Nachbauen erst selbst rechnen, dann vergleichen.',
-        twbxBtn: 'BINT_Tableau_Uebung.twbx',
-        tabTitle: 'Dieselben KPIs in Tableau',
-        tabDesc: 'Tableau kennt kein CALCULATE. Was in DAX der Filterkontext ist, verteilt sich hier auf zwei Werkzeuge: Level-of-Detail-Ausdr\u00fccke legen die Ebene fest, auf der gerechnet wird, Tabellenberechnungen rechnen \u00fcber das, was die Ansicht bereits zeigt. Wer diesen Unterschied verstanden hat, liest beide Sprachen.',
-        tabMapTitle: 'DAX und Tableau nebeneinander',
-        tabMapHeaders: ['Aufgabe', 'DAX', 'Tableau', 'Worin der Unterschied liegt'],
-        tabMapRows: [
-          ['Summe im aktuellen Filter', 'SUM(Umsatz[Betrag])', 'SUM([Sales])', 'gleich'],
-          ['Summe mit zus\u00e4tzlichem Filter', 'CALCULATE(SUM(...), Region = \"West\")', 'SUM(IF [Region] = \"West\" THEN [Sales] END)', 'Tableau filtert im Ausdruck statt \u00fcber eine Kontextfunktion'],
-          ['Bezug auf die Gesamtsumme', 'CALCULATE(SUM(...), ALL(...))', '{ FIXED : SUM([Sales]) }', 'der LOD-Ausdruck rechnet vor der Ansicht und ignoriert deren Filter'],
-          ['Anteil an der Ansicht', 'DIVIDE(..., CALCULATE(..., ALL(...)))', 'SUM([Sales]) / TOTAL(SUM([Sales]))', 'die Tabellenberechnung rechnet nur \u00fcber das Sichtbare'],
-          ['Vorjahreswert', 'SAMEPERIODLASTYEAR', 'LOOKUP(SUM([Sales]), -1)', 'Tableau greift auf die vorige Zelle zu, nicht auf einen Kalender'],
-          ['Rang', 'RANKX(ALL(...), ...)', 'RANK(SUM([Sales]))', 'in der Wirkung gleich'],
-          ['Zwischenergebnis benennen', 'VAR / RETURN', 'eigenes berechnetes Feld', 'Tableau kennt keine Variablen innerhalb eines Ausdrucks'],
-        ],
-        tabCodeTitle: 'Berechnete Felder f\u00fcr train.csv',
-        tabCodeNote: 'Jedes Feld einzeln anlegen \u00fcber Analyse \u203a Berechnetes Feld erstellen. Die Feldnamen in eckigen Klammern entsprechen den Spalten der CSV-Datei.',
-        tabCode: '// Gesamtumsatz\nSUM([Sales])\n\n// Umsatz West \u2013 in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Anteil am Gesamtumsatz \u2013 LOD, unabh\u00e4ngig von der Ansicht\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Anteil an der Ansicht \u2013 Tabellenberechnung\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Umsatz des Vorjahres \u2013 Jahr muss in der Ansicht liegen\nLOOKUP(SUM([Sales]), -1)\n\n// Wachstum gegen\u00fcber dem Vorjahr\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Rang nach Umsatz\nRANK(SUM([Sales]))\n\n// Umsatz je Kunde \u2013 unabh\u00e4ngig von der Ansicht\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Erstbestellung je Kunde\n{ FIXED [Customer ID] : MIN([Order Date]) }\n\n// Durchschnittlicher Bestellwert\nSUM([Sales]) / COUNTD([Order ID])',
-        tabLODTitle: 'LOD oder Tabellenberechnung?',
-        tabLODText: 'Die Faustregel steckt in der Reihenfolge, in der Tableau rechnet: Ein FIXED-Ausdruck entsteht, bevor die Filter der Ansicht greifen \u2013 sein Ergebnis bleibt stabil, egal was gerade sichtbar ist. Eine Tabellenberechnung entsteht danach und sieht nur noch, was die Ansicht zeigt. Der Anteil der Region West betr\u00e4gt mit FIXED immer 31,4 %; mit TOTAL() ist es der Anteil an den gerade sichtbaren Regionen. Beide Zahlen sind richtig \u2013 sie beantworten verschiedene Fragen.',
-        tabDateTitle: 'Wenn das Bestelldatum als Text ankommt',
-        tabDateText: 'In train.csv steht das Datum als 08/11/2017, also Tag zuerst. Liest Tableau die Spalte als Text ein, legen Sie ein berechnetes Feld an: DATEPARSE(\"dd/MM/yyyy\", [Order Date]). Pr\u00fcfen Sie das Ergebnis an einer Zahl, die Sie kennen \u2013 das Wachstum 2018 muss 20,3 % ergeben. Kommt etwas anderes heraus, wurden Tag und Monat vertauscht.',
-        tabCheckTitle: 'Selbstcheck (1 Minute)',
-        tabCheckItems: [
-          'Gesamtumsatz 2.261.536,78 \u2013 dieselbe Zahl wie in Power BI und in Python.',
-          'Umsatz West 710.219,68, Anteil 31,4 % \u2013 die Probe auf den LOD-Ausdruck.',
-          'Wachstum 2018 gegen\u00fcber 2017 rund 20,3 %, 2016 zeigt \u22124,3 %.',
-          'Im Rang nach Unterkategorie stehen Phones, Chairs und Storage vorn.',
-          '4.922 Bestellungen, durchschnittlicher Bestellwert 459,48.',
-        ],
-        s4Title: 'Filter-Kontext',
-        s4Desc: 'Das Verst\u00E4ndnis des Filter-Kontexts ist der Schl\u00FCssel zu machtvollem DAX. Es gibt zwei grundlegende Kontexte in DAX:',
-        s4RowTitle: 'Row Context (Zeilen-Kontext)',
-        s4RowText: 'Beim Row Context iteriert DAX Zeile f\u00FCr Zeile \u00FCber eine Tabelle. Dieser Kontext entsteht automatisch bei Calculated Columns und bei Iterator-Funktionen wie SUMX, AVERAGEX, MAXX. In jedem Durchlauf ist die aktuelle Zeile bekannt.',
-        s4FilterTitle: 'Filter Context (Filter-Kontext)',
-        s4FilterText: 'Der Filter Context ist die Menge aller aktiven Filter, wenn ein Measure ausgewertet wird. Diese Filter entstehen durch Slicers, Report-Filter, Zeilen/Spalten in einer Matrix oder durch CALCULATE()-Aufrufe im DAX-Code selbst.',
-        s4WhyCalcTitle: 'Warum CALCULATE() so m\u00E4chtig ist',
-        s4WhyCalcText: 'CALCULATE() ist die zentrale Funktion, um einen skalaren Ausdruck in einem ge\u00E4nderten Filterkontext auszuwerten: Filter hinzuf\u00FCgen, entfernen oder \u00FCberschreiben \u2013 direkt in einer Formel. Das Gegenst\u00FCck f\u00FCr Tabellenausdr\u00FCcke ist CALCULATETABLE(); daneben wirken Filtermodifikatoren wie ALL(), REMOVEFILTERS() oder KEEPFILTERS() auf den Kontext. In einem Measure f\u00FChrt der Weg zu eigenen Filtern aber praktisch immer \u00FCber CALCULATE.',
-        s4CodeCalc: '-- Ohne CALCULATE: bestehende Filter gelten, aber\n-- man kann keine NEUEN Filter hinzuf\u00FCgen\nUmsatz_einfach = SUM(Umsatz[Betrag])  -- respektiert aktive Slicer/Filter\n\n-- Mit CALCULATE: Filter-Kontext gezielt \u00E4ndern\nUmsatz_DE = CALCULATE(\n    SUM(Umsatz[Betrag]),\n    Umsatz[Land] = "Deutschland"   -- neuer Filter wird hinzugef\u00FCgt\n)\n\n-- Filter entfernen mit ALL()\nUmsatz_Gesamt_Immer = CALCULATE(\n    SUM(Umsatz[Betrag]),\n    ALL(Umsatz)                    -- ALLE Filter auf Umsatz entfernt\n)\n\n-- Anteil am Gesamtumsatz\nAnteil_% = DIVIDE(\n    [Gesamtumsatz],\n    CALCULATE([Gesamtumsatz], ALL(Umsatz[Land])),\n    0\n)\n\n-- VAR / RETURN (modernes DAX-Pattern)\n-- Setzt voraus: Gesamtkosten = SUM(Umsatz[Kosten])\nGewinnmarge =\n    VAR _umsatz = [Gesamtumsatz]\n    VAR _kosten = [Gesamtkosten]\n    RETURN\n        DIVIDE(_umsatz - _kosten, _umsatz, 0)',
-        s4CodeNote: 'Konzeptsnippet: Platzhaltertabelle Umsatz mit den Spalten Betrag, Land und Kosten. Das Muster gilt unver\u00E4ndert, nur die Namen wechseln.',
-
-        s5Title: 'Lernressourcen',
-        s5Desc: 'Erg\u00E4nzende YouTube-Kanalempfehlungen f\u00FCr DAX und Python-Analysen:',
-        s5Resources: [
-          {
-            title: 'SQLBI \u2013 DAX Introduction',
-            url: 'https://www.youtube.com/@SQLBI',
-            desc: 'SQLBI (Marco Russo & Alberto Ferrari) sind die weltweit f\u00FChrenden DAX-Experten. Tiefe Einblicke in DAX, Power BI und das Tabular-Modell.',
-          },
-          {
-            title: '"DAX Fridays" \u2013 Curbal',
-            url: 'https://www.youtube.com/@Curbal',
-            desc: 'W\u00F6chentliche DAX-Tipps und Tutorials. Sehr praxisnah, gut f\u00FCr Einsteiger und Fortgeschrittene.',
-          },
-          {
-            title: 'Guy in a Cube',
-            url: 'https://www.youtube.com/@GuyInACube',
-            desc: 'Offizieller Microsoft-naher Kanal (Adam Saxton & Patrick LeBlanc). Power BI News, Tipps und Best Practices.',
-          },
-          {
-            title: 'Enterprise DNA',
-            url: 'https://www.youtube.com/@EnterpriseDNA',
-            desc: 'Fortgeschrittene DAX-Patterns, Datenmodellierung und reale Business-Szenarien.',
-          },
-        ],
-
-        // SMART KPI Framework
-        s3SmartTitle: 'SMART-KPI-Framework',
-        s3SmartText: 'Gute KPIs erf\u00FCllen die SMART-Kriterien (Doran, 1981): Specific \u2013 klar definiert und eindeutig messbar; Measurable \u2013 quantifizierbar mit konkreten Metriken; Achievable \u2013 realistisch erreichbar; Relevant \u2013 strategisch bedeutsam f\u00FCr das Unternehmensziel; Time-bound \u2013 mit klarem Zeithorizont (z.\u00A0B. monatlich, quartalsweise).',
-        // Leading vs. Lagging
-        s3LeadLagTitle: 'Leading vs. Lagging Indicators',
-        s3LeadLagText: 'Lagging Indicators messen vergangene Ergebnisse (Umsatz, Gewinn, Churn Rate). Leading Indicators sind Fr\u00FChwarn-Kennzahlen, die zuk\u00FCnftige Ergebnisse vorhersagen (Website-Traffic, Pipeline-Volumen, Kundenzufriedenheit). Eine gute KPI-Strategie kombiniert beide Typen.',
-        // DAX Variables
-        s4VarTitle: 'DAX-Variablen (VAR / RETURN)',
-        s4VarText: 'Seit SQL Server 2016 / Power BI unterst\u00FCtzt DAX Variablen mit VAR / RETURN. Vorteile: Lesbarkeit \u2013 komplexe Formeln werden in benannte Zwischenschritte zerlegt; Performance \u2013 ein Ausdruck wird nur einmal ausgewertet; Debugging \u2013 Variablen k\u00F6nnen einzeln getestet werden.',
-        // Additional resources
-        s5BookRef: 'Buchempfehlung: "The Definitive Guide to DAX" von Marco Russo & Alberto Ferrari (Microsoft Press, 2. Aufl. 2019) \u2013 das Standardwerk f\u00FCr fortgeschrittenes DAX.',
-        // Quiz
-        quizTitle: 'Quiz',
-        quizQuestions: [
-          {
-            q: 'Wof\u00FCr steht das M in SMART-KPIs?',
-            options: ['Modular', 'Measurable', 'Mandatory', 'Manual'],
-            correct: 1,
-            explanation: 'SMART steht f\u00FCr Specific, Measurable, Achievable, Relevant, Time-bound. \u201EMeasurable" verlangt, dass die Kennzahl numerisch erfassbar ist \u2013 \u201EKundenzufriedenheit verbessern" ist kein KPI, \u201ENPS von 32 auf 40 steigern" schon.',
-          },
-          {
-            q: 'Welches Konzept ver\u00E4ndert den Filter-Kontext in DAX?',
-            options: ['SUM()', 'CALCULATE()', 'VAR', 'ALL()'],
-            correct: 1,
-            explanation: 'Nur CALCULATE() kann den Filter-Kontext aktiv ver\u00E4ndern. SUM() aggregiert lediglich im bestehenden Kontext, VAR speichert Zwischenergebnisse, und ALL() ist ein Filter-Modifikator, der seine Wirkung erst als Argument innerhalb von CALCULATE() entfaltet.',
-          },
-          {
-            q: 'Was ist ein Leading Indicator?',
-            options: ['Quartals-Umsatz', 'Website-Traffic', 'Jahresgewinn', 'Churn Rate'],
-            correct: 1,
-            explanation: 'Website-Traffic ist vorlaufend: er ver\u00E4ndert sich, bevor sich der Umsatz ver\u00E4ndert, und l\u00E4sst daher Steuerung zu. Umsatz, Gewinn oder Quartalsergebnis sind Lagging Indicators \u2013 sie messen, was bereits geschehen ist.',
-          },
-          {
-            q: 'Wo werden Calculated Columns gespeichert?',
-            options: ['Im Measure-Bereich', 'Im Filter-Kontext', 'In der Tabelle (Row Context)', 'Nur zur Laufzeit'],
-            correct: 2,
-            explanation: 'Calculated Columns werden beim Daten-Refresh berechnet und materialisiert in der Tabelle gespeichert \u2013 sie belegen also Arbeitsspeicher und arbeiten im Row Context. Measures dagegen werden zur Abfragezeit im Filter Context berechnet und speichern nichts. Faustregel: Measures bevorzugen, Calculated Columns nur wenn man den Wert zum Filtern oder Gruppieren braucht.',
-          },
-          {
-            q: 'Was liefert SAMEPERIODLASTYEAR() zur\u00FCck?',
-            options: ['Die Vorwoche', 'Den gleichen Zeitraum im Vorjahr', 'Den Monatsdurchschnitt', 'Den kumulierten Wert'],
-            correct: 1,
-            explanation: 'SAMEPERIODLASTYEAR() gibt eine Tabelle mit denselben Datumswerten, um ein Jahr zur\u00FCckversetzt, zur\u00FCck \u2013 typisch f\u00FCr Vorjahresvergleiche. Voraussetzung: eine als Datumstabelle markierte, l\u00FCckenlose Kalendertabelle im Modell, sonst liefert die Funktion falsche oder leere Ergebnisse.',
-          },
-          {
-            q: 'Was bewirkt ALL() in CALCULATE()?',
-            options: ['F\u00FCgt neue Filter hinzu', 'Entfernt bestehende Filter', 'Sortiert die Tabelle', 'Erstellt eine Calculated Column'],
-            correct: 1,
-            explanation: 'ALL() entfernt bestehende Filter von einer Tabelle oder Spalte und ist damit die Grundlage f\u00FCr Anteilsberechnungen: der Z\u00E4hler respektiert den Slicer, der Nenner (mit ALL()) nicht \u2013 so entsteht \u201EAnteil am Gesamtumsatz".',
-          },
-        ],
-        // Zusammenfassung
-        summaryTitle: 'Zusammenfassung',
-        summaryItems: [
-          'DAX ist die Formelsprache von Power BI \u2013 optimiert f\u00FCr tabellarische Datenmodelle.',
-          'Measures (dynamisch, zur Laufzeit) sind fast immer Calculated Columns (statisch, gespeichert) vorzuziehen.',
-          'CALCULATE() ist die m\u00E4chtigste DAX-Funktion \u2013 sie ver\u00E4ndert den Filter-Kontext.',
-          'VAR / RETURN verbessert Lesbarkeit und Performance komplexer DAX-Formeln.',
-          'Gute KPIs erf\u00FCllen die SMART-Kriterien (Doran, 1981).',
-          'Leading Indicators (Fr\u00FChwarn-KPIs) erg\u00E4nzen Lagging Indicators (Ergebnis-KPIs).',
-          'Python (pandas) eignet sich als Vergleichstool und f\u00FCr explorative Analysen.',
-        ],
-
-        navPrev: '\u2190 Lab 02: Daten',
-        navNext: 'Lab 04: Dashboards \u2192',
-      },
-
-      en: {
-        title: 'KPIs with DAX \u0026 Python',
-        ytNote: 'External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.',
-        desc: 'DAX (Data Analysis Expressions) is the formula language of Power BI. In this lab you will learn how to calculate important business KPIs in both DAX and Python, understand the filter context, and use measures correctly.',
-        lernziele: [
-          'Apply DAX fundamentals in Power BI',
-          'Understand Measures vs. Calculated Columns',
-          'Calculate important business KPIs',
-          'Understand Filter Context in DAX',
-        ],
-        navContents: 'Contents',
-        nav: [
-          { href: '#dax-grundlagen',   label: 'DAX Fundamentals' },
-          { href: '#python',           label: 'Python Equivalents' },
-          { href: '#kpi-tabelle',      label: 'KPI Table' },
-          { href: '#filter-kontext',   label: 'Filter Context' },
-          { href: '#tableau',          label: 'Tableau' },
-          { href: '#youtube',          label: 'Resources' },
-          { href: '#quiz',             label: 'Quiz' },
-          { href: '#zusammenfassung',  label: 'Summary' },
-        ],
-        backLabel: '\u2190 Overview',
-
-        s1Title: 'DAX Fundamentals',
-        s1Desc: 'DAX (Data Analysis Expressions) is an Excel-like formula language developed specifically for Power BI, Analysis Services and Power Pivot. With DAX you can define powerful calculations and analyses directly in the data model.',
-        s1WhatTitle: 'What is DAX?',
-        s1WhatText: 'DAX is a collection of functions, operators and constants that can be used in formulas (expressions) to calculate one or more values. DAX is optimised for working with tables and relationships and has two important concepts: Measures and Calculated Columns.',
-        s1MeasuresTitle: 'Measures vs. Calculated Columns',
-        s1MeasuresDe: [
-          {
-            name: 'Measures (Metrics)',
-            color: 'var(--col-primary)',
-            points: [
-              'Dynamic \u2013 calculated at runtime',
-              'Dependent on the current filter context',
-              'NOT stored in the table',
-              'Examples: Total Revenue, Margin %, YoY Growth',
-            ],
-          },
-          {
-            name: 'Calculated Columns',
-            color: 'var(--col-accent)',
-            points: [
-              'Recalculated on every data refresh',
-              'Evaluated row by row in the row context',
-              'Result is stored in the model and consumes memory',
-              'Examples: Full Name, Category Group',
-            ],
-          },
-        ],
-        s1GoldenRule: 'Golden Rule',
-        s1GoldenRuleText: 'Almost always use Measures! Measures are more flexible, consume less memory and respond correctly to filters. Use Calculated Columns only when you need the value in slicers or as a filter condition.',
-        s1CodeDax: '-- Simple aggregation\nTotalRevenue = SUM(Sales[Amount])\n\n-- With condition (CALCULATE)\nRevenue_DE = CALCULATE(SUM(Sales[Amount]), Sales[Country] = "Germany")\n\n-- Division with zero protection\n-- Note: [GrossProfit] must exist as its own measure, e.g.\n-- GrossProfit = SUM(Sales[Profit])\nMargin_% = DIVIDE([GrossProfit], [TotalRevenue], 0) * 100\n\n-- Time intelligence\nRevenue_PY = CALCULATE([TotalRevenue], SAMEPERIODLASTYEAR(Date[Date]))\nGrowth_% = DIVIDE([TotalRevenue] - [Revenue_PY], [Revenue_PY], 0) * 100\n\n-- Ranking\nTop_Products = RANKX(ALL(Product[Name]), [TotalRevenue], , DESC, Dense)',
-        s1CodeNote: 'Concept snippet: Sales[Amount], Sales[Profit] and Sales[Country] are placeholders and do not exist in the course dataset. The measures that fit train.csv are in Lab\u00A005.',
-
-        s2Title: 'Python Equivalents',
-        s2Desc: 'The same KPIs you calculate in DAX can be implemented in Python using the pandas library. Here are the direct equivalents:',
-        s2CodePython: '# Total revenue\ntotal_revenue = df[\'Amount\'].sum()\n\n# Revenue Germany\nrevenue_de = df[df[\'Country\'] == \'Germany\'][\'Amount\'].sum()\n\n# Margin\nmargin_pct = df[\'GrossProfit\'].sum() / df[\'Amount\'].sum() * 100\n\n# Year-over-year comparison\n# Note: df[\'Date\'] = pd.to_datetime(df[\'Date\'])  # ensure datetime type first\ndf[\'Year\'] = pd.to_datetime(df[\'Date\']).dt.year\nyearly = df.groupby(\'Year\')[\'Amount\'].sum()\ngrowth = yearly.pct_change() * 100\nprint(growth)\n\n# Ranking\ntop_products = (df.groupby(\'Product\')[\'Amount\'].sum()\n                  .sort_values(ascending=False)\n                  .reset_index())\ntop_products[\'Rank\'] = top_products[\'Amount\'].rank(method=\'dense\', ascending=False).astype(int)  # Column \'Amount\' corresponds to \'Sales\' in the Superstore dataset\nprint(top_products.head(10))',
-        s2CodeNote: 'Concept snippet with placeholder columns. The runnable version on train.csv follows directly below.',
-        s2RunTitle: 'The same KPIs, runnable with train.csv',
-        dataTitle: 'Data for this section',
-        dataText: 'The runnable block below needs train.csv in the same directory as the script. It is the same course dataset as in Labs\u00A004, 05 and 06: 9,800 order line items, 2015\u20132018, date format DD/MM/YYYY, encoding latin-1. Sales is the only measure \u2013 this variant has no Profit, Quantity or Discount.',
-        dataLicense: 'Source: Superstore Sales Dataset by Rohit Sahoo (Kaggle), licensed GPL\u00A02.',
-        dataDirect: 'Download train.csv',
-        dataKaggle: 'Original source on Kaggle',
-        s2CodePythonRun: "# The same KPIs as above, but on the course dataset train.csv\n# (real column names instead of Amount / GrossProfit / Country).\nimport pandas as pd\n\ndf = pd.read_csv('train.csv', encoding='latin-1')\ndf['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)\n\n# Total revenue  ->  DAX: Revenue = SUM(Orders[Sales])\ntotal_sales = df['Sales'].sum()\nprint(f\"Total revenue: {total_sales:,.2f}\")       # 2,261,536.78\n\n# Filtered aggregation  ->  DAX: CALCULATE(..., Orders[Region] = \"West\")\nsales_west = df.loc[df['Region'] == 'West', 'Sales'].sum()\nprint(f\"Revenue West:  {sales_west:,.2f}\")         # 710,219.68\n\n# Share of total  ->  DAX: DIVIDE(..., CALCULATE(..., ALL(...)))\nprint(f\"Share West:    {sales_west / total_sales * 100:.1f} %\")  # 31.4 %\n\n# Year-over-year  ->  DAX: SAMEPERIODLASTYEAR(Date[Date])\nyearly = df.groupby(df['Order Date'].dt.year)['Sales'].sum()\nprint(yearly.round(2))     # 2015 479856.21 | 2016 459436.01\n                           # 2017 600192.55 | 2018 722052.02\nprint((yearly.pct_change() * 100).round(1))  # 2018: 20.3\n\n# Ranking  ->  DAX: RANKX(ALL(...), [Revenue], , DESC, Dense)\ntop = df.groupby('Sub-Category')['Sales'].sum().sort_values(ascending=False)\nprint(top.head(3).round(2))  # Phones 327782.45 | Chairs 322822.73\n                             # Storage 219343.39",
-        s2RunNote: 'Prerequisites: pandas installed, train.csv in the same directory (download in Lab\u00A004). The expected values are in the comment after each line \u2013 if a number is off, it is nearly always the date format or the encoding.',
-        selfCheckTitle: 'Self-check (1 minute)',
-        selfCheckItems: [
-          'Total revenue 2,261,536.78 \u2013 the DAX measure Revenue in Lab 05 returns the same number.',
-          'Revenue West 710,219.68, share 31.4% \u2013 this is the check on CALCULATE with a filter argument.',
-          'Growth 2018 over 2017 about 20.3% \u2013 the check on SAMEPERIODLASTYEAR.',
-          'The ranking is led by Phones, Chairs and Storage.',
-          'Common error: 2016 shows a minus (\u22124.3%). That is correct, not a miscalculation.',
-        ],
-
-        s3Title: 'KPI Table',
-        s3Desc: 'The most important business KPIs at a glance \u2013 with formula, DAX function, Python and Tableau equivalent.',
-        s3Headers: ['KPI', 'Formula', 'DAX Function', 'Python (Pandas)', 'Tableau'],
-        s3Rows: [
-          ['Total Revenue', '\u03A3 Amount', 'SUM()', '.sum()', 'SUM()'],
-          ['Gross Profit', 'Revenue \u2212 COGS', 'SUM() \u2212 SUM()', 'Subtraction', 'SUM() \u2212 SUM()'],
-          ['Margin %', 'Profit / Revenue \u00D7 100', 'DIVIDE()', '/ * 100', 'SUM() / SUM()'],
-          ['YoY Growth', '(Now \u2212 PY) / PY', 'SAMEPERIODLASTYEAR', 'pct_change()', 'LOOKUP(..., -1)'],
-          ['Conversion Rate', 'Purchases / Visits', 'DIVIDE()', '/', 'COUNTD() / COUNTD()'],
-          ['Customer LTV', 'Avg Order Value \u00D7 Frequency', 'AVERAGEX + COUNTROWS', 'groupby + mean', '{FIXED [Customer] : SUM()}'],
-          ['Churn Rate', 'Churned / Total', 'COUNTROWS + DIVIDE', 'count + /', 'COUNTD() / COUNTD()'],
-        ],
-
-
-        twbxTitle: 'Download the finished workbook',
-        twbxText: 'BINT_Tableau_Uebung.twbx ships train.csv together with all ten calculated fields from this section. It is a packaged workbook – it opens in Tableau Desktop and Tableau Public without any further connection. Build your own version first, then compare.',
-        twbxBtn: 'BINT_Tableau_Uebung.twbx',
-        tabTitle: 'The same KPIs in Tableau',
-        tabDesc: 'Tableau has no CALCULATE. What DAX calls filter context is split across two tools here: level-of-detail expressions set the level at which a value is computed, table calculations compute across what the view already shows. Understand that difference and you can read both languages.',
-        tabMapTitle: 'DAX and Tableau side by side',
-        tabMapHeaders: ['Task', 'DAX', 'Tableau', 'Where they differ'],
-        tabMapRows: [
-          ['Sum in the current filter', 'SUM(Sales[Amount])', 'SUM([Sales])', 'identical'],
-          ['Sum with an extra filter', 'CALCULATE(SUM(...), Region = \"West\")', 'SUM(IF [Region] = \"West\" THEN [Sales] END)', 'Tableau filters inside the expression instead of through a context function'],
-          ['Reference to the grand total', 'CALCULATE(SUM(...), ALL(...))', '{ FIXED : SUM([Sales]) }', 'the LOD expression is computed before the view and ignores its filters'],
-          ['Share of the view', 'DIVIDE(..., CALCULATE(..., ALL(...)))', 'SUM([Sales]) / TOTAL(SUM([Sales]))', 'the table calculation only covers what is visible'],
-          ['Previous year', 'SAMEPERIODLASTYEAR', 'LOOKUP(SUM([Sales]), -1)', 'Tableau reads the previous cell, not a calendar'],
-          ['Rank', 'RANKX(ALL(...), ...)', 'RANK(SUM([Sales]))', 'same effect'],
-          ['Naming an intermediate result', 'VAR / RETURN', 'a separate calculated field', 'Tableau has no variables inside an expression'],
-        ],
-        tabCodeTitle: 'Calculated fields for train.csv',
-        tabCodeNote: 'Create each field separately via Analysis \u203a Create Calculated Field. The field names in square brackets match the columns of the CSV file.',
-        tabCode: '// Gesamtumsatz\nSUM([Sales])\n\n// Umsatz West \u2013 in DAX: CALCULATE(SUM(...), Region = \"West\")\nSUM(IF [Region] = \"West\" THEN [Sales] END)\n\n// Anteil am Gesamtumsatz \u2013 LOD, unabh\u00e4ngig von der Ansicht\nSUM([Sales]) / MIN({ FIXED : SUM([Sales]) })\n\n// Anteil an der Ansicht \u2013 Tabellenberechnung\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// Umsatz des Vorjahres \u2013 Jahr muss in der Ansicht liegen\nLOOKUP(SUM([Sales]), -1)\n\n// Wachstum gegen\u00fcber dem Vorjahr\n(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)\n\n// Rang nach Umsatz\nRANK(SUM([Sales]))\n\n// Umsatz je Kunde \u2013 unabh\u00e4ngig von der Ansicht\n{ FIXED [Customer ID] : SUM([Sales]) }\n\n// Erstbestellung je Kunde\n{ FIXED [Customer ID] : MIN([Order Date]) }\n\n// Durchschnittlicher Bestellwert\nSUM([Sales]) / COUNTD([Order ID])',
-        tabLODTitle: 'LOD or table calculation?',
-        tabLODText: 'The rule of thumb follows Tableau order of operations: a FIXED expression is computed before the filters of the view apply, so its result stays stable no matter what is visible. A table calculation happens afterwards and only sees what the view shows. The share of the West region is always 31.4% with FIXED; with TOTAL() it is the share of the regions currently visible. Both numbers are correct \u2013 they answer different questions.',
-        tabDateTitle: 'When the order date arrives as text',
-        tabDateText: 'In train.csv the date reads 08/11/2017, day first. If Tableau imports the column as text, create a calculated field: DATEPARSE(\"dd/MM/yyyy\", [Order Date]). Check the result against a number you know \u2013 growth in 2018 must come out at 20.3%. Anything else means day and month were swapped.',
-        tabCheckTitle: 'Self-check (1 minute)',
-        tabCheckItems: [
-          'Total revenue 2,261,536.78 \u2013 the same number as in Power BI and Python.',
-          'West revenue 710,219.68, share 31.4% \u2013 the check on the LOD expression.',
-          'Growth 2018 over 2017 about 20.3%, 2016 shows \u22124.3%.',
-          'The rank by sub-category is led by Phones, Chairs and Storage.',
-          '4,922 orders, average order value 459.48.',
-        ],
-        s4Title: 'Filter Context',
-        s4Desc: 'Understanding the filter context is the key to powerful DAX. There are two fundamental contexts in DAX:',
-        s4RowTitle: 'Row Context',
-        s4RowText: 'In Row Context, DAX iterates row by row over a table. This context is automatically created for Calculated Columns and for iterator functions like SUMX, AVERAGEX, MAXX. In each iteration the current row is known.',
-        s4FilterTitle: 'Filter Context',
-        s4FilterText: 'The Filter Context is the set of all active filters when a Measure is evaluated. These filters are created by slicers, report filters, rows/columns in a matrix or by CALCULATE() calls in the DAX code itself.',
-        s4WhyCalcTitle: 'Why CALCULATE() is so powerful',
-        s4WhyCalcText: 'CALCULATE() is the central function for evaluating a scalar expression in a modified filter context: add, remove or override filters \u2013 directly in a formula. Its counterpart for table expressions is CALCULATETABLE(); filter modifiers such as ALL(), REMOVEFILTERS() and KEEPFILTERS() also act on the context. Inside a measure, however, the route to your own filters is practically always CALCULATE.',
-        s4CodeCalc: '-- Without CALCULATE: existing filters apply, but\n-- you cannot ADD new filters\nRevenue_simple = SUM(Sales[Amount])  -- respects active slicers/filters\n\n-- With CALCULATE: modify filter context explicitly\nRevenue_DE = CALCULATE(\n    SUM(Sales[Amount]),\n    Sales[Country] = "Germany"     -- new filter is added\n)\n\n-- Remove filter with ALL()\nRevenue_Always_Total = CALCULATE(\n    SUM(Sales[Amount]),\n    ALL(Sales)                     -- ALL filters on Sales removed\n)\n\n-- Share of total revenue\nShare_% = DIVIDE(\n    [TotalRevenue],\n    CALCULATE([TotalRevenue], ALL(Sales[Country])),\n    0\n)\n\n-- VAR / RETURN (modern DAX pattern)\n-- Requires: TotalCost = SUM(Sales[Cost])\nProfitMargin =\n    VAR _revenue = [TotalRevenue]\n    VAR _cost    = [TotalCost]\n    RETURN\n        DIVIDE(_revenue - _cost, _revenue, 0)',
-        s4CodeNote: 'Concept snippet: placeholder table Sales with columns Amount, Country and Cost. The pattern holds unchanged, only the names differ.',
-
-        s5Title: 'Learning Resources',
-        s5Desc: 'Recommended YouTube channels for DAX and Python analytics:',
-        s5Resources: [
-          {
-            title: 'SQLBI \u2013 DAX Introduction',
-            url: 'https://www.youtube.com/@SQLBI',
-            desc: 'SQLBI (Marco Russo & Alberto Ferrari) are the world\'s leading DAX experts. Deep insights into DAX, Power BI and the Tabular model.',
-          },
-          {
-            title: '"DAX Fridays" \u2013 Curbal',
-            url: 'https://www.youtube.com/@Curbal',
-            desc: 'Weekly DAX tips and tutorials. Very practical, suitable for beginners and advanced users alike.',
-          },
-          {
-            title: 'Guy in a Cube',
-            url: 'https://www.youtube.com/@GuyInACube',
-            desc: 'Official Microsoft-adjacent channel (Adam Saxton & Patrick LeBlanc). Power BI news, tips and best practices.',
-          },
-          {
-            title: 'Enterprise DNA',
-            url: 'https://www.youtube.com/@EnterpriseDNA',
-            desc: 'Advanced DAX patterns, data modelling and real-world business scenarios.',
-          },
-        ],
-
-        // SMART KPI Framework
-        s3SmartTitle: 'SMART KPI Framework',
-        s3SmartText: 'Good KPIs meet the SMART criteria (Doran, 1981): Specific \u2013 clearly defined and unambiguously measurable; Measurable \u2013 quantifiable with concrete metrics; Achievable \u2013 realistically attainable; Relevant \u2013 strategically significant for business goals; Time-bound \u2013 with a clear time horizon (e.g. monthly, quarterly).',
-        // Leading vs. Lagging
-        s3LeadLagTitle: 'Leading vs. Lagging Indicators',
-        s3LeadLagText: 'Lagging indicators measure past outcomes (revenue, profit, churn rate). Leading indicators are early-warning metrics that predict future results (website traffic, pipeline volume, customer satisfaction). A sound KPI strategy combines both types.',
-        // DAX Variables
-        s4VarTitle: 'DAX Variables (VAR / RETURN)',
-        s4VarText: 'Since SQL Server 2016 / Power BI, DAX supports variables with VAR / RETURN. Benefits: Readability \u2013 complex formulas are broken into named intermediate steps; Performance \u2013 an expression is evaluated only once; Debugging \u2013 variables can be tested individually.',
-        // Additional resources
-        s5BookRef: 'Book recommendation: "The Definitive Guide to DAX" by Marco Russo & Alberto Ferrari (Microsoft Press, 2nd ed. 2019) \u2013 the standard reference for advanced DAX.',
-        // Quiz
-        quizTitle: 'Quiz',
-        quizQuestions: [
-          {
-            q: 'What does the M in SMART KPIs stand for?',
-            options: ['Modular', 'Measurable', 'Mandatory', 'Manual'],
-            correct: 1,
-            explanation: 'SMART stands for Specific, Measurable, Achievable, Relevant, Time-bound. "Measurable" requires the metric to be numerically captured: "improve customer satisfaction" is not a KPI, "raise NPS from 32 to 40" is.',
-          },
-          {
-            q: 'Which concept modifies the filter context in DAX?',
-            options: ['SUM()', 'CALCULATE()', 'VAR', 'ALL()'],
-            correct: 1,
-            explanation: 'Only CALCULATE() actively modifies the filter context. SUM() merely aggregates within the existing context, VAR stores intermediate results, and ALL() is a filter modifier that only takes effect as an argument inside CALCULATE().',
-          },
-          {
-            q: 'What is a leading indicator?',
-            options: ['Quarterly revenue', 'Website traffic', 'Annual profit', 'Churn rate'],
-            correct: 1,
-            explanation: 'Website traffic is leading: it moves before revenue moves, so it can still be acted upon. Revenue, profit or quarterly results are lagging indicators - they measure what has already happened.',
-          },
-          {
-            q: 'Where are Calculated Columns stored?',
-            options: ['In the Measure area', 'In the filter context', 'In the table (Row Context)', 'Only at runtime'],
-            correct: 2,
-            explanation: 'Calculated Columns are computed at data refresh and materialised in the table, so they consume memory and work in the row context. Measures, by contrast, are evaluated at query time in the filter context and store nothing. Rule of thumb: prefer measures; use calculated columns only when you need the value for filtering or grouping.',
-          },
-          {
-            q: 'What does SAMEPERIODLASTYEAR() return?',
-            options: ['The previous week', 'The same period in the prior year', 'The monthly average', 'The cumulative value'],
-            correct: 1,
-            explanation: 'SAMEPERIODLASTYEAR() returns a table of the same dates shifted back by one year - the standard building block for year-over-year comparisons. It requires a contiguous calendar table marked as a date table in the model, otherwise it returns wrong or empty results.',
-          },
-          {
-            q: 'What does ALL() do inside CALCULATE()?',
-            options: ['Adds new filters', 'Removes existing filters', 'Sorts the table', 'Creates a Calculated Column'],
-            correct: 1,
-            explanation: 'ALL() removes existing filters from a table or column, which is the basis for share-of-total calculations: the numerator respects the slicer, the denominator (wrapped in ALL()) does not - giving you "share of total revenue".',
-          },
-        ],
-        // Summary
-        summaryTitle: 'Summary',
-        summaryItems: [
-          'DAX is the formula language of Power BI \u2013 optimised for tabular data models.',
-          'Measures (dynamic, at runtime) are almost always preferable to Calculated Columns (static, stored).',
-          'CALCULATE() is the most powerful DAX function \u2013 it modifies the filter context.',
-          'VAR / RETURN improves readability and performance of complex DAX formulas.',
-          'Good KPIs meet the SMART criteria (Doran, 1981).',
-          'Leading indicators (early-warning KPIs) complement lagging indicators (outcome KPIs).',
-          'Python (pandas) serves as a comparison tool and for exploratory analysis.',
-        ],
-
-        navPrev: '\u2190 Lab 02: Data',
-        navNext: 'Lab 04: Dashboards \u2192',
-      },
-    };
-
-    // ─── App Component ────────────────────────────────────────────────────────
-    function App() {
-
-      const [lang, setLang] = useState(BINTLab.getLanguage);
-      const [activeSection, setActiveSection] = useState('dax-grundlagen');
-
-      const setLangAndStore = (l) => {
-        setLang(l);
-        BINTLab.setLanguage(l);
-      };
-
-      useEffect(() => {
-        const sections = ['dax-grundlagen', 'python', 'kpi-tabelle', 'filter-kontext', 'youtube', 'quiz', 'zusammenfassung'];
-        const handler = () => {
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const el = document.getElementById(sections[i]);
-            if (el && el.getBoundingClientRect().top <= 100) {
-              setActiveSection(sections[i]);
-              return;
-            }
-          }
-          setActiveSection('dax-grundlagen');
-        };
-        window.addEventListener('scroll', handler, { passive: true });
-        return () => window.removeEventListener('scroll', handler);
-      }, []);
-
-      const tx = translations[lang];
-
-      // Tab-Titel und html[lang] der gewaehlten Sprache folgen lassen
-      React.useEffect(() => {
-        document.title = 'Lab 03 \u2013 ' + tx.title + ' \u00B7 THWS BINT-Lab';
-        document.documentElement.lang = lang;
-        BINTLab.setLanguage(lang);
-      }, [lang, tx.title]);
-
-      return (
-        <div data-lang={lang}>
-
-          {/* Fixed Header */}
-          {/* Sprunglink: erstes fokussierbares Element, wird beim Fokus sichtbar. */}
-          <a className="skip-link" href="#main">
-            {lang === 'en' ? 'Skip to content' : 'Zum Inhalt springen'}
-          </a>
-          <header className="header">
-            <div className="header-left">
-              <a href={'index.html?lang=' + lang} className="header-logo">{'BINT-Lab'}</a>
-              <a href={'index.html' + ('?lang=' + lang)} className="header-back">{tx.backLabel}</a>
-            </div>
-            <div style={{ display: 'flex', gap: '0.35rem' }}>
-              <button className={'lang-btn' + (lang === 'de' ? ' active' : '')} onClick={() => setLangAndStore('de')} aria-pressed={lang === 'de'} aria-label="Deutsch">{'DE'}</button>
-              <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => setLangAndStore('en')} aria-pressed={lang === 'en'} aria-label="English">{'EN'}</button>
-            </div>
-          </header>
-
-          {/* Sidebar */}
-          <nav className="sidebar">
-            <div className="sidebar-title">{tx.navContents}</div>
-            {tx.nav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={'sidebar-link' + (activeSection === item.href.slice(1) ? ' active' : '')}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Lab Header */}
-          <div className="lab-header">
-            <div className="lab-num">{'03'}</div>
-            <h1 className="lab-title-h1">{tx.title}</h1>
-            <p className="lab-desc-intro">{tx.desc}</p>
-            <div className="lernziele-chips">
-              {tx.lernziele.map((lz, i) => (
-                <span key={i} className="lernziel-chip">{lz}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <main className="main-content" id="main">
-
-            {/* ── Section 1: DAX Grundlagen ── */}
-            <section id="dax-grundlagen" className="section-block">
-              <h2>{tx.s1Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s1Desc}</p>
-
-              <h3 style={{ marginTop: '1.5rem' }}>{tx.s1WhatTitle}</h3>
-              <div className="info-box">
-                <p style={{ margin: 0 }}>{tx.s1WhatText}</p>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s1MeasuresTitle}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
-                {tx.s1MeasuresDe.map((item, i) => (
-                  <div key={i} className="bauhaus-card">
-                    <div style={{
-                      display: 'inline-block', background: item.color, color: 'white',
-                      fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
-                      fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                      padding: '0.2rem 0.6rem', borderRadius: '3px', marginBottom: '0.85rem'
-                    }}>
-                      {item.name}
-                    </div>
-                    <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
-                      {item.points.map((pt, j) => (
-                        <li key={j} style={{ fontSize: '0.875rem', color: '#374151', lineHeight: 1.7 }}>{pt}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-
-              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s1GoldenRule}</h4>
-                <p style={{ margin: 0 }}>{tx.s1GoldenRuleText}</p>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{'DAX Code'}</h3>
-              <CodeBlock code={tx.s1CodeDax} lang={lang} kind="concept" note={tx.s1CodeNote} />
-            </section>
-
-            {/* ── Section 2: Python Aquivalente ── */}
-            <section id="python" className="section-block">
-              <h2>{tx.s2Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s2Desc}</p>
-              <CodeBlock code={tx.s2CodePython} lang={lang} kind="concept" note={tx.s2CodeNote} />
-              <div className="info-box" style={{ marginTop: '1.25rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.dataTitle}</h4>
-                <p style={{ margin: '0 0 0.75rem' }}>{tx.dataText}</p>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <a href="data/train.csv" download
-                     style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataDirect}
-                  </a>
-                  <a href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting"
-                     target="_blank" rel="noopener noreferrer"
-                     style={{ border: '1.5px solid var(--col-primary)', color: 'var(--col-primary)', textDecoration: 'none', padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    {tx.dataKaggle}
-                  </a>
-                </div>
-                <p style={{ margin: '0.75rem 0 0', fontSize: '0.78rem', color: '#4B5563' }}>{tx.dataLicense}</p>
-              </div>
-              <h4 style={{ marginTop: '1.5rem' }}>{tx.s2RunTitle}</h4>
-              <CodeBlock code={tx.s2CodePythonRun} lang={lang} kind="run" note={tx.s2RunNote} />
-              <div className="challenge-box">
-                <h4 style={{ marginTop: 0 }}>{tx.selfCheckTitle}</h4>
-                <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
-                  {tx.selfCheckItems.map((item, i) => <li key={i}>{item}</li>)}
-                </ul>
-              </div>
-            </section>
-
-            {/* ── Section 3: KPI-Tabelle ── */}
-            <section id="kpi-tabelle" className="section-block">
-              <h2>{tx.s3Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s3Desc}</p>
-              <div className="table-wrap">
-                <table>
-                <thead>
-                  <tr>{tx.s3Headers.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tx.s3Rows.map((row, i) => (
-                    <tr key={i}>
-                      <td style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: 'var(--col-primary)' }}>{row[0]}</td>
-                      <td>{row[1]}</td>
-                      <td><code>{row[2]}</code></td>
-                      <td><code>{row[3]}</code></td>
-                      <td><code>{row[4]}</code></td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-              {/* SMART KPI Framework */}
-              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s3SmartTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s3SmartText}</p>
-              </div>
-
-              {/* Leading vs. Lagging */}
-              <div className="tip-box" style={{ marginTop: '1rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s3LeadLagTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s3LeadLagText}</p>
-              </div>
-            </section>
-
-            {/* ── Section 4: Filter-Kontext ── */}
-            <section id="filter-kontext" className="section-block">
-              <h2>{tx.s4Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s4Desc}</p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem', margin: '1rem 0 1.5rem' }}>
-                <div className="concept-box" style={{ margin: 0 }}>
-                  <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s4RowTitle}</h4>
-                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{tx.s4RowText}</p>
-                </div>
-                <div className="tip-box" style={{ margin: 0 }}>
-                  <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s4FilterTitle}</h4>
-                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{tx.s4FilterText}</p>
-                </div>
-              </div>
-
-              <h3 style={{ marginTop: '2rem' }}>{tx.s4WhyCalcTitle}</h3>
-              <div className="info-box">
-                <p style={{ margin: 0 }}>{tx.s4WhyCalcText}</p>
-              </div>
-
-              <CodeBlock code={tx.s4CodeCalc} lang={lang} kind="concept" note={tx.s4CodeNote} />
-
-              {/* DAX Variables */}
-              <div className="info-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.s4VarTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.s4VarText}</p>
-              </div>
-            </section>
-
-
-            {/* -- Section 4b: Tableau -- */}
-            <section id="tableau" className="section-block">
-              <h2>{tx.tabTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.tabDesc}</p>
-              <div className="tip-box" style={{ marginTop: '1.25rem' }}>
-                <h4 style={{ marginTop: 0 }}>{tx.twbxTitle}</h4>
-                <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem' }}>{tx.twbxText}</p>
-              <a href="starter/BINT_Tableau_Uebung.twbx" download
-                 style={{ background: 'var(--col-primary)', color: 'white', textDecoration: 'none',
-                          padding: '0.45rem 0.9rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                {tx.twbxBtn}
-              </a>
-              </div>
-
-              <h3 style={{ marginTop: '1.75rem' }}>{tx.tabMapTitle}</h3>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>{tx.tabMapHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                  </thead>
-                  <tbody>
-                    {tx.tabMapRows.map((row, i) => (
-                      <tr key={i}>
-                        <td style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: 'var(--col-primary)' }}>{row[0]}</td>
-                        <td><code>{row[1]}</code></td>
-                        <td><code>{row[2]}</code></td>
-                        <td style={{ fontSize: '0.86rem', color: '#374151' }}>{row[3]}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="concept-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.tabLODTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.tabLODText}</p>
-              </div>
-
-              <h4 style={{ marginTop: '1.75rem' }}>{tx.tabCodeTitle}</h4>
-              <CodeBlock code={tx.tabCode} lang={lang} kind="run" note={tx.tabCodeNote} />
-
-              <div className="tip-box" style={{ marginTop: '1rem' }}>
-                <h4 style={{ marginTop: 0, color: 'var(--col-primary)' }}>{tx.tabDateTitle}</h4>
-                <p style={{ margin: 0 }}>{tx.tabDateText}</p>
-              </div>
-
-              <div className="challenge-box" style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ marginTop: 0 }}>{tx.tabCheckTitle}</h4>
-                <ul style={{ margin: 0, paddingLeft: '1.15rem', lineHeight: 1.8, fontSize: '0.88rem' }}>
-                  {tx.tabCheckItems.map((item, i) => <li key={i}>{item}</li>)}
-                </ul>
-              </div>
-            </section>
-
-            {/* ── Section 5: YouTube-Ressourcen ── */}
-            <section id="youtube" className="section-block">
-              <h2>{tx.s5Title}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <p>{tx.s5Desc}</p>
-
-              <div className="youtube-box">
-                <h3>{'YouTube'}</h3>
-
-                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#78350F' }}>
-
-                  {tx.ytNote}
-
-                </p>
-                {tx.s5Resources.map((res, i) => (
-                  <div key={i} style={{
-                    marginBottom: i < tx.s5Resources.length - 1 ? '1.25rem' : 0,
-                    paddingBottom: i < tx.s5Resources.length - 1 ? '1.25rem' : 0,
-                    borderBottom: i < tx.s5Resources.length - 1 ? '1px solid #FED7AA' : 'none'
-                  }}>
-                    <a href={res.url} target="_blank" rel="noopener noreferrer" className="youtube-link">{res.title}</a>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#78350F' }}>{res.desc}</p>
-                  </div>
-                ))}
-              </div>
-              {/* Book reference */}
-              <div className="info-box" style={{ marginTop: '1.25rem' }}>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>{tx.s5BookRef}</p>
-              </div>
-            </section>
-
-            {/* ── Section 6: Quiz ── */}
-            <section id="quiz" className="section-block">
-              <h2>{tx.quizTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              {tx.quizQuestions.map((qq, qi) => (
-                <QuizQuestion key={qi} question={qq} index={qi} lang={lang} />
-              ))}
-            </section>
-
-            {/* ── Section 7: Zusammenfassung ── */}
-            <section id="zusammenfassung" className="section-block">
-              <h2>{tx.summaryTitle}</h2>
-              <div className="bauhaus-accent-line"></div>
-              <div className="concept-box">
-                <ol style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                  {tx.summaryItems.map((item, i) => (
-                    <li key={i} style={{ fontSize: '0.9rem', lineHeight: 1.7, color: '#1A1A1A', marginBottom: '0.35rem' }}>{item}</li>
-                  ))}
-                </ol>
-              </div>
-            </section>
-
-            {/* ── Nav Bottom ── */}
-            <div className="nav-bottom">
-              <a href={'lab-02-daten.html' + ('?lang=' + lang)} className="nav-btn">
-                {tx.navPrev}
-              </a>
-              <a href={'lab-04-dashboards.html' + ('?lang=' + lang)} className="nav-btn primary">
-                {tx.navNext}
-              </a>
-            </div>
-
-          </main>
-
-          {/* Footer */}
-          <footer className="footer">
-            {'THWS Business School \u00B7 BINT-Lab \u00B7 Prof. Dr. Robert Butscher'}
-          </footer>
-
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+<body class="lab-page" data-lab="lab-03">
+
+<a class="skip-link" href="#main"><span lang="de">Zum Inhalt springen</span><span lang="en">Skip to content</span></a>
+
+<header class="header">
+  <div class="header-left">
+    <a class="header-logo" href="index.html" data-lab-link><span class="mark">BINT</span>-Lab</a>
+    <a class="header-back" href="index.html" data-lab-link>
+      <span lang="de">← Zur Übersicht</span><span lang="en">← Back to overview</span>
+    </a>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" data-lang-btn="de" aria-pressed="true" aria-label="Deutsch">DE</button>
+    <button class="lang-btn" data-lang-btn="en" aria-pressed="false" aria-label="English">EN</button>
+  </div>
+</header>
+
+<nav class="sidebar" aria-label="Lab-Navigation">
+  <div class="sidebar-title"><span lang="de">Inhalt</span><span lang="en">Contents</span></div>
+  <a class="sidebar-link" href="#dax-grundlagen"><span lang="de">DAX Grundlagen</span><span lang="en">DAX Fundamentals</span></a>
+  <a class="sidebar-link" href="#python"><span lang="de">Python Äquivalente</span><span lang="en">Python Equivalents</span></a>
+  <a class="sidebar-link" href="#kpi-tabelle"><span lang="de">KPI-Tabelle</span><span lang="en">KPI Table</span></a>
+  <a class="sidebar-link" href="#filter-kontext"><span lang="de">Filter-Kontext</span><span lang="en">Filter Context</span></a>
+  <a class="sidebar-link" href="#tableau">Tableau</a>
+  <a class="sidebar-link" href="#youtube"><span lang="de">Ressourcen</span><span lang="en">Resources</span></a>
+  <a class="sidebar-link" href="#quiz">Quiz</a>
+  <a class="sidebar-link" href="#zusammenfassung"><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></a>
+</nav>
+
+<div class="lab-header">
+  <div class="lab-num-big">03</div>
+  <h1 class="lab-title"><span lang="de">KPIs mit DAX &amp; Python</span><span lang="en">KPIs with DAX &amp; Python</span></h1>
+  <p class="lab-intro"><span lang="de">DAX (Data Analysis Expressions) ist die Formelsprache von Power BI. In diesem Lab lernen Sie, wie Sie wichtige Business-KPIs sowohl in DAX als auch in Python berechnen, den Filter-Kontext verstehen und Measures korrekt einsetzen.</span><span lang="en">DAX (Data Analysis Expressions) is the formula language of Power BI. In this lab you will learn how to calculate important business KPIs in both DAX and Python, understand the filter context, and use measures correctly.</span></p>
+  <div class="lernziele">
+    <span class="lernziel-chip"><span lang="de">DAX-Grundlagen in Power BI anwenden</span><span lang="en">Apply DAX fundamentals in Power BI</span></span>
+    <span class="lernziel-chip"><span lang="de">Measures vs. Calculated Columns verstehen</span><span lang="en">Understand Measures vs. Calculated Columns</span></span>
+    <span class="lernziel-chip"><span lang="de">Wichtige Business-KPIs berechnen</span><span lang="en">Calculate important business KPIs</span></span>
+    <span class="lernziel-chip"><span lang="de">Filter-Kontext in DAX verstehen</span><span lang="en">Understand Filter Context in DAX</span></span>
+  </div>
+</div>
+
+<main class="main-content" id="main">
+
+  <section class="section-block" id="dax-grundlagen">
+    <h2><span lang="de">DAX Grundlagen</span><span lang="en">DAX Fundamentals</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">DAX (Data Analysis Expressions) ist eine Excel-ähnliche Formelsprache, die speziell für Power BI, Analysis Services und Power Pivot entwickelt wurde. Mit DAX können Sie leistungsstarke Berechnungen und Analysen direkt im Datenmodell definieren.</span><span lang="en">DAX (Data Analysis Expressions) is an Excel-like formula language developed specifically for Power BI, Analysis Services and Power Pivot. With DAX you can define powerful calculations and analyses directly in the data model.</span></p>
+
+    <h3><span lang="de">Was ist DAX?</span><span lang="en">What is DAX?</span></h3>
+    <div class="info-box">
+      <p><span lang="de">DAX ist eine Sammlung von Funktionen, Operatoren und Konstanten, die in Formeln (Expressions) verwendet werden können, um einen oder mehrere Werte zu berechnen. DAX wurde für die Arbeit mit Tabellen und Beziehungen optimiert und kennt zwei wichtige Konzepte: Measures und Calculated Columns.</span><span lang="en">DAX is a collection of functions, operators and constants that can be used in formulas (expressions) to calculate one or more values. DAX is optimised for working with tables and relationships and has two important concepts: Measures and Calculated Columns.</span></p>
+    </div>
+
+    <h3>Measures vs. Calculated Columns</h3>
+    <div class="karten breit">
+      <div class="karte">
+        <span class="marke"><span lang="de">Measures (Kennzahlen)</span><span lang="en">Measures (Metrics)</span></span>
+        <ul>
+          <li><span lang="de">Dynamisch – werden zur Laufzeit berechnet</span><span lang="en">Dynamic – calculated at runtime</span></li>
+          <li><span lang="de">Abhängig vom aktuellen Filter-Kontext</span><span lang="en">Dependent on the current filter context</span></li>
+          <li><span lang="de">Werden NICHT in der Tabelle gespeichert</span><span lang="en">NOT stored in the table</span></li>
+          <li><span lang="de">Beispiele: Gesamtumsatz, Marge %, YoY-Wachstum</span><span lang="en">Examples: Total Revenue, Margin %, YoY Growth</span></li>
+        </ul>
+      </div>
+      <div class="karte">
+        <span class="marke">Calculated Columns</span>
+        <ul>
+          <li><span lang="de">Werden bei jeder Datenaktualisierung neu berechnet</span><span lang="en">Recalculated on every data refresh</span></li>
+          <li><span lang="de">Zeile für Zeile im Row Context ausgewertet</span><span lang="en">Evaluated row by row in the row context</span></li>
+          <li><span lang="de">Ergebnis wird im Modell gespeichert und belegt Speicher</span><span lang="en">Result is stored in the model and consumes memory</span></li>
+          <li><span lang="de">Beispiele: Vollständiger Name, Kategorie-Gruppe</span><span lang="en">Examples: Full Name, Category Group</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="concept-box">
+      <h4><span lang="de">Goldene Regel</span><span lang="en">Golden Rule</span></h4>
+      <p><span lang="de">Fast immer Measures verwenden! Measures sind flexibler, verbrauchen weniger Speicher und reagieren korrekt auf Filter. Calculated Columns nur verwenden, wenn Sie den Wert in Slicern oder als Filterbedingung benötigen.</span><span lang="en">Almost always use Measures! Measures are more flexible, consume less memory and respond correctly to filters. Use Calculated Columns only when you need the value in slicers or as a filter condition.</span></p>
+    </div>
+
+    <h3>DAX Code</h3>
+    <!-- SCREENSHOT: powerbi-new-measure · Power BI Desktop · Modellierung → Neues Measure · Formelleiste mit Gesamtumsatz = SUM(...) -->
+    <div class="codeblock" data-kind="concept" data-name="s1CodeDax">
+<pre class="code-block" lang="de">-- Einfache Aggregation
+Gesamtumsatz = SUM(Umsatz[Betrag])
+
+-- Mit Bedingung (CALCULATE)
+Umsatz_DE = CALCULATE(SUM(Umsatz[Betrag]), Umsatz[Land] = "Deutschland")
+
+-- Division mit Null-Absicherung
+-- Hinweis: [Bruttogewinn] muss als eigenes Measure existieren, z.B.
+-- Bruttogewinn = SUM(Umsatz[Gewinn])
+Marge_% = DIVIDE([Bruttogewinn], [Gesamtumsatz], 0) * 100
+
+-- Zeitintelligenz
+Umsatz_VJ = CALCULATE([Gesamtumsatz], SAMEPERIODLASTYEAR(Datum[Datum]))
+Wachstum_% = DIVIDE([Gesamtumsatz] - [Umsatz_VJ], [Umsatz_VJ], 0) * 100
+
+-- Ranking
+Top_Produkte = RANKX(ALL(Produkt[Name]), [Gesamtumsatz], , DESC, Dense)</pre>
+<pre class="code-block" lang="en">-- Simple aggregation
+TotalRevenue = SUM(Sales[Amount])
+
+-- With condition (CALCULATE)
+Revenue_DE = CALCULATE(SUM(Sales[Amount]), Sales[Country] = "Germany")
+
+-- Division with zero protection
+-- Note: [GrossProfit] must exist as its own measure, e.g.
+-- GrossProfit = SUM(Sales[Profit])
+Margin_% = DIVIDE([GrossProfit], [TotalRevenue], 0) * 100
+
+-- Time intelligence
+Revenue_PY = CALCULATE([TotalRevenue], SAMEPERIODLASTYEAR(Date[Date]))
+Growth_% = DIVIDE([TotalRevenue] - [Revenue_PY], [Revenue_PY], 0) * 100
+
+-- Ranking
+Top_Products = RANKX(ALL(Product[Name]), [TotalRevenue], , DESC, Dense)</pre>
+      <p class="code-note"><span lang="de">Konzeptsnippet: Umsatz[Betrag], Umsatz[Gewinn] und Umsatz[Land] sind Platzhalter und existieren im Kursdatensatz nicht. Die auf train.csv passenden Measures stehen in Lab 05.</span><span lang="en">Concept snippet: Sales[Amount], Sales[Profit] and Sales[Country] are placeholders and do not exist in the course dataset. The measures that fit train.csv are in Lab 05.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="python">
+    <h2><span lang="de">Python Äquivalente</span><span lang="en">Python Equivalents</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Die gleichen KPIs, die Sie in DAX berechnen, können in Python mit der pandas-Bibliothek umgesetzt werden. Hier sehen Sie die direkten Äquivalente:</span><span lang="en">The same KPIs you calculate in DAX can be implemented in Python using the pandas library. Here are the direct equivalents:</span></p>
+    <div class="codeblock" data-kind="concept" data-name="s2CodePython">
+<pre class="code-block" lang="de"># Gesamtumsatz
+umsatz_gesamt = df['Betrag'].sum()
+
+# Umsatz DE
+umsatz_de = df[df['Land'] == 'Deutschland']['Betrag'].sum()
+
+# Marge
+marge_pct = df['Bruttogewinn'].sum() / df['Betrag'].sum() * 100
+
+# Jahresvergleich
+# Vorher: df['Datum'] = pd.to_datetime(df['Datum'])
+df['Jahr'] = pd.to_datetime(df['Datum']).dt.year
+yearly = df.groupby('Jahr')['Betrag'].sum()
+wachstum = yearly.pct_change() * 100
+print(wachstum)
+
+# Ranking
+top_produkte = (df.groupby('Produkt')['Betrag'].sum()
+                  .sort_values(ascending=False)
+                  .reset_index())
+top_produkte['Rang'] = top_produkte['Betrag'].rank(method='dense', ascending=False).astype(int)  # Spalte 'Betrag' entspricht 'Sales' im Superstore-Datensatz
+print(top_produkte.head(10))</pre>
+<pre class="code-block" lang="en"># Total revenue
+total_revenue = df['Amount'].sum()
+
+# Revenue Germany
+revenue_de = df[df['Country'] == 'Germany']['Amount'].sum()
+
+# Margin
+margin_pct = df['GrossProfit'].sum() / df['Amount'].sum() * 100
+
+# Year-over-year comparison
+# Note: df['Date'] = pd.to_datetime(df['Date'])  # ensure datetime type first
+df['Year'] = pd.to_datetime(df['Date']).dt.year
+yearly = df.groupby('Year')['Amount'].sum()
+growth = yearly.pct_change() * 100
+print(growth)
+
+# Ranking
+top_products = (df.groupby('Product')['Amount'].sum()
+                  .sort_values(ascending=False)
+                  .reset_index())
+top_products['Rank'] = top_products['Amount'].rank(method='dense', ascending=False).astype(int)  # Column 'Amount' corresponds to 'Sales' in the Superstore dataset
+print(top_products.head(10))</pre>
+      <p class="code-note"><span lang="de">Konzeptsnippet mit Platzhalterspalten. Die lauffähige Fassung auf train.csv steht direkt darunter.</span><span lang="en">Concept snippet with placeholder columns. The runnable version on train.csv follows directly below.</span></p>
+    </div>
+
+    <div class="download-box">
+      <h3><span lang="de">Daten für diesen Abschnitt</span><span lang="en">Data for this section</span></h3>
+      <p><span lang="de">Der lauffähige Block unten braucht train.csv im selben Verzeichnis wie das Skript. Es ist derselbe Kursdatensatz wie in Lab 04, 05 und 06: 9.800 Bestellpositionen, 2015–2018, Datumsformat TT/MM/JJJJ, Encoding latin-1. Einzige Kennzahl ist Sales – Profit, Quantity und Discount gibt es in dieser Variante nicht.</span><span lang="en">The runnable block below needs train.csv in the same directory as the script. It is the same course dataset as in Labs 04, 05 and 06: 9,800 order line items, 2015–2018, date format DD/MM/YYYY, encoding latin-1. Sales is the only measure – this variant has no Profit, Quantity or Discount.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="data/train.csv" download><span lang="de">train.csv herunterladen</span><span lang="en">Download train.csv</span></a>
+        <a class="btn-download sekundaer" href="https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting" target="_blank" rel="noopener noreferrer"><span lang="de">Originalquelle bei Kaggle</span><span lang="en">Original source on Kaggle</span></a>
+      </div>
+      <p class="lizenz"><span lang="de">Quelle: Superstore Sales Dataset von Rohit Sahoo (Kaggle), Lizenz GPL 2.</span><span lang="en">Source: Superstore Sales Dataset by Rohit Sahoo (Kaggle), licensed GPL 2.</span></p>
+    </div>
+
+    <h3><span lang="de">Dieselben KPIs, lauffähig mit train.csv</span><span lang="en">The same KPIs, runnable with train.csv</span></h3>
+    <div class="codeblock" data-kind="run" data-name="s2CodePythonRun">
+<pre class="code-block" lang="de"># Dieselben KPIs wie oben, aber auf dem Kursdatensatz train.csv
+# (echte Spaltennamen statt Betrag / Bruttogewinn / Land).
+import pandas as pd
+
+df = pd.read_csv('train.csv', encoding='latin-1')
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+
+# Gesamtumsatz  -&gt;  DAX: Umsatz = SUM(Orders[Sales])
+umsatz_gesamt = df['Sales'].sum()
+print(f"Gesamtumsatz: {umsatz_gesamt:,.2f}")        # 2,261,536.78
+
+# Gefilterte Aggregation  -&gt;  DAX: CALCULATE(..., Orders[Region] = "West")
+umsatz_west = df.loc[df['Region'] == 'West', 'Sales'].sum()
+print(f"Umsatz West:  {umsatz_west:,.2f}")           # 710,219.68
+
+# Anteil am Gesamtumsatz  -&gt;  DAX: DIVIDE(..., CALCULATE(..., ALL(...)))
+print(f"Anteil West:  {umsatz_west / umsatz_gesamt * 100:.1f} %")  # 31.4 %
+
+# Jahresvergleich  -&gt;  DAX: SAMEPERIODLASTYEAR(Datum[Datum])
+jahr = df.groupby(df['Order Date'].dt.year)['Sales'].sum()
+print(jahr.round(2))       # 2015 479856.21 | 2016 459436.01
+                           # 2017 600192.55 | 2018 722052.02
+print((jahr.pct_change() * 100).round(1))   # 2018: 20.3
+
+# Ranking  -&gt;  DAX: RANKX(ALL(...), [Umsatz], , DESC, Dense)
+top = df.groupby('Sub-Category')['Sales'].sum().sort_values(ascending=False)
+print(top.head(3).round(2))  # Phones 327782.45 | Chairs 322822.73
+                             # Storage 219343.39</pre>
+<pre class="code-block" lang="en"># The same KPIs as above, but on the course dataset train.csv
+# (real column names instead of Amount / GrossProfit / Country).
+import pandas as pd
+
+df = pd.read_csv('train.csv', encoding='latin-1')
+df['Order Date'] = pd.to_datetime(df['Order Date'], dayfirst=True)
+
+# Total revenue  -&gt;  DAX: Revenue = SUM(Orders[Sales])
+total_sales = df['Sales'].sum()
+print(f"Total revenue: {total_sales:,.2f}")       # 2,261,536.78
+
+# Filtered aggregation  -&gt;  DAX: CALCULATE(..., Orders[Region] = "West")
+sales_west = df.loc[df['Region'] == 'West', 'Sales'].sum()
+print(f"Revenue West:  {sales_west:,.2f}")         # 710,219.68
+
+# Share of total  -&gt;  DAX: DIVIDE(..., CALCULATE(..., ALL(...)))
+print(f"Share West:    {sales_west / total_sales * 100:.1f} %")  # 31.4 %
+
+# Year-over-year  -&gt;  DAX: SAMEPERIODLASTYEAR(Date[Date])
+yearly = df.groupby(df['Order Date'].dt.year)['Sales'].sum()
+print(yearly.round(2))     # 2015 479856.21 | 2016 459436.01
+                           # 2017 600192.55 | 2018 722052.02
+print((yearly.pct_change() * 100).round(1))  # 2018: 20.3
+
+# Ranking  -&gt;  DAX: RANKX(ALL(...), [Revenue], , DESC, Dense)
+top = df.groupby('Sub-Category')['Sales'].sum().sort_values(ascending=False)
+print(top.head(3).round(2))  # Phones 327782.45 | Chairs 322822.73
+                             # Storage 219343.39</pre>
+      <p class="code-note"><span lang="de">Voraussetzung: pandas installiert, train.csv im selben Verzeichnis (Download oben). Die Sollwerte stehen als Kommentar hinter jeder Zeile – stimmt eine Zahl nicht, liegt es fast immer am Datumsformat oder am encoding.</span><span lang="en">Prerequisites: pandas installed, train.csv in the same directory (download above). The expected values are in the comment after each line – if a number is off, it is nearly always the date format or the encoding.</span></p>
+    </div>
+
+    <div class="challenge-box">
+      <h4><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h4>
+      <ul>
+        <li><span lang="de">Gesamtumsatz 2.261.536,78 – dieselbe Zahl liefert das DAX-Measure Umsatz in Lab 05.</span><span lang="en">Total revenue 2,261,536.78 – the DAX measure Revenue in Lab 05 returns the same number.</span></li>
+        <li><span lang="de">Umsatz West 710.219,68, Anteil 31,4 % – das ist die Probe auf CALCULATE mit Filterargument.</span><span lang="en">Revenue West 710,219.68, share 31.4% – this is the check on CALCULATE with a filter argument.</span></li>
+        <li><span lang="de">Wachstum 2018 gegenüber 2017 rund 20,3 % – die Probe auf SAMEPERIODLASTYEAR.</span><span lang="en">Growth 2018 over 2017 about 20.3% – the check on SAMEPERIODLASTYEAR.</span></li>
+        <li><span lang="de">Im Ranking stehen Phones, Chairs und Storage vorn.</span><span lang="en">The ranking is led by Phones, Chairs and Storage.</span></li>
+        <li><span lang="de">Typischer Fehler: 2016 zeigt ein Minus (−4,3 %). Das ist korrekt, kein Rechenfehler.</span><span lang="en">Common error: 2016 shows a minus (−4.3%). That is correct, not a miscalculation.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-block" id="kpi-tabelle">
+    <h2><span lang="de">KPI-Tabelle</span><span lang="en">KPI Table</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Die wichtigsten Business-KPIs auf einen Blick – mit Formel, DAX-Funktion, Python- und Tableau-Äquivalent.</span><span lang="en">The most important business KPIs at a glance – with formula, DAX function, Python and Tableau equivalent.</span></p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>KPI</th><th><span lang="de">Formel</span><span lang="en">Formula</span></th><th><span lang="de">DAX-Funktion</span><span lang="en">DAX Function</span></th><th>Python (Pandas)</th><th>Tableau</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="kopf"><span lang="de">Gesamtumsatz</span><span lang="en">Total Revenue</span></td><td><span lang="de">Σ Betrag</span><span lang="en">Σ Amount</span></td><td><code>SUM()</code></td><td><code>.sum()</code></td><td><code>SUM()</code></td></tr>
+          <tr><td class="kopf"><span lang="de">Bruttogewinn</span><span lang="en">Gross Profit</span></td><td><span lang="de">Umsatz − COGS</span><span lang="en">Revenue − COGS</span></td><td><code>SUM() − SUM()</code></td><td><code><span lang="de">Subtraktion</span><span lang="en">Subtraction</span></code></td><td><code>SUM() − SUM()</code></td></tr>
+          <tr><td class="kopf"><span lang="de">Marge %</span><span lang="en">Margin %</span></td><td><span lang="de">Gewinn / Umsatz × 100</span><span lang="en">Profit / Revenue × 100</span></td><td><code>DIVIDE()</code></td><td><code>/ * 100</code></td><td><code>SUM() / SUM()</code></td></tr>
+          <tr><td class="kopf"><span lang="de">YoY-Wachstum</span><span lang="en">YoY Growth</span></td><td><span lang="de">(Jetzt − VJ) / VJ</span><span lang="en">(Now − PY) / PY</span></td><td><code>SAMEPERIODLASTYEAR</code></td><td><code>pct_change()</code></td><td><code>LOOKUP(..., -1)</code></td></tr>
+          <tr><td class="kopf">Conversion Rate</td><td><span lang="de">Käufe / Besuche</span><span lang="en">Purchases / Visits</span></td><td><code>DIVIDE()</code></td><td><code>/</code></td><td><code>COUNTD() / COUNTD()</code></td></tr>
+          <tr><td class="kopf">Customer LTV</td><td><span lang="de">Ø Bestellwert × Frequenz</span><span lang="en">Avg Order Value × Frequency</span></td><td><code>AVERAGEX + COUNTROWS</code></td><td><code>groupby + mean</code></td><td><code><span lang="de">{FIXED [Kunde] : SUM()}</span><span lang="en">{FIXED [Customer] : SUM()}</span></code></td></tr>
+          <tr><td class="kopf">Churn Rate</td><td><span lang="de">Abgewanderte / Gesamt</span><span lang="en">Churned / Total</span></td><td><code>COUNTROWS + DIVIDE</code></td><td><code>count + /</code></td><td><code>COUNTD() / COUNTD()</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept-box">
+      <h3><span lang="de">SMART-KPI-Framework</span><span lang="en">SMART KPI Framework</span></h3>
+      <p><span lang="de">Gute KPIs erfüllen die SMART-Kriterien (Doran, 1981): Specific – klar definiert und eindeutig messbar; Measurable – quantifizierbar mit konkreten Metriken; Achievable – realistisch erreichbar; Relevant – strategisch bedeutsam für das Unternehmensziel; Time-bound – mit klarem Zeithorizont (z. B. monatlich, quartalsweise).</span><span lang="en">Good KPIs meet the SMART criteria (Doran, 1981): Specific – clearly defined and unambiguously measurable; Measurable – quantifiable with concrete metrics; Achievable – realistically attainable; Relevant – strategically significant for business goals; Time-bound – with a clear time horizon (e.g. monthly, quarterly).</span></p>
+    </div>
+
+    <div class="tip-box">
+      <h3>Leading vs. Lagging Indicators</h3>
+      <p><span lang="de">Lagging Indicators messen vergangene Ergebnisse (Umsatz, Gewinn, Churn Rate). Leading Indicators sind Frühwarn-Kennzahlen, die zukünftige Ergebnisse vorhersagen (Website-Traffic, Pipeline-Volumen, Kundenzufriedenheit). Eine gute KPI-Strategie kombiniert beide Typen.</span><span lang="en">Lagging indicators measure past outcomes (revenue, profit, churn rate). Leading indicators are early-warning metrics that predict future results (website traffic, pipeline volume, customer satisfaction). A sound KPI strategy combines both types.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="filter-kontext">
+    <h2><span lang="de">Filter-Kontext</span><span lang="en">Filter Context</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Das Verständnis des Filter-Kontexts ist der Schlüssel zu machtvollem DAX. Es gibt zwei grundlegende Kontexte in DAX:</span><span lang="en">Understanding the filter context is the key to powerful DAX. There are two fundamental contexts in DAX:</span></p>
+
+    <div class="karten breit">
+      <div class="concept-box">
+        <h3><span lang="de">Row Context (Zeilen-Kontext)</span><span lang="en">Row Context</span></h3>
+        <p><span lang="de">Beim Row Context iteriert DAX Zeile für Zeile über eine Tabelle. Dieser Kontext entsteht automatisch bei Calculated Columns und bei Iterator-Funktionen wie SUMX, AVERAGEX, MAXX. In jedem Durchlauf ist die aktuelle Zeile bekannt.</span><span lang="en">In Row Context, DAX iterates row by row over a table. This context is automatically created for Calculated Columns and for iterator functions like SUMX, AVERAGEX, MAXX. In each iteration the current row is known.</span></p>
+      </div>
+      <div class="tip-box">
+        <h3><span lang="de">Filter Context (Filter-Kontext)</span><span lang="en">Filter Context</span></h3>
+        <p><span lang="de">Der Filter Context ist die Menge aller aktiven Filter, wenn ein Measure ausgewertet wird. Diese Filter entstehen durch Slicers, Report-Filter, Zeilen/Spalten in einer Matrix oder durch CALCULATE()-Aufrufe im DAX-Code selbst.</span><span lang="en">The Filter Context is the set of all active filters when a Measure is evaluated. These filters are created by slicers, report filters, rows/columns in a matrix or by CALCULATE() calls in the DAX code itself.</span></p>
+      </div>
+    </div>
+
+    <h3><span lang="de">Warum CALCULATE() so mächtig ist</span><span lang="en">Why CALCULATE() is so powerful</span></h3>
+    <div class="info-box">
+      <p><span lang="de">CALCULATE() ist die zentrale Funktion, um einen skalaren Ausdruck in einem geänderten Filterkontext auszuwerten: Filter hinzufügen, entfernen oder überschreiben – direkt in einer Formel. Das Gegenstück für Tabellenausdrücke ist CALCULATETABLE(); daneben wirken Filtermodifikatoren wie ALL(), REMOVEFILTERS() oder KEEPFILTERS() auf den Kontext. In einem Measure führt der Weg zu eigenen Filtern aber praktisch immer über CALCULATE.</span><span lang="en">CALCULATE() is the central function for evaluating a scalar expression in a modified filter context: add, remove or override filters – directly in a formula. Its counterpart for table expressions is CALCULATETABLE(); filter modifiers such as ALL(), REMOVEFILTERS() and KEEPFILTERS() also act on the context. Inside a measure, however, the route to your own filters is practically always CALCULATE.</span></p>
+    </div>
+    <div class="codeblock" data-kind="concept" data-name="s4CodeCalc">
+<pre class="code-block" lang="de">-- Ohne CALCULATE: bestehende Filter gelten, aber
+-- man kann keine NEUEN Filter hinzufügen
+Umsatz_einfach = SUM(Umsatz[Betrag])  -- respektiert aktive Slicer/Filter
+
+-- Mit CALCULATE: Filter-Kontext gezielt ändern
+Umsatz_DE = CALCULATE(
+    SUM(Umsatz[Betrag]),
+    Umsatz[Land] = "Deutschland"   -- neuer Filter wird hinzugefügt
+)
+
+-- Filter entfernen mit ALL()
+Umsatz_Gesamt_Immer = CALCULATE(
+    SUM(Umsatz[Betrag]),
+    ALL(Umsatz)                    -- ALLE Filter auf Umsatz entfernt
+)
+
+-- Anteil am Gesamtumsatz
+Anteil_% = DIVIDE(
+    [Gesamtumsatz],
+    CALCULATE([Gesamtumsatz], ALL(Umsatz[Land])),
+    0
+)
+
+-- VAR / RETURN (modernes DAX-Pattern)
+-- Setzt voraus: Gesamtkosten = SUM(Umsatz[Kosten])
+Gewinnmarge =
+    VAR _umsatz = [Gesamtumsatz]
+    VAR _kosten = [Gesamtkosten]
+    RETURN
+        DIVIDE(_umsatz - _kosten, _umsatz, 0)</pre>
+<pre class="code-block" lang="en">-- Without CALCULATE: existing filters apply, but
+-- you cannot ADD new filters
+Revenue_simple = SUM(Sales[Amount])  -- respects active slicers/filters
+
+-- With CALCULATE: modify filter context explicitly
+Revenue_DE = CALCULATE(
+    SUM(Sales[Amount]),
+    Sales[Country] = "Germany"     -- new filter is added
+)
+
+-- Remove filter with ALL()
+Revenue_Always_Total = CALCULATE(
+    SUM(Sales[Amount]),
+    ALL(Sales)                     -- ALL filters on Sales removed
+)
+
+-- Share of total revenue
+Share_% = DIVIDE(
+    [TotalRevenue],
+    CALCULATE([TotalRevenue], ALL(Sales[Country])),
+    0
+)
+
+-- VAR / RETURN (modern DAX pattern)
+-- Requires: TotalCost = SUM(Sales[Cost])
+ProfitMargin =
+    VAR _revenue = [TotalRevenue]
+    VAR _cost    = [TotalCost]
+    RETURN
+        DIVIDE(_revenue - _cost, _revenue, 0)</pre>
+      <p class="code-note"><span lang="de">Konzeptsnippet: Platzhaltertabelle Umsatz mit den Spalten Betrag, Land und Kosten. Das Muster gilt unverändert, nur die Namen wechseln.</span><span lang="en">Concept snippet: placeholder table Sales with columns Amount, Country and Cost. The pattern holds unchanged, only the names differ.</span></p>
+    </div>
+
+    <div class="info-box">
+      <h4><span lang="de">DAX-Variablen (VAR / RETURN)</span><span lang="en">DAX Variables (VAR / RETURN)</span></h4>
+      <p><span lang="de">Seit SQL Server 2016 / Power BI unterstützt DAX Variablen mit VAR / RETURN. Vorteile: Lesbarkeit – komplexe Formeln werden in benannte Zwischenschritte zerlegt; Performance – ein Ausdruck wird nur einmal ausgewertet; Debugging – Variablen können einzeln getestet werden.</span><span lang="en">Since SQL Server 2016 / Power BI, DAX supports variables with VAR / RETURN. Benefits: Readability – complex formulas are broken into named intermediate steps; Performance – an expression is evaluated only once; Debugging – variables can be tested individually.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="tableau">
+    <h2><span lang="de">Dieselben KPIs in Tableau</span><span lang="en">The same KPIs in Tableau</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Tableau kennt kein CALCULATE. Was in DAX der Filterkontext ist, verteilt sich hier auf zwei Werkzeuge: Level-of-Detail-Ausdrücke legen die Ebene fest, auf der gerechnet wird, Tabellenberechnungen rechnen über das, was die Ansicht bereits zeigt. Wer diesen Unterschied verstanden hat, liest beide Sprachen.</span><span lang="en">Tableau has no CALCULATE. What DAX calls filter context is split across two tools here: level-of-detail expressions set the level at which a value is computed, table calculations compute across what the view already shows. Understand that difference and you can read both languages.</span></p>
+
+    <div class="download-box">
+      <h3><span lang="de">Fertige Arbeitsmappe herunterladen</span><span lang="en">Download the finished workbook</span></h3>
+      <p><span lang="de">BINT_Tableau_Uebung.twbx enthält train.csv und alle zehn berechneten Felder aus diesem Abschnitt. Die Datei ist gepackt – sie läuft ohne weitere Verbindung in Tableau Desktop und in Tableau Public. Zum Nachbauen erst selbst rechnen, dann vergleichen.</span><span lang="en">BINT_Tableau_Uebung.twbx ships train.csv together with all ten calculated fields from this section. It is a packaged workbook – it opens in Tableau Desktop and Tableau Public without any further connection. Build your own version first, then compare.</span></p>
+      <div class="download-reihe">
+        <a class="btn-download" href="starter/BINT_Tableau_Uebung.twbx" download>BINT_Tableau_Uebung.twbx</a>
+      </div>
+    </div>
+
+    <h3><span lang="de">DAX und Tableau nebeneinander</span><span lang="en">DAX and Tableau side by side</span></h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th><span lang="de">Aufgabe</span><span lang="en">Task</span></th><th>DAX</th><th>Tableau</th><th><span lang="de">Worin der Unterschied liegt</span><span lang="en">Where they differ</span></th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="kopf"><span lang="de">Summe im aktuellen Filter</span><span lang="en">Sum in the current filter</span></td><td><code><span lang="de">SUM(Umsatz[Betrag])</span><span lang="en">SUM(Sales[Amount])</span></code></td><td><code>SUM([Sales])</code></td><td><span lang="de">gleich</span><span lang="en">identical</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Summe mit zusätzlichem Filter</span><span lang="en">Sum with an extra filter</span></td><td><code>CALCULATE(SUM(...), Region = "West")</code></td><td><code>SUM(IF [Region] = "West" THEN [Sales] END)</code></td><td><span lang="de">Tableau filtert im Ausdruck statt über eine Kontextfunktion</span><span lang="en">Tableau filters inside the expression instead of through a context function</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Bezug auf die Gesamtsumme</span><span lang="en">Reference to the grand total</span></td><td><code>CALCULATE(SUM(...), ALL(...))</code></td><td><code>{ FIXED : SUM([Sales]) }</code></td><td><span lang="de">der LOD-Ausdruck rechnet vor der Ansicht und ignoriert deren Filter</span><span lang="en">the LOD expression is computed before the view and ignores its filters</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Anteil an der Ansicht</span><span lang="en">Share of the view</span></td><td><code>DIVIDE(..., CALCULATE(..., ALL(...)))</code></td><td><code>SUM([Sales]) / TOTAL(SUM([Sales]))</code></td><td><span lang="de">die Tabellenberechnung rechnet nur über das Sichtbare</span><span lang="en">the table calculation only covers what is visible</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Vorjahreswert</span><span lang="en">Previous year</span></td><td><code>SAMEPERIODLASTYEAR</code></td><td><code>LOOKUP(SUM([Sales]), -1)</code></td><td><span lang="de">Tableau greift auf die vorige Zelle zu, nicht auf einen Kalender</span><span lang="en">Tableau reads the previous cell, not a calendar</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Rang</span><span lang="en">Rank</span></td><td><code>RANKX(ALL(...), ...)</code></td><td><code>RANK(SUM([Sales]))</code></td><td><span lang="de">in der Wirkung gleich</span><span lang="en">same effect</span></td></tr>
+          <tr><td class="kopf"><span lang="de">Zwischenergebnis benennen</span><span lang="en">Naming an intermediate result</span></td><td><code>VAR / RETURN</code></td><td><code><span lang="de">eigenes berechnetes Feld</span><span lang="en">a separate calculated field</span></code></td><td><span lang="de">Tableau kennt keine Variablen innerhalb eines Ausdrucks</span><span lang="en">Tableau has no variables inside an expression</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept-box">
+      <h4><span lang="de">LOD oder Tabellenberechnung?</span><span lang="en">LOD or table calculation?</span></h4>
+      <p><span lang="de">Die Faustregel steckt in der Reihenfolge, in der Tableau rechnet: Ein FIXED-Ausdruck entsteht, bevor die Filter der Ansicht greifen – sein Ergebnis bleibt stabil, egal was gerade sichtbar ist. Eine Tabellenberechnung entsteht danach und sieht nur noch, was die Ansicht zeigt. Der Anteil der Region West beträgt mit FIXED immer 31,4 %; mit TOTAL() ist es der Anteil an den gerade sichtbaren Regionen. Beide Zahlen sind richtig – sie beantworten verschiedene Fragen.</span><span lang="en">The rule of thumb follows Tableau order of operations: a FIXED expression is computed before the filters of the view apply, so its result stays stable no matter what is visible. A table calculation happens afterwards and only sees what the view shows. The share of the West region is always 31.4% with FIXED; with TOTAL() it is the share of the regions currently visible. Both numbers are correct – they answer different questions.</span></p>
+    </div>
+
+    <h3><span lang="de">Berechnete Felder für train.csv</span><span lang="en">Calculated fields for train.csv</span></h3>
+    <!-- SCREENSHOT: tableau-calculated-field · Tableau Desktop · Analyse → Berechnetes Feld erstellen · Dialog mit SUM([Sales]) -->
+    <div class="codeblock" data-kind="run" data-name="tabCode">
+<pre class="code-block">// Gesamtumsatz
+SUM([Sales])
+
+// Umsatz West – in DAX: CALCULATE(SUM(...), Region = "West")
+SUM(IF [Region] = "West" THEN [Sales] END)
+
+// Anteil am Gesamtumsatz – LOD, unabhängig von der Ansicht
+SUM([Sales]) / MIN({ FIXED : SUM([Sales]) })
+
+// Anteil an der Ansicht – Tabellenberechnung
+SUM([Sales]) / TOTAL(SUM([Sales]))
+
+// Umsatz des Vorjahres – Jahr muss in der Ansicht liegen
+LOOKUP(SUM([Sales]), -1)
+
+// Wachstum gegenüber dem Vorjahr
+(SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / LOOKUP(SUM([Sales]), -1)
+
+// Rang nach Umsatz
+RANK(SUM([Sales]))
+
+// Umsatz je Kunde – unabhängig von der Ansicht
+{ FIXED [Customer ID] : SUM([Sales]) }
+
+// Erstbestellung je Kunde
+{ FIXED [Customer ID] : MIN([Order Date]) }
+
+// Durchschnittlicher Bestellwert
+SUM([Sales]) / COUNTD([Order ID])</pre>
+      <p class="code-note"><span lang="de">Jedes Feld einzeln anlegen über Analyse › Berechnetes Feld erstellen. Die Feldnamen in eckigen Klammern entsprechen den Spalten der CSV-Datei.</span><span lang="en">Create each field separately via Analysis › Create Calculated Field. The field names in square brackets match the columns of the CSV file.</span></p>
+    </div>
+
+    <div class="tip-box">
+      <h4><span lang="de">Wenn das Bestelldatum als Text ankommt</span><span lang="en">When the order date arrives as text</span></h4>
+      <p><span lang="de">In train.csv steht das Datum als 08/11/2017, also Tag zuerst. Liest Tableau die Spalte als Text ein, legen Sie ein berechnetes Feld an: DATEPARSE("dd/MM/yyyy", [Order Date]). Prüfen Sie das Ergebnis an einer Zahl, die Sie kennen – das Wachstum 2018 muss 20,3 % ergeben. Kommt etwas anderes heraus, wurden Tag und Monat vertauscht.</span><span lang="en">In train.csv the date reads 08/11/2017, day first. If Tableau imports the column as text, create a calculated field: DATEPARSE("dd/MM/yyyy", [Order Date]). Check the result against a number you know – growth in 2018 must come out at 20.3%. Anything else means day and month were swapped.</span></p>
+    </div>
+
+    <div class="challenge-box">
+      <h4><span lang="de">Selbstcheck (1 Minute)</span><span lang="en">Self-check (1 minute)</span></h4>
+      <ul>
+        <li><span lang="de">Gesamtumsatz 2.261.536,78 – dieselbe Zahl wie in Power BI und in Python.</span><span lang="en">Total revenue 2,261,536.78 – the same number as in Power BI and Python.</span></li>
+        <li><span lang="de">Umsatz West 710.219,68, Anteil 31,4 % – die Probe auf den LOD-Ausdruck.</span><span lang="en">West revenue 710,219.68, share 31.4% – the check on the LOD expression.</span></li>
+        <li><span lang="de">Wachstum 2018 gegenüber 2017 rund 20,3 %, 2016 zeigt −4,3 %.</span><span lang="en">Growth 2018 over 2017 about 20.3%, 2016 shows −4.3%.</span></li>
+        <li><span lang="de">Im Rang nach Unterkategorie stehen Phones, Chairs und Storage vorn.</span><span lang="en">The rank by sub-category is led by Phones, Chairs and Storage.</span></li>
+        <li><span lang="de">4.922 Bestellungen, durchschnittlicher Bestellwert 459,48.</span><span lang="en">4,922 orders, average order value 459.48.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-block" id="youtube">
+    <h2><span lang="de">Lernressourcen</span><span lang="en">Learning Resources</span></h2>
+    <div class="accent-line"></div>
+    <p><span lang="de">Ergänzende YouTube-Kanalempfehlungen für DAX und Python-Analysen:</span><span lang="en">Recommended YouTube channels for DAX and Python analytics:</span></p>
+
+    <div class="youtube-box">
+      <h3>YouTube</h3>
+      <p class="hinweis-klein"><span lang="de">Externe Ziele: Die Links führen auf Kanalstartseiten bei YouTube. Im EU-Browser erscheint dort zuerst der Consent-Dialog, und der passende Beitrag muss auf dem Kanal noch gesucht werden. Bewusst Kanal statt Einzelvideo: einzelne Videos verschwinden, Kanäle bieten eine zentrale Anlaufstelle.</span><span lang="en">External destinations: these links open channel landing pages on YouTube. In an EU browser the consent dialog appears first, and you still have to find the relevant video on the channel. Channels rather than single videos on purpose: individual videos disappear, channels provide a central starting point.</span></p>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@SQLBI" target="_blank" rel="noopener noreferrer">SQLBI – DAX Introduction</a>
+        <p><span lang="de">SQLBI (Marco Russo &amp; Alberto Ferrari) sind die weltweit führenden DAX-Experten. Tiefe Einblicke in DAX, Power BI und das Tabular-Modell.</span><span lang="en">SQLBI (Marco Russo &amp; Alberto Ferrari) are the world's leading DAX experts. Deep insights into DAX, Power BI and the Tabular model.</span></p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@Curbal" target="_blank" rel="noopener noreferrer">"DAX Fridays" – Curbal</a>
+        <p><span lang="de">Wöchentliche DAX-Tipps und Tutorials. Sehr praxisnah, gut für Einsteiger und Fortgeschrittene.</span><span lang="en">Weekly DAX tips and tutorials. Very practical, suitable for beginners and advanced users alike.</span></p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@GuyInACube" target="_blank" rel="noopener noreferrer">Guy in a Cube</a>
+        <p><span lang="de">Offizieller Microsoft-naher Kanal (Adam Saxton &amp; Patrick LeBlanc). Power BI News, Tipps und Best Practices.</span><span lang="en">Official Microsoft-adjacent channel (Adam Saxton &amp; Patrick LeBlanc). Power BI news, tips and best practices.</span></p>
+      </div>
+      <div class="ressource">
+        <a class="youtube-link" href="https://www.youtube.com/@EnterpriseDNA" target="_blank" rel="noopener noreferrer">Enterprise DNA</a>
+        <p><span lang="de">Fortgeschrittene DAX-Patterns, Datenmodellierung und reale Business-Szenarien.</span><span lang="en">Advanced DAX patterns, data modelling and real-world business scenarios.</span></p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <p><span lang="de">Buchempfehlung: "The Definitive Guide to DAX" von Marco Russo &amp; Alberto Ferrari (Microsoft Press, 2. Aufl. 2019) – das Standardwerk für fortgeschrittenes DAX.</span><span lang="en">Book recommendation: "The Definitive Guide to DAX" by Marco Russo &amp; Alberto Ferrari (Microsoft Press, 2nd ed. 2019) – the standard reference for advanced DAX.</span></p>
+    </div>
+  </section>
+
+  <section class="section-block" id="quiz">
+    <h2>Quiz</h2>
+    <div class="accent-line"></div>
+    <div data-quiz></div>
+  </section>
+
+  <section class="section-block" id="zusammenfassung">
+    <h2><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h2>
+    <div class="accent-line"></div>
+    <div class="concept-box">
+      <ol>
+        <li><span lang="de">DAX ist die Formelsprache von Power BI – optimiert für tabellarische Datenmodelle.</span><span lang="en">DAX is the formula language of Power BI – optimised for tabular data models.</span></li>
+        <li><span lang="de">Measures (dynamisch, zur Laufzeit) sind fast immer Calculated Columns (statisch, gespeichert) vorzuziehen.</span><span lang="en">Measures (dynamic, at runtime) are almost always preferable to Calculated Columns (static, stored).</span></li>
+        <li><span lang="de">CALCULATE() ist die mächtigste DAX-Funktion – sie verändert den Filter-Kontext.</span><span lang="en">CALCULATE() is the most powerful DAX function – it modifies the filter context.</span></li>
+        <li><span lang="de">VAR / RETURN verbessert Lesbarkeit und Performance komplexer DAX-Formeln.</span><span lang="en">VAR / RETURN improves readability and performance of complex DAX formulas.</span></li>
+        <li><span lang="de">Gute KPIs erfüllen die SMART-Kriterien (Doran, 1981).</span><span lang="en">Good KPIs meet the SMART criteria (Doran, 1981).</span></li>
+        <li><span lang="de">Leading Indicators (Frühwarn-KPIs) ergänzen Lagging Indicators (Ergebnis-KPIs).</span><span lang="en">Leading indicators (early-warning KPIs) complement lagging indicators (outcome KPIs).</span></li>
+        <li><span lang="de">Python (pandas) eignet sich als Vergleichstool und für explorative Analysen.</span><span lang="en">Python (pandas) serves as a comparison tool and for exploratory analysis.</span></li>
+      </ol>
+    </div>
+    <nav class="nav-bottom"></nav>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span lang="de">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+  <span lang="en">THWS Business School · BINT-Lab · Prof. Dr. Robert Butscher</span>
+</footer>
+
+<script type="module">
+  import { starteLab } from './assets/bint.js'
+  starteLab({ lab: 'lab-03', basis: '.' })
+</script>
 </body>
 </html>

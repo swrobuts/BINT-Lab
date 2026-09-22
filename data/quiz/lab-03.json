@@ -1,0 +1,182 @@
+[
+  {
+    "id": "B03-01",
+    "frage": {
+      "de": "Wofür steht das M in SMART-KPIs?",
+      "en": "What does the M in SMART KPIs stand for?"
+    },
+    "optionen": [
+      {
+        "de": "Measurable",
+        "en": "Measurable"
+      },
+      {
+        "de": "Manual",
+        "en": "Manual"
+      },
+      {
+        "de": "Modular",
+        "en": "Modular"
+      },
+      {
+        "de": "Mandatory",
+        "en": "Mandatory"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "SMART steht für Specific, Measurable, Achievable, Relevant, Time-bound. „Measurable“ verlangt, dass die Kennzahl numerisch erfassbar ist – „Kundenzufriedenheit verbessern“ ist kein KPI, „NPS von 32 auf 40 steigern“ schon.",
+      "en": "SMART stands for Specific, Measurable, Achievable, Relevant, Time-bound. \"Measurable\" requires the metric to be numerically captured: \"improve customer satisfaction\" is not a KPI, \"raise NPS from 32 to 40\" is."
+    }
+  },
+  {
+    "id": "B03-02",
+    "frage": {
+      "de": "Welches Konzept verändert den Filter-Kontext in DAX?",
+      "en": "Which concept modifies the filter context in DAX?"
+    },
+    "optionen": [
+      {
+        "de": "SUM()",
+        "en": "SUM()"
+      },
+      {
+        "de": "ALL()",
+        "en": "ALL()"
+      },
+      {
+        "de": "VAR",
+        "en": "VAR"
+      },
+      {
+        "de": "CALCULATE()",
+        "en": "CALCULATE()"
+      }
+    ],
+    "richtig": 3,
+    "erklaerung": {
+      "de": "Nur CALCULATE() kann den Filter-Kontext aktiv verändern. SUM() aggregiert lediglich im bestehenden Kontext, VAR speichert Zwischenergebnisse, und ALL() ist ein Filter-Modifikator, der seine Wirkung erst als Argument innerhalb von CALCULATE() entfaltet.",
+      "en": "Only CALCULATE() actively modifies the filter context. SUM() merely aggregates within the existing context, VAR stores intermediate results, and ALL() is a filter modifier that only takes effect as an argument inside CALCULATE()."
+    }
+  },
+  {
+    "id": "B03-03",
+    "frage": {
+      "de": "Was ist ein Leading Indicator?",
+      "en": "What is a leading indicator?"
+    },
+    "optionen": [
+      {
+        "de": "Quartals-Umsatz",
+        "en": "Quarterly revenue"
+      },
+      {
+        "de": "Jahresgewinn",
+        "en": "Annual profit"
+      },
+      {
+        "de": "Churn Rate",
+        "en": "Churn rate"
+      },
+      {
+        "de": "Website-Traffic",
+        "en": "Website traffic"
+      }
+    ],
+    "richtig": 3,
+    "erklaerung": {
+      "de": "Website-Traffic ist vorlaufend: er verändert sich, bevor sich der Umsatz verändert, und lässt daher Steuerung zu. Umsatz, Gewinn oder Quartalsergebnis sind Lagging Indicators – sie messen, was bereits geschehen ist.",
+      "en": "Website traffic is leading: it moves before revenue moves, so it can still be acted upon. Revenue, profit or quarterly results are lagging indicators - they measure what has already happened."
+    }
+  },
+  {
+    "id": "B03-04",
+    "frage": {
+      "de": "Wo werden Calculated Columns gespeichert?",
+      "en": "Where are Calculated Columns stored?"
+    },
+    "optionen": [
+      {
+        "de": "In der Tabelle (Row Context)",
+        "en": "In the table (Row Context)"
+      },
+      {
+        "de": "Im Measure-Bereich",
+        "en": "In the Measure area"
+      },
+      {
+        "de": "Nur zur Laufzeit",
+        "en": "Only at runtime"
+      },
+      {
+        "de": "Im Filter-Kontext",
+        "en": "In the filter context"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "Calculated Columns werden beim Daten-Refresh berechnet und materialisiert in der Tabelle gespeichert – sie belegen also Arbeitsspeicher und arbeiten im Row Context. Measures dagegen werden zur Abfragezeit im Filter Context berechnet und speichern nichts. Faustregel: Measures bevorzugen, Calculated Columns nur wenn man den Wert zum Filtern oder Gruppieren braucht.",
+      "en": "Calculated Columns are computed at data refresh and materialised in the table, so they consume memory and work in the row context. Measures, by contrast, are evaluated at query time in the filter context and store nothing. Rule of thumb: prefer measures; use calculated columns only when you need the value for filtering or grouping."
+    }
+  },
+  {
+    "id": "B03-05",
+    "frage": {
+      "de": "Was liefert SAMEPERIODLASTYEAR() zurück?",
+      "en": "What does SAMEPERIODLASTYEAR() return?"
+    },
+    "optionen": [
+      {
+        "de": "Den Monatsdurchschnitt",
+        "en": "The monthly average"
+      },
+      {
+        "de": "Den gleichen Zeitraum im Vorjahr",
+        "en": "The same period in the prior year"
+      },
+      {
+        "de": "Die Vorwoche",
+        "en": "The previous week"
+      },
+      {
+        "de": "Den kumulierten Wert",
+        "en": "The cumulative value"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "SAMEPERIODLASTYEAR() gibt eine Tabelle mit denselben Datumswerten, um ein Jahr zurückversetzt, zurück – typisch für Vorjahresvergleiche. Voraussetzung: eine als Datumstabelle markierte, lückenlose Kalendertabelle im Modell, sonst liefert die Funktion falsche oder leere Ergebnisse.",
+      "en": "SAMEPERIODLASTYEAR() returns a table of the same dates shifted back by one year - the standard building block for year-over-year comparisons. It requires a contiguous calendar table marked as a date table in the model, otherwise it returns wrong or empty results."
+    }
+  },
+  {
+    "id": "B03-06",
+    "frage": {
+      "de": "Was bewirkt ALL() in CALCULATE()?",
+      "en": "What does ALL() do inside CALCULATE()?"
+    },
+    "optionen": [
+      {
+        "de": "Fügt neue Filter hinzu",
+        "en": "Adds new filters"
+      },
+      {
+        "de": "Erstellt eine Calculated Column",
+        "en": "Creates a Calculated Column"
+      },
+      {
+        "de": "Entfernt bestehende Filter",
+        "en": "Removes existing filters"
+      },
+      {
+        "de": "Sortiert die Tabelle",
+        "en": "Sorts the table"
+      }
+    ],
+    "richtig": 2,
+    "erklaerung": {
+      "de": "ALL() entfernt bestehende Filter von einer Tabelle oder Spalte und ist damit die Grundlage für Anteilsberechnungen: der Zähler respektiert den Slicer, der Nenner (mit ALL()) nicht – so entsteht „Anteil am Gesamtumsatz“.",
+      "en": "ALL() removes existing filters from a table or column, which is the basis for share-of-total calculations: the numerator respects the slicer, the denominator (wrapped in ALL()) does not - giving you \"share of total revenue\"."
+    }
+  }
+]

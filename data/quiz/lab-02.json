@@ -1,0 +1,182 @@
+[
+  {
+    "id": "B02-01",
+    "frage": {
+      "de": "Was ist der Hauptunterschied zwischen Star Schema und Snowflake Schema?",
+      "en": "What is the main difference between Star Schema and Snowflake Schema?"
+    },
+    "optionen": [
+      {
+        "de": "Star Schema hat mehrere Faktentabellen, Snowflake nur eine",
+        "en": "Star Schema has multiple fact tables, Snowflake only one"
+      },
+      {
+        "de": "Star Schema benötigt mehr Speicher als Snowflake Schema",
+        "en": "Star Schema requires more storage than Snowflake Schema"
+      },
+      {
+        "de": "Snowflake Schema wird nur in der Cloud verwendet",
+        "en": "Snowflake Schema is only used in the cloud"
+      },
+      {
+        "de": "Im Star Schema sind Dimensionen denormalisiert (flach), im Snowflake normalisiert (mehrere Tabellen)",
+        "en": "In Star Schema dimensions are denormalised (flat), in Snowflake normalised (multiple tables)"
+      }
+    ],
+    "richtig": 3,
+    "erklaerung": {
+      "de": "Im Star Schema liegen die Dimensionen denormalisiert (flach) vor – einfacher und schneller. Im Snowflake Schema sind Dimensionen in mehrere Tabellen normalisiert – spart Speicher, aber erfordert mehr JOINs.",
+      "en": "In the Star Schema, dimensions are denormalised (flat) – simpler and faster. In the Snowflake Schema, dimensions are normalised into multiple tables – saves storage but requires more JOINs."
+    }
+  },
+  {
+    "id": "B02-02",
+    "frage": {
+      "de": "Welche Methode in pandas entfernt doppelte Zeilen aus einem DataFrame?",
+      "en": "Which pandas method removes duplicate rows from a DataFrame?"
+    },
+    "optionen": [
+      {
+        "de": "df.drop_duplicates()",
+        "en": "df.drop_duplicates()"
+      },
+      {
+        "de": "df.deduplicate()",
+        "en": "df.deduplicate()"
+      },
+      {
+        "de": "df.remove_duplicates()",
+        "en": "df.remove_duplicates()"
+      },
+      {
+        "de": "df.unique()",
+        "en": "df.unique()"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "df.drop_duplicates() entfernt doppelte Zeilen aus einem pandas DataFrame. Mit subset=[] können spezifische Spalten für den Vergleich angegeben werden.",
+      "en": "df.drop_duplicates() removes duplicate rows from a pandas DataFrame. The subset=[] parameter can specify which columns to compare."
+    }
+  },
+  {
+    "id": "B02-03",
+    "frage": {
+      "de": "Was ist GraphQL?",
+      "en": "What is GraphQL?"
+    },
+    "optionen": [
+      {
+        "de": "Eine API-Abfragesprache – die Antwort ist JSON",
+        "en": "An API query language – the response is JSON"
+      },
+      {
+        "de": "Eine Datenbanksprache wie SQL",
+        "en": "A database language like SQL"
+      },
+      {
+        "de": "Ein Cloud-Speicherdienst",
+        "en": "A cloud storage service"
+      },
+      {
+        "de": "Ein Dateiformat wie JSON oder XML",
+        "en": "A file format like JSON or XML"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "GraphQL ist eine API-Abfragesprache (kein Datenformat). Die Antworten einer GraphQL-API werden als JSON zurückgegeben.",
+      "en": "GraphQL is an API query language (not a data format). Responses from a GraphQL API are returned as JSON."
+    }
+  },
+  {
+    "id": "B02-04",
+    "frage": {
+      "de": "Welcher DWH-Architekturansatz verwendet Star Schemata in fachbereichsbezogenen Data Marts?",
+      "en": "Which DWH architecture approach uses star schemas in business-area data marts?"
+    },
+    "optionen": [
+      {
+        "de": "Bill Inmon (Top-Down)",
+        "en": "Bill Inmon (Top-Down)"
+      },
+      {
+        "de": "Ralph Kimball (Bottom-Up)",
+        "en": "Ralph Kimball (Bottom-Up)"
+      },
+      {
+        "de": "Edgar F. Codd (Relational)",
+        "en": "Edgar F. Codd (Relational)"
+      },
+      {
+        "de": "Dan Linstedt (Data Vault)",
+        "en": "Dan Linstedt (Data Vault)"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "Ralph Kimball (1996) propagiert den Bottom-Up-Ansatz: fachbereichsbezogene Data Marts mit Star Schema, die schnell produktiv sind. Inmon bevorzugt ein unternehmensweites normalisiertes DWH.",
+      "en": "Ralph Kimball (1996) advocates the Bottom-Up approach: business-area data marts with star schema that are quick to productionise. Inmon prefers an enterprise-wide normalised DWH."
+    }
+  },
+  {
+    "id": "B02-05",
+    "frage": {
+      "de": "Welcher SCD-Typ speichert historische Änderungen mit Gültigkeitszeitraum?",
+      "en": "Which SCD type stores historical changes with a validity period?"
+    },
+    "optionen": [
+      {
+        "de": "SCD Typ 3 (Zusätzliche Spalte)",
+        "en": "SCD Type 3 (Additional column)"
+      },
+      {
+        "de": "SCD Typ 2 (Neue Zeile)",
+        "en": "SCD Type 2 (New row)"
+      },
+      {
+        "de": "SCD Typ 0 (Keine Änderung)",
+        "en": "SCD Type 0 (No change)"
+      },
+      {
+        "de": "SCD Typ 1 (Überschreiben)",
+        "en": "SCD Type 1 (Overwrite)"
+      }
+    ],
+    "richtig": 1,
+    "erklaerung": {
+      "de": "SCD Typ 2 fügt bei jeder Änderung eine neue Zeile mit Gültigkeitszeitraum (valid_from, valid_to) ein. Das ist der Standard im Data Warehousing, weil die vollständige Historie erhalten bleibt.",
+      "en": "SCD Type 2 adds a new row with validity period (valid_from, valid_to) for each change. This is the standard in data warehousing because the complete history is preserved."
+    }
+  },
+  {
+    "id": "B02-06",
+    "frage": {
+      "de": "Welche der folgenden ist KEINE Dimension im DAMA DMBOK-Datenqualitätsframework?",
+      "en": "Which of the following is NOT a dimension in the DAMA DMBOK data quality framework?"
+    },
+    "optionen": [
+      {
+        "de": "Scalability (Skalierbarkeit)",
+        "en": "Scalability"
+      },
+      {
+        "de": "Accuracy (Korrektheit)",
+        "en": "Accuracy"
+      },
+      {
+        "de": "Completeness (Vollständigkeit)",
+        "en": "Completeness"
+      },
+      {
+        "de": "Timeliness (Aktualität)",
+        "en": "Timeliness"
+      }
+    ],
+    "richtig": 0,
+    "erklaerung": {
+      "de": "Scalability ist keine Datenqualitätsdimension. Die sechs DAMA DMBOK-Dimensionen sind: Accuracy, Completeness, Consistency, Timeliness, Validity und Uniqueness.",
+      "en": "Scalability is not a data quality dimension. The six DAMA DMBOK dimensions are: Accuracy, Completeness, Consistency, Timeliness, Validity, and Uniqueness."
+    }
+  }
+]

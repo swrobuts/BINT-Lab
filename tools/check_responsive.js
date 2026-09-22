@@ -3,8 +3,9 @@
 //   * scrollWidth <= innerWidth bei 320 / 390 / 768 / 1024 / 1440 px
 //     (die Seite selbst darf nie horizontal scrollen; Tabellen und
 //      Codebloecke duerfen es innerhalb ihres Containers)
-//   * jede Seite rendert ueberhaupt - faengt Transpilierungsfehler ab
-//   * kein "undefined" und keine CDN-Fehlermeldung im sichtbaren Text
+//   * jede Seite rendert ueberhaupt und ohne JavaScript-Fehler
+//   * das Quiz jeder Lab-Seite ist aufgebaut (data/quiz/<lab>.json geladen)
+//   * kein "undefined" und keine Fehlermeldung im sichtbaren Text
 //   * genau eine h1 je Seite, Sprunglink mit vorhandenem Ziel und
 //     Sprachbuttons mit aria-label und aria-pressed
 //
@@ -74,7 +75,8 @@ const WIDTHS = [320, 390, 768, 1024, 1440];
 const LANGS = process.argv.includes('--no-lang') ? [null] : ['de', 'en'];
 // Dash rendert die Diagramme erst nach dem ersten Callback - dann ist der
 // Mindestinhalt deutlich kleiner als bei einer Lab-Seite.
-const MIN_LEN = process.argv.includes('--no-lang') ? 40 : 1500;
+const DASH = process.argv.includes('--no-lang');
+const MIN_LEN = DASH ? 40 : 1500;
 
 async function main() {
   const browser = await launch();
@@ -93,15 +95,17 @@ async function main() {
         pageErrors = [];
         const path = p.replace(/^\//, '');
         const url = lang ? `${BASE}/${path}?lang=${lang}` : `${BASE}/${path}`;
-        await page.goto(url, { waitUntil: MIN_LEN < 1500 ? 'domcontentloaded' : 'networkidle' });
-        // Babel transpiliert im Browser - kurz warten, bis gemountet ist.
-        await page.waitForSelector(MIN_LEN < 1500
-          ? '.js-plotly-plot .main-svg' : '#root h1', { timeout: 20000 }).catch(() => {});
+        await page.goto(url, { waitUntil: DASH ? 'domcontentloaded' : 'networkidle' });
+        await page.waitForSelector(DASH ? '.js-plotly-plot .main-svg' : 'h1', { timeout: 20000 }).catch(() => {});
+        // Das Quiz kommt per fetch; bei Lab-Seiten darauf warten.
+        const isLab = !DASH && path.startsWith('lab-');
+        if (isLab) await page.waitForSelector('.uebung, .warn-box', { timeout: 10000 }).catch(() => {});
         const r = await page.evaluate(() => ({
           sw: document.documentElement.scrollWidth,
           iw: window.innerWidth,
-          len: (document.getElementById('root') || document.body).textContent.trim().length,
-          bad: /undefined|\[object Object\]|konnte nicht geladen|could not load/.test(document.body.innerText),
+          len: document.body.innerText.trim().length,
+          bad: /undefined|\[object Object\]|konnte nicht geladen|could not be loaded|NaN/.test(document.body.innerText),
+          quiz: document.querySelectorAll('.uebung').length,
           // Genau eine h1 je Seite: darunter haengt die Ueberschriftenhierarchie,
           // an der sich Screenreader-Nutzer durch die Seite bewegen.
           h1: document.querySelectorAll('h1').length,
@@ -114,17 +118,20 @@ async function main() {
           })(),
           langLabelled: [...document.querySelectorAll('.lang-btn')]
             .every((b) => b.getAttribute('aria-label') && b.getAttribute('aria-pressed') !== null),
+          htmlLang: document.documentElement.getAttribute('lang'),
         }));
         checked++;
         const at = `${p}${lang ? ' ' + lang : ''} @${w}px`;
         for (const error of pageErrors) fails.push(`${at}: JavaScript: ${error}`);
-        if (MIN_LEN < 1500 && await page.locator('.js-plotly-plot .main-svg').count() === 0)
+        if (DASH && await page.locator('.js-plotly-plot .main-svg').count() === 0)
           fails.push(`${at}: Dash-Diagramme nicht gerendert`);
         if (r.sw > r.iw) fails.push(`${at}: scrollWidth ${r.sw} > innerWidth ${r.iw}`);
         if (r.len < MIN_LEN) fails.push(`${at}: nicht gerendert (${r.len} Zeichen)`);
         if (r.bad) fails.push(`${at}: Fehlertext im sichtbaren Inhalt`);
+        if (isLab && r.quiz === 0) fails.push(`${at}: Quiz nicht aufgebaut`);
+        if (lang && r.htmlLang !== lang) fails.push(`${at}: html[lang] ist ${r.htmlLang}`);
         // Semantik nur einmal je Seite pruefen, nicht bei jeder Breite
-        if (w === WIDTHS[0] && MIN_LEN >= 1500) {
+        if (w === WIDTHS[0] && !DASH) {
           if (r.h1 !== 1) fails.push(`${at}: ${r.h1} h1-Elemente statt genau einem`);
           if (!r.skip) fails.push(`${at}: kein Sprunglink zum Inhalt`);
           else if (!r.skipTargetOk) fails.push(`${at}: Sprunglink zeigt ins Leere`);
