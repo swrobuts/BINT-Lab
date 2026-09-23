@@ -513,7 +513,9 @@ td code { white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 760px) { .bonus { grid-template-columns: 1fr; } }
 
 /* Produktive Dashboards, gebaut mit dem Stack des Kurses. */
-.dashboards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.1rem; }
+.dashboards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; }
+@media (max-width: 860px) { .dashboards { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } }
+.live-badge.beispiel { background: #EEF2FF; color: var(--primary-d); }
 .dashboard-card {
   border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;
   background: #fff; padding: 1.2rem 1.3rem; text-decoration: none; color: inherit;
