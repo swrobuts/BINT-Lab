@@ -515,7 +515,6 @@ td code { white-space: pre-wrap; overflow-wrap: anywhere; }
 /* Produktive Dashboards, gebaut mit dem Stack des Kurses. */
 .dashboards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; }
 @media (max-width: 860px) { .dashboards { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } }
-.live-badge.beispiel { background: #EEF2FF; color: var(--primary-d); }
 .dashboard-card {
   border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;
   background: #fff; padding: 1.2rem 1.3rem; text-decoration: none; color: inherit;
@@ -526,10 +525,12 @@ td code { white-space: pre-wrap; overflow-wrap: anywhere; }
 .dashboard-card .name { font-weight: 700; color: var(--primary-d); }
 .dashboard-card p { margin: 0; font-size: 0.875rem; color: var(--ink-soft); flex: 1; }
 .dashboard-card .tech { font-size: 0.74rem; font-weight: 600; color: var(--ink-soft); }
-.live-badge {
-  flex: none; background: var(--ok); color: #fff; font-size: 0.62rem; font-weight: 800;
+.kat-badge {
+  flex: none; font-size: 0.62rem; font-weight: 800;
   letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.5rem;
 }
+.kat-steuerung { background: var(--primary-d); color: #fff; }
+.kat-storytelling { background: #EEF2FF; color: var(--primary-d); }
 
 /* ------------------------------------------------------------ Lab-Layout */
 
