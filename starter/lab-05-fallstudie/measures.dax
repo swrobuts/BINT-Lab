@@ -48,28 +48,56 @@ DIVIDE([Umsatz] - [Umsatz_VJ], [Umsatz_VJ], 0) * 100
 -- Deckungsbeitrags-Measures wie Gewinn oder Marge lassen sich damit
 -- nicht bilden; sie brauchen die Vollversion des Superstore-Datensatzes.
 
--- 4. Kacheln, Monatslinie und Jahresfilter (Schritt 4 und 5)
---    Die Kacheln zeigen immer 2018 und ignorieren den Jahres-Slicer,
---    weil FILTER(ALL(...)) den Datumsfilter aufhebt. Muster fuer Umsatz,
---    fuer Bestellungen, Positionen und Avg_Bestellwert genauso.
+-- 4. Kacheln, Minisaeulen, Monatslinie und Jahresfilter (Schritt 4 und 5)
+--    Der Slicer liegt auf der Spalte Jahr. Die Kacheln zeigen das
+--    Bezugsjahr (das juengste gewaehlte Jahr, ohne Auswahl 2018) und den
+--    Vergleich zum Jahr davor. Muster fuer Umsatz; Bestellungen,
+--    Positionen und Avg_Bestellwert genauso.
 
-Umsatz 2018 =
-CALCULATE([Umsatz], FILTER(ALL(Orders[Order Date]), YEAR(Orders[Order Date]) = 2018))
+Jahr = YEAR(Orders[Order Date])            -- Spaltentools -> Neue Spalte
 
-Umsatz 2017 =
-CALCULATE([Umsatz], FILTER(ALL(Orders[Order Date]), YEAR(Orders[Order Date]) = 2017))
+Bezugsjahr =
+MAX(Orders[Jahr])
+
+Umsatz Bezugsjahr =
+VAR j = [Bezugsjahr]
+RETURN CALCULATE([Umsatz], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
+
+Umsatz Vorjahr =
+VAR j = [Bezugsjahr]
+RETURN CALCULATE([Umsatz], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
 
 Umsatz Veraenderung =
-VAR d = DIVIDE([Umsatz 2018] - [Umsatz 2017], [Umsatz 2017])
-RETURN IF(d >= 0, "+", "-") & FORMAT(ABS(d) * 100, "0.0") & " % zum Vorjahr"
+VAR a = [Umsatz Bezugsjahr]
+VAR v = [Umsatz Vorjahr]
+VAR d = DIVIDE(a - v, v)
+RETURN IF(ISBLANK(v), "kein Vorjahr im Datensatz",
+    IF(d >= 0, "+", "-") & FORMAT(ABS(d) * 100, "0.0") & " % zum Vorjahr")
 
--- Minisaeulen: zwei Reihen in einem gestapelten Saeulendiagramm,
--- Vorjahre hellgrau, aktuelles Jahr in der Akzentfarbe
+Umsatz Farbe =                              -- Kartenfarbe per Feldwert
+IF(ISBLANK([Umsatz Vorjahr]) || [Umsatz Bezugsjahr] >= [Umsatz Vorjahr], "#1E3A8A", "#B23B1E")
+
+Umsatz Titel =
+"UMSATZ " & [Bezugsjahr]
+
+-- Minisaeulen: eigene Tabelle Jahre ohne Beziehung, damit die Achse
+-- alle vier Jahre behaelt, auch wenn der Slicer auf ein Jahr steht
+-- (Modellierung -> Neue Tabelle):
+Jahre =
+ADDCOLUMNS(DISTINCT(SELECTCOLUMNS(Orders, "Jahr", Orders[Jahr])),
+    "Jahr kurz", "'" & RIGHT(FORMAT([Jahr], "0"), 2))
+
+-- Gestapeltes Saeulendiagramm: X-Achse Jahre[Jahr kurz], zwei Reihen,
+-- Vorjahre hellgrau, Bezugsjahr in der Akzentfarbe
 Umsatz Vorjahre =
-IF(YEAR(MAX(Orders[Order Date])) < 2018, [Umsatz])
+VAR j = [Bezugsjahr]
+VAR y = MAX(Jahre[Jahr])
+RETURN IF(y <> j, CALCULATE([Umsatz], REMOVEFILTERS(Orders[Jahr]), Orders[Jahr] = y))
 
 Umsatz Aktuell =
-IF(YEAR(MAX(Orders[Order Date])) = 2018, [Umsatz])
+VAR j = [Bezugsjahr]
+VAR y = MAX(Jahre[Jahr])
+RETURN IF(y = j, CALCULATE([Umsatz], REMOVEFILTERS(Orders[Jahr]), Orders[Jahr] = y))
 
 -- Monatslinie: graue Punkte je November/Dezember, letzter Wert rot
 Saisonpunkte =
@@ -78,10 +106,7 @@ IF(MONTH(MAX(Orders[Order Date])) >= 11 && MAX(Orders[Order Date]) < DATE(2018, 
 Letzter Monat =
 IF(MAX(Orders[Order Date]) >= DATE(2018, 12, 1), [Umsatz])
 
--- Jahresfilter: berechnete Spalte fuer den Slicer und ein Measure,
--- das den gewaehlten Zeitraum in den Untertitel schreibt
-Jahr = YEAR(Orders[Order Date])            -- Spaltentools -> Neue Spalte
-
+-- Untertitel mit dem gewaehlten Zeitraum
 Zeitraum =
 VAR mn = MIN(Orders[Jahr])
 VAR mx = MAX(Orders[Jahr])

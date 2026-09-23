@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "2bb5f173784ebc880e60",
   "position": {
-    "x": 513,
-    "y": 222,
+    "x": 517.3086867618299,
+    "y": 247.39633910877905,
     "z": 8,
     "height": 48,
     "width": 230,
@@ -41,6 +41,22 @@
               "expr": {
                 "Literal": {
                   "Value": "11D"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Orders"
+                        }
+                      },
+                      "Property": "Bestellungen Farbe"
+                    }
+                  }
                 }
               }
             }

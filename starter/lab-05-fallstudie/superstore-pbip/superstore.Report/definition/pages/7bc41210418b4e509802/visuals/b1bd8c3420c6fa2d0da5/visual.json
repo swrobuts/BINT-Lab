@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "b1bd8c3420c6fa2d0da5",
   "position": {
-    "x": 1206,
-    "y": 140,
+    "x": 1184.955366493476,
+    "y": 147.6525940023723,
     "z": 13,
     "height": 166,
     "width": 200,
@@ -20,13 +20,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "Orders"
+                      "Entity": "Jahre"
                     }
                   },
                   "Property": "Jahr kurz"
                 }
               },
-              "queryRef": "Orders.Jahr kurz",
+              "queryRef": "Jahre.Jahr kurz",
               "nativeQueryRef": "Jahr kurz",
               "active": true
             }
@@ -72,10 +72,10 @@
               "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "Orders"
+                    "Entity": "Jahre"
                   }
                 },
-                "Property": "Jahr kurz"
+                "Property": "Jahr"
               }
             },
             "direction": "Ascending"

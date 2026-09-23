@@ -2,37 +2,73 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "2a97d8bdd439a320655a",
   "position": {
-    "x": 60,
-    "y": 140,
+    "x": 64.30868676182999,
+    "y": 104,
     "z": 2,
-    "height": 24,
+    "height": 60,
     "width": 230,
     "tabOrder": 2
   },
   "visual": {
-    "visualType": "textbox",
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orders"
+                    }
+                  },
+                  "Property": "Umsatz Titel"
+                }
+              },
+              "queryRef": "Orders.Umsatz Titel",
+              "nativeQueryRef": "Umsatz Titel"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
     "objects": {
-      "general": [
+      "labels": [
         {
           "properties": {
-            "paragraphs": [
-              {
-                "horizontalTextAlignment": "center",
-                "textRuns": [
-                  {
-                    "value": "UMSATZ 2018",
-                    "textStyle": {
-                      "fontSize": "9pt",
-                      "color": "#6B7280"
-                    }
-                  }
-                ]
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
               }
-            ]
+            },
+            "color": {
+              "expr": {
+                "Literal": {
+                  "Value": "'#6B7280'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
           }
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "visualContainerObjects": {}
   }
 }

@@ -2,37 +2,73 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "09f2b5e6343862d900d9",
   "position": {
-    "x": 966,
-    "y": 140,
+    "x": 970.3086867618299,
+    "y": 104,
     "z": 10,
-    "height": 24,
+    "height": 60,
     "width": 230,
     "tabOrder": 10
   },
   "visual": {
-    "visualType": "textbox",
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orders"
+                    }
+                  },
+                  "Property": "Bestellwert Titel"
+                }
+              },
+              "queryRef": "Orders.Bestellwert Titel",
+              "nativeQueryRef": "Bestellwert Titel"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
     "objects": {
-      "general": [
+      "labels": [
         {
           "properties": {
-            "paragraphs": [
-              {
-                "horizontalTextAlignment": "center",
-                "textRuns": [
-                  {
-                    "value": "Ø BESTELLWERT 2018",
-                    "textStyle": {
-                      "fontSize": "9pt",
-                      "color": "#6B7280"
-                    }
-                  }
-                ]
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
               }
-            ]
+            },
+            "color": {
+              "expr": {
+                "Literal": {
+                  "Value": "'#6B7280'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
           }
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "visualContainerObjects": {}
   }
 }

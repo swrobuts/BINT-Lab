@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "9e6525301ebe02b89f7f",
   "position": {
-    "x": 966,
-    "y": 164,
+    "x": 970.3086867618299,
+    "y": 189.39633910877905,
     "z": 11,
     "height": 62,
     "width": 230,
@@ -23,11 +23,11 @@
                       "Entity": "Orders"
                     }
                   },
-                  "Property": "Bestellwert 2018"
+                  "Property": "Bestellwert Bezugsjahr"
                 }
               },
-              "queryRef": "Orders.Bestellwert 2018",
-              "nativeQueryRef": "Bestellwert 2018"
+              "queryRef": "Orders.Bestellwert Bezugsjahr",
+              "nativeQueryRef": "Bestellwert Bezugsjahr"
             }
           ]
         }

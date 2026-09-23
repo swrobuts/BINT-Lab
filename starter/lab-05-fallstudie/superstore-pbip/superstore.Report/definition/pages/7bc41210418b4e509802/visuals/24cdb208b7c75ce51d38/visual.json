@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "24cdb208b7c75ce51d38",
   "position": {
-    "x": 513,
-    "y": 164,
+    "x": 517.3086867618299,
+    "y": 189.39633910877905,
     "z": 7,
     "height": 62,
     "width": 230,
@@ -23,11 +23,11 @@
                       "Entity": "Orders"
                     }
                   },
-                  "Property": "Bestellungen 2018"
+                  "Property": "Bestellungen Bezugsjahr"
                 }
               },
-              "queryRef": "Orders.Bestellungen 2018",
-              "nativeQueryRef": "Bestellungen 2018"
+              "queryRef": "Orders.Bestellungen Bezugsjahr",
+              "nativeQueryRef": "Bestellungen Bezugsjahr"
             }
           ]
         }
