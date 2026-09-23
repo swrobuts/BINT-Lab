@@ -51,6 +51,11 @@ PACKAGE_FILES = {
                      "init/01_schema.sql", "init/02_import.sql", "verify.sql"],
 }
 
+# Das Power-BI-Projekt (PBIP) liegt als Ordnerbaum im Starterpaket; alle Dateien sind Text.
+PACKAGE_FILES["lab-05-fallstudie"] += sorted(
+    str(f.relative_to(STARTER / "lab-05-fallstudie")).replace("\\", "/")
+    for f in (STARTER / "lab-05-fallstudie" / "superstore-pbip").rglob("*") if f.is_file())
+
 
 def package_bytes(pkg):
     output = io.BytesIO()

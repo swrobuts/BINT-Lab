@@ -35,3 +35,7 @@ Power BI. Sollwerte: Umsatz 2.261.536,78 · Bestellungen 4.922 ·
 ## bint-klar.json
 
 Designdatei für Power BI Desktop: Ansicht → Designs → Nach Designs suchen → diese Datei wählen. Sie setzt eine gedeckte Farbe für alle Visuals, schaltet Gitternetz, Achsentitel und Legenden aus und aktiviert Datenbeschriftungen. Das Dashboard aus Schritt 3 lässt sich damit in einem Schritt reduzieren.
+
+## superstore-pbip
+
+Der fertige Power-BI-Bericht aus Schritt 5 als Power-BI-Projekt (PBIP): Kennzahlkacheln, Botschaftstitel, Monatslinie mit hervorgehobenem letztem Wert und Jahresfilter. `superstore.pbip` in Power BI Desktop öffnen (Version ab 2024). Das Projekt enthält keine Daten: unter Transformieren → Datenquelleneinstellungen den Pfad zu `train.csv` setzen (voreingestellt `C:\BINT\train.csv`) und dann Aktualisieren. Die Measures liegen in `superstore.SemanticModel/definition/tables/Orders.tmdl`, die Visuals als JSON unter `superstore.Report/definition/pages`.

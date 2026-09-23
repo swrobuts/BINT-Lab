@@ -28,7 +28,7 @@ assets/bint.js                  Laufzeit: Sprache, Codebloecke, Quiz, Checkliste
 assets/img/                     Bildschirmfotos aus Power BI und Tableau
 data/quiz/lab-0*.json           Quizfragen je Lab (zweisprachig)
 data/train.csv                  Superstore-Datensatz, Grundlage aller Uebungen
-starter/                        Starterpakete und Tableau-Arbeitsmappe
+starter/                        Starterpakete, Tableau-Arbeitsmappe, Power-BI-Projekt
 tools/                          Pruefskripte und Generatoren
 ```
 
