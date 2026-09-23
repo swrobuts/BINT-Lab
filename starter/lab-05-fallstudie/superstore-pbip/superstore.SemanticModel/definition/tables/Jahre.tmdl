@@ -2,24 +2,20 @@ table Jahre
 	lineageTag: c32ca982-3431-4b4a-b13c-0ebf09c57784
 
 	column Jahr
-		dataType: int64
-		isNameInferred
-		isDataTypeInferred
 		formatString: 0
 		lineageTag: 9a97a3bd-5b38-4a8d-ab7e-f3baf4226a1a
 		summarizeBy: none
+		isNameInferred
 		sourceColumn: [Jahr]
 
 		annotation SummarizationSetBy = Automatic
 
 	column 'Jahr kurz'
-		dataType: string
-		isNameInferred
-		isDataTypeInferred
 		lineageTag: 0ca8cd8a-c1cb-472f-bb20-8e61e9cf0158
 		summarizeBy: none
-		sortByColumn: Jahr
+		isNameInferred
 		sourceColumn: [Jahr kurz]
+		sortByColumn: Jahr
 
 		annotation SummarizationSetBy = Automatic
 
@@ -28,3 +24,4 @@ table Jahre
 		source = ADDCOLUMNS(DISTINCT(SELECTCOLUMNS(Orders, "Jahr", Orders[Jahr])), "Jahr kurz", "'" & RIGHT(FORMAT([Jahr], "0"), 2))
 
 	annotation PBI_Id = dfde21f7a1fb47ed9db8b96a6ca7c42a
+

@@ -14,10 +14,10 @@ annotation PBI_QueryOrder = ["Orders"]
 annotation PBI_ProTooling = ["DevMode"]
 
 ref table Orders
-ref table Jahre
 ref table DateTableTemplate_dc420225-6019-44b7-a4b9-1145237a7a1d
 ref table LocalDateTable_bf17564c-115b-4606-ab4d-7af6c2687a5d
 ref table LocalDateTable_37812e14-f286-460b-930e-fb58c2b0a72b
+ref table Jahre
 
 ref cultureInfo de-DE
 

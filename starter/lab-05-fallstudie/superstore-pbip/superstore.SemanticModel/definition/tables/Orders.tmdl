@@ -18,26 +18,8 @@ table Orders
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	measure 'Bezugsjahr' = MAX(Orders[Jahr])
-		formatString: 0
-		lineageTag: d02a7783-ce87-486a-bfed-322318468ed9
-
-	measure 'Umsatz Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Umsatz], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
-		formatString: #,0
-		lineageTag: 58467f08-de96-46cd-b8f2-7cddc8533fe3
-
-	measure 'Umsatz Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Umsatz], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
-		formatString: #,0
-		lineageTag: 5c1484f3-f7b7-44ce-814a-119dc365ccd7
-
 	measure 'Umsatz Veränderung' = VAR a = [Umsatz Bezugsjahr] VAR v = [Umsatz Vorjahr] VAR d = DIVIDE(a - v, v) RETURN IF(ISBLANK(v) || v = 0, "kein Vorjahr im Datensatz", IF(d >= 0, "+", "−") & FORMAT(ABS(d) * 100, "0.0") & " % zum Vorjahr")
 		lineageTag: 7f941950-664e-4a90-9ba3-dbda293a1436
-
-	measure 'Umsatz Farbe' = IF(ISBLANK([Umsatz Vorjahr]) || [Umsatz Bezugsjahr] >= [Umsatz Vorjahr], "#1E3A8A", "#B23B1E")
-		lineageTag: f9b20c06-61b6-457c-9052-31a380b8c4d8
-
-	measure 'Umsatz Titel' = "UMSATZ " & [Bezugsjahr]
-		lineageTag: cc12fe16-aebf-4d49-be46-491718224b29
 
 	measure 'Umsatz Vorjahre' = VAR j = [Bezugsjahr] VAR y = MAX(Jahre[Jahr]) RETURN IF(y <> j, CALCULATE([Umsatz], REMOVEFILTERS(Orders[Jahr]), Orders[Jahr] = y))
 		formatString: #,0
@@ -47,22 +29,8 @@ table Orders
 		formatString: #,0
 		lineageTag: 325ba7ad-8c81-4d96-aae3-7adc5db122e2
 
-	measure 'Bestellungen Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Bestellungen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
-		formatString: #,0
-		lineageTag: f02c96f5-722b-465c-9a39-f30daeddc1da
-
-	measure 'Bestellungen Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Bestellungen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
-		formatString: #,0
-		lineageTag: e9b19e87-9a75-446d-ae3c-a2bc5ebcc511
-
 	measure 'Bestellungen Veränderung' = VAR a = [Bestellungen Bezugsjahr] VAR v = [Bestellungen Vorjahr] VAR d = DIVIDE(a - v, v) RETURN IF(ISBLANK(v) || v = 0, "kein Vorjahr im Datensatz", IF(d >= 0, "+", "−") & FORMAT(ABS(d) * 100, "0.0") & " % zum Vorjahr")
 		lineageTag: 1ff95a45-f36f-4908-8e02-fc7050d1ae63
-
-	measure 'Bestellungen Farbe' = IF(ISBLANK([Bestellungen Vorjahr]) || [Bestellungen Bezugsjahr] >= [Bestellungen Vorjahr], "#1E3A8A", "#B23B1E")
-		lineageTag: e7180128-e995-4d6f-8ed9-e2436d000a07
-
-	measure 'Bestellungen Titel' = "BESTELLUNGEN " & [Bezugsjahr]
-		lineageTag: 4ec420e1-c6dd-4d1c-b385-840f5360da63
 
 	measure 'Bestellungen Vorjahre' = VAR j = [Bezugsjahr] VAR y = MAX(Jahre[Jahr]) RETURN IF(y <> j, CALCULATE([Bestellungen], REMOVEFILTERS(Orders[Jahr]), Orders[Jahr] = y))
 		formatString: #,0
@@ -72,22 +40,8 @@ table Orders
 		formatString: #,0
 		lineageTag: f0d87c12-cc6f-421b-acad-5ff14b3de475
 
-	measure 'Positionen Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Positionen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
-		formatString: #,0
-		lineageTag: e0334339-f480-4f4c-9984-2357e126b40c
-
-	measure 'Positionen Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Positionen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
-		formatString: #,0
-		lineageTag: 22e8b688-33f8-4e8e-9881-ea6afe7fc232
-
 	measure 'Positionen Veränderung' = VAR a = [Positionen Bezugsjahr] VAR v = [Positionen Vorjahr] VAR d = DIVIDE(a - v, v) RETURN IF(ISBLANK(v) || v = 0, "kein Vorjahr im Datensatz", IF(d >= 0, "+", "−") & FORMAT(ABS(d) * 100, "0.0") & " % zum Vorjahr")
 		lineageTag: d956f68b-19c6-46af-8a28-795b40832bcd
-
-	measure 'Positionen Farbe' = IF(ISBLANK([Positionen Vorjahr]) || [Positionen Bezugsjahr] >= [Positionen Vorjahr], "#1E3A8A", "#B23B1E")
-		lineageTag: aa791d82-6837-449c-aeaf-858616b2fc86
-
-	measure 'Positionen Titel' = "POSITIONEN " & [Bezugsjahr]
-		lineageTag: dba78864-1508-4496-9f1a-a0a093af2478
 
 	measure 'Positionen Vorjahre' = VAR j = [Bezugsjahr] VAR y = MAX(Jahre[Jahr]) RETURN IF(y <> j, CALCULATE([Positionen], REMOVEFILTERS(Orders[Jahr]), Orders[Jahr] = y))
 		formatString: #,0
@@ -97,22 +51,8 @@ table Orders
 		formatString: #,0
 		lineageTag: cd1c7c09-f8d4-4d1d-9fa3-5127f11c3956
 
-	measure 'Bestellwert Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Ø Bestellwert], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
-		formatString: #,0.00
-		lineageTag: bee2005c-bd6b-4bd9-a1b7-8fa0f5ad1167
-
-	measure 'Bestellwert Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Ø Bestellwert], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
-		formatString: #,0.00
-		lineageTag: baa7daab-8faa-4355-b2b4-353b4640a137
-
 	measure 'Bestellwert Veränderung' = VAR a = [Bestellwert Bezugsjahr] VAR v = [Bestellwert Vorjahr] VAR d = DIVIDE(a - v, v) RETURN IF(ISBLANK(v) || v = 0, "kein Vorjahr im Datensatz", IF(d >= 0, "+", "−") & FORMAT(ABS(d) * 100, "0.0") & " % zum Vorjahr")
 		lineageTag: f4116f2c-3e33-42aa-9fe7-81b5f26c1a8d
-
-	measure 'Bestellwert Farbe' = IF(ISBLANK([Bestellwert Vorjahr]) || [Bestellwert Bezugsjahr] >= [Bestellwert Vorjahr], "#1E3A8A", "#B23B1E")
-		lineageTag: 39181b6b-b591-402c-9428-77c8e25f76f2
-
-	measure 'Bestellwert Titel' = "Ø BESTELLWERT " & [Bezugsjahr]
-		lineageTag: a0921c3f-1c03-403d-8a21-bb2087397f3c
 
 	measure 'Bestellwert Vorjahre' = VAR j = [Bezugsjahr] VAR y = MAX(Jahre[Jahr]) RETURN IF(y <> j, CALCULATE([Ø Bestellwert], REMOVEFILTERS(Orders[Jahr]), Orders[Jahr] = y))
 		formatString: #,0.00
@@ -141,6 +81,66 @@ table Orders
 
 	measure 'Untertitel Monate' = "Umsatz je Monat in US-Dollar, " & [Zeitraum]
 		lineageTag: 6ce8311d-0871-4cfa-b775-38eb3b4e25b2
+
+	measure Bezugsjahr = MAX(Orders[Jahr])
+		formatString: 0
+		lineageTag: d02a7783-ce87-486a-bfed-322318468ed9
+
+	measure 'Umsatz Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Umsatz], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
+		formatString: #,0
+		lineageTag: 58467f08-de96-46cd-b8f2-7cddc8533fe3
+
+	measure 'Umsatz Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Umsatz], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
+		formatString: #,0
+		lineageTag: 5c1484f3-f7b7-44ce-814a-119dc365ccd7
+
+	measure 'Umsatz Farbe' = IF(ISBLANK([Umsatz Vorjahr]) || [Umsatz Bezugsjahr] >= [Umsatz Vorjahr], "#1E3A8A", "#B23B1E")
+		lineageTag: f9b20c06-61b6-457c-9052-31a380b8c4d8
+
+	measure 'Umsatz Titel' = "UMSATZ " & [Bezugsjahr]
+		lineageTag: cc12fe16-aebf-4d49-be46-491718224b29
+
+	measure 'Bestellungen Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Bestellungen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
+		formatString: #,0
+		lineageTag: f02c96f5-722b-465c-9a39-f30daeddc1da
+
+	measure 'Bestellungen Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Bestellungen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
+		formatString: #,0
+		lineageTag: e9b19e87-9a75-446d-ae3c-a2bc5ebcc511
+
+	measure 'Bestellungen Farbe' = IF(ISBLANK([Bestellungen Vorjahr]) || [Bestellungen Bezugsjahr] >= [Bestellungen Vorjahr], "#1E3A8A", "#B23B1E")
+		lineageTag: e7180128-e995-4d6f-8ed9-e2436d000a07
+
+	measure 'Bestellungen Titel' = "BESTELLUNGEN " & [Bezugsjahr]
+		lineageTag: 4ec420e1-c6dd-4d1c-b385-840f5360da63
+
+	measure 'Positionen Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Positionen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
+		formatString: #,0
+		lineageTag: e0334339-f480-4f4c-9984-2357e126b40c
+
+	measure 'Positionen Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Positionen], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
+		formatString: #,0
+		lineageTag: 22e8b688-33f8-4e8e-9881-ea6afe7fc232
+
+	measure 'Positionen Farbe' = IF(ISBLANK([Positionen Vorjahr]) || [Positionen Bezugsjahr] >= [Positionen Vorjahr], "#1E3A8A", "#B23B1E")
+		lineageTag: aa791d82-6837-449c-aeaf-858616b2fc86
+
+	measure 'Positionen Titel' = "POSITIONEN " & [Bezugsjahr]
+		lineageTag: dba78864-1508-4496-9f1a-a0a093af2478
+
+	measure 'Bestellwert Bezugsjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Ø Bestellwert], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j))
+		formatString: #,0.00
+		lineageTag: bee2005c-bd6b-4bd9-a1b7-8fa0f5ad1167
+
+	measure 'Bestellwert Vorjahr' = VAR j = [Bezugsjahr] RETURN CALCULATE([Ø Bestellwert], FILTER(ALL(Orders[Jahr]), Orders[Jahr] = j - 1))
+		formatString: #,0.00
+		lineageTag: baa7daab-8faa-4355-b2b4-353b4640a137
+
+	measure 'Bestellwert Farbe' = IF(ISBLANK([Bestellwert Vorjahr]) || [Bestellwert Bezugsjahr] >= [Bestellwert Vorjahr], "#1E3A8A", "#B23B1E")
+		lineageTag: 39181b6b-b591-402c-9428-77c8e25f76f2
+
+	measure 'Bestellwert Titel' = "Ø BESTELLWERT " & [Bezugsjahr]
+		lineageTag: a0921c3f-1c03-403d-8a21-bb2087397f3c
 
 	column 'Row ID'
 		dataType: string
