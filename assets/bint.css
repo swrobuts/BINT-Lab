@@ -529,7 +529,7 @@ td code { white-space: pre-wrap; overflow-wrap: anywhere; }
   flex: none; font-size: 0.62rem; font-weight: 800;
   letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.5rem;
 }
-.kat-steuerung { background: var(--primary-d); color: #fff; }
+.kat-business { background: var(--primary-d); color: #fff; }
 .kat-storytelling { background: #EEF2FF; color: var(--primary-d); }
 
 /* ------------------------------------------------------------ Lab-Layout */
