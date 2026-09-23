@@ -312,7 +312,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "10D"
+                  "Value": "9D"
                 }
               }
             },
@@ -333,18 +333,7 @@
             "labelPosition": {
               "expr": {
                 "Literal": {
-                  "Value": "'Under'"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#B23B1E'"
-                    }
-                  }
+                  "Value": "'Above'"
                 }
               }
             }
@@ -369,7 +358,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             }
@@ -386,6 +375,13 @@
                   "Value": "true"
                 }
               }
+            },
+            "labelPosition": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Under'"
+                }
+              }
             }
           },
           "selector": {
@@ -396,31 +392,10 @@
       "valueAxis": [
         {
           "properties": {
-            "gridlineShow": {
+            "show": {
               "expr": {
                 "Literal": {
                   "Value": "false"
-                }
-              }
-            },
-            "labelDisplayUnits": {
-              "expr": {
-                "Literal": {
-                  "Value": "1000D"
-                }
-              }
-            },
-            "showAxisTitle": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "9D"
                 }
               }
             }
@@ -448,6 +423,20 @@
               "expr": {
                 "Literal": {
                   "Value": "true"
+                }
+              }
+            },
+            "end": {
+              "expr": {
+                "Literal": {
+                  "Value": "datetime'2018-12-01T00:00:00'"
+                }
+              }
+            },
+            "start": {
+              "expr": {
+                "Literal": {
+                  "Value": "datetime'2015-01-01T00:00:00'"
                 }
               }
             }
@@ -482,7 +471,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Jedes Jahr Spitzen im November und Dezember, 2018 auf Rekordniveau'"
+                  "Value": "'Jahreshoch meist im vierten Quartal, Rekord im November 2018 mit 118 Tsd.'"
                 }
               }
             },

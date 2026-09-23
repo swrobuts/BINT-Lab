@@ -66,7 +66,7 @@ table Orders
 		formatString: #,0
 		lineageTag: 6561ecf0-c8cc-4720-b008-1d2eb00e65f8
 
-	measure Saisonpunkte = IF(MONTH(MAX(Orders[Order Date])) >= 11 && MAX(Orders[Order Date]) < DATE(2018, 12, 1), [Umsatz])
+	measure Saisonpunkte = VAR y = YEAR(MAX(Orders[Order Date])) VAR cur = [Umsatz] VAR mx = MAXX(FILTER(ALL(Orders[Monatsbeginn]), YEAR(Orders[Monatsbeginn]) = y), VAR mb = Orders[Monatsbeginn] RETURN CALCULATE([Umsatz], REMOVEFILTERS(), Orders[Monatsbeginn] = mb)) RETURN IF(cur = mx && MAX(Orders[Order Date]) < DATE(2018, 12, 1), cur)
 		formatString: #,0
 		lineageTag: 2027234b-4782-473f-915f-5475cf94b9e7
 
@@ -314,6 +314,13 @@ table Orders
 		lineageTag: c69fa104-f596-4ede-b1da-f00266d2daa2
 		summarizeBy: none
 		sortByColumn: Jahr
+
+		annotation SummarizationSetBy = Automatic
+
+	column Monatsbeginn = DATE(YEAR(Orders[Order Date]), MONTH(Orders[Order Date]), 1)
+		formatString: Short Date
+		lineageTag: 5822f326-c4fb-4693-a979-a07fa9bbf27a
+		summarizeBy: none
 
 		annotation SummarizationSetBy = Automatic
 

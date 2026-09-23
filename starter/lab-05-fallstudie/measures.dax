@@ -99,9 +99,14 @@ VAR j = [Bezugsjahr]
 VAR y = MAX(Jahre[Jahr])
 RETURN IF(y = j, CALCULATE([Umsatz], REMOVEFILTERS(Orders[Jahr]), Orders[Jahr] = y))
 
--- Monatslinie: graue Punkte je November/Dezember, letzter Wert rot
+-- Monatslinie: grauer Punkt am Jahreshoch, letzter Wert rot
+-- (Monatsbeginn = DATE(YEAR([Order Date]), MONTH([Order Date]), 1) als Spalte)
 Saisonpunkte =
-IF(MONTH(MAX(Orders[Order Date])) >= 11 && MAX(Orders[Order Date]) < DATE(2018, 12, 1), [Umsatz])
+VAR y = YEAR(MAX(Orders[Order Date]))
+VAR cur = [Umsatz]
+VAR mx = MAXX(FILTER(ALL(Orders[Monatsbeginn]), YEAR(Orders[Monatsbeginn]) = y),
+    VAR mb = Orders[Monatsbeginn] RETURN CALCULATE([Umsatz], REMOVEFILTERS(), Orders[Monatsbeginn] = mb))
+RETURN IF(cur = mx && MAX(Orders[Order Date]) < DATE(2018, 12, 1), cur)
 
 Letzter Monat =
 IF(MAX(Orders[Order Date]) >= DATE(2018, 12, 1), [Umsatz])
